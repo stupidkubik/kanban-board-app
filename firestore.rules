@@ -6,18 +6,139 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isSelf(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function userProfileKeysValid() {
+      return request.resource.data.keys().hasOnly([
+        "preferredLocale",
+        "email",
+        "createdAt",
+        "updatedAt"
+      ]);
+    }
+
+    function preferredLocaleValid() {
+      return !request.resource.data.keys().hasAny(["preferredLocale"])
+        || request.resource.data.preferredLocale in ["ru", "en"];
+    }
+
+    function emailValid() {
+      return !request.resource.data.keys().hasAny(["email"])
+        || request.resource.data.email is string
+        || request.resource.data.email == null;
+    }
+
     function isMember() {
       return isSignedIn() && resource.data.members[request.auth.uid] == true;
     }
 
-    function isMemberInNewData() {
-      return isSignedIn() && request.resource.data.members[request.auth.uid] == true;
+    function memberRole() {
+      return resource.data.roles is map ? resource.data.roles[request.auth.uid] : null;
+    }
+
+    function hasLanguage() {
+      return request.resource.data.keys().hasAny(["language"]);
+    }
+
+    function isLanguageValid() {
+      return !hasLanguage() || request.resource.data.language in ["ru", "en"];
+    }
+
+    function isEditor() {
+      return isMember() && (memberRole() == "owner" || memberRole() == "editor" || memberRole() == null);
+    }
+
+    function isOwner() {
+      return isSignedIn() && resource.data.ownerId == request.auth.uid;
+    }
+
+    function ownerUnchanged() {
+      return request.resource.data.ownerId == resource.data.ownerId;
+    }
+
+    function membersUnchanged() {
+      return request.resource.data.members == resource.data.members;
+    }
+
+    function rolesUnchanged() {
+      return request.resource.data.roles == resource.data.roles;
+    }
+
+    function onlyMembersAndRolesChanged() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(["members", "roles"]);
+    }
+
+    function inviteDoc(boardId) {
+      return get(/databases/$(database)/documents/boardInvites/$(boardId + "__" + request.auth.token.email));
+    }
+
+    function hasInvite(boardId) {
+      return request.auth.token.email != null &&
+        exists(/databases/$(database)/documents/boardInvites/$(boardId + "__" + request.auth.token.email));
+    }
+
+    function inviteRole(boardId) {
+      return inviteDoc(boardId).data.role;
+    }
+
+    function canAcceptInvite(boardId) {
+      return isSignedIn()
+        && request.auth.token.email != null
+        && hasInvite(boardId)
+        && resource.data.roles is map
+        && request.resource.data.roles is map
+        && ownerUnchanged()
+        && onlyMembersAndRolesChanged()
+        && request.resource.data.members.diff(resource.data.members).affectedKeys().hasOnly([request.auth.uid])
+        && request.resource.data.roles.diff(resource.data.roles).affectedKeys().hasOnly([request.auth.uid])
+        && request.resource.data.members[request.auth.uid] == true
+        && request.resource.data.roles[request.auth.uid] == inviteRole(boardId);
     }
 
     match /boards/{boardId} {
       allow read: if isMember();
-      allow create: if isMemberInNewData();
-      allow update, delete: if isMember() && isMemberInNewData();
+      allow create: if isSignedIn()
+        && request.resource.data.ownerId == request.auth.uid
+        && request.resource.data.members[request.auth.uid] == true
+        && request.resource.data.roles[request.auth.uid] == "owner"
+        && isLanguageValid();
+      allow update: if isLanguageValid() && ((isOwner()
+          && ownerUnchanged()
+          && request.resource.data.members[request.auth.uid] == true
+          && request.resource.data.roles[request.auth.uid] == "owner")
+        || (isEditor() && ownerUnchanged() && membersUnchanged() && rolesUnchanged())
+        || canAcceptInvite(boardId));
+      allow delete: if isOwner();
+    }
+
+    match /users/{userId} {
+      allow read: if isSelf(userId);
+      allow create, update: if isSelf(userId)
+        && userProfileKeysValid()
+        && preferredLocaleValid()
+        && emailValid();
+      allow delete: if false;
+    }
+
+    function isBoardOwner(boardId) {
+      return isSignedIn() && get(/databases/$(database)/documents/boards/$(boardId)).data.ownerId == request.auth.uid;
+    }
+
+    function isInvitee() {
+      return request.auth.token.email != null && request.auth.token.email == resource.data.email;
+    }
+
+    match /boardInvites/{inviteId} {
+      allow create: if isSignedIn()
+        && request.resource.data.email is string
+        && request.resource.data.boardId is string
+        && request.resource.data.invitedBy == request.auth.uid
+        && request.resource.data.role in ["editor", "viewer"]
+        && isBoardOwner(request.resource.data.boardId);
+      allow read: if isBoardOwner(resource.data.boardId) || isInvitee();
+      allow delete: if isBoardOwner(resource.data.boardId) || isInvitee();
     }
 
     match /{document=**} {
