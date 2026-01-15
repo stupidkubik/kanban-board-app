@@ -4,7 +4,6 @@ import * as React from "react"
 import { useRouter } from "next/navigation"
 import { signOut } from "firebase/auth"
 import {
-  addDoc,
   collection,
   deleteDoc,
   doc,
@@ -30,19 +29,18 @@ import {
 import { useAuth } from "@/components/auth-provider"
 import { clientAuth, clientDb } from "@/lib/firebase/client"
 import { getCopy, languageLabels, roleLabels, type Locale } from "@/lib/i18n"
-
-type BoardRole = "owner" | "editor" | "viewer"
-type BoardLanguage = Locale
-
-type BoardRecord = {
-  title: string
-  ownerId: string
-  members: Record<string, boolean>
-  roles?: Record<string, BoardRole>
-  language?: BoardLanguage
-}
-
-type Board = BoardRecord & { id: string }
+import {
+  boardUpdateOptimistic,
+  boardUpsertOptimistic,
+  boardsClear,
+  boardsError,
+  boardsLoading,
+  boardsReceived,
+  type Board,
+  type BoardLanguage,
+  type BoardRole,
+} from "@/lib/store/boards-slice"
+import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
 
 type InviteRecord = {
   boardId: string
@@ -72,9 +70,13 @@ const getMemberRole = (board: Board, uid: string) => {
 export function KanbanApp() {
   const router = useRouter()
   const { user } = useAuth()
-  const [boards, setBoards] = React.useState<Board[]>([])
+  const dispatch = useAppDispatch()
+  const boards = useAppSelector((state) =>
+    state.boards.order.map((id) => state.boards.boards[id]).filter(Boolean)
+  )
   const [title, setTitle] = React.useState("")
   const [uiLocale, setUiLocale] = React.useState<Locale>("ru")
+  const [localeTouched, setLocaleTouched] = React.useState(false)
   const [newBoardLanguage, setNewBoardLanguage] = React.useState<BoardLanguage>("ru")
   const [newBoardLanguageTouched, setNewBoardLanguageTouched] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
@@ -91,17 +93,43 @@ export function KanbanApp() {
   const [profileReady, setProfileReady] = React.useState(false)
   const [profileExists, setProfileExists] = React.useState(false)
   const uiCopy = React.useMemo(() => getCopy(uiLocale), [uiLocale])
+  const handleUiLocaleChange = React.useCallback((value: Locale) => {
+    setUiLocale(value)
+    setLocaleTouched(true)
+  }, [])
+  const localeTouchedRef = React.useRef(false)
+  const uiLocaleRef = React.useRef<Locale>("ru")
+
+  React.useEffect(() => {
+    localeTouchedRef.current = localeTouched
+  }, [localeTouched])
+
+  React.useEffect(() => {
+    uiLocaleRef.current = uiLocale
+  }, [uiLocale])
 
   React.useEffect(() => {
     const storedLocale = window.localStorage.getItem("uiLocale")
+    const storedTouched = window.localStorage.getItem("uiLocaleTouched")
     if (storedLocale === "ru" || storedLocale === "en") {
       setUiLocale(storedLocale)
+    }
+    if (storedTouched === "1") {
+      setLocaleTouched(true)
     }
   }, [])
 
   React.useEffect(() => {
     window.localStorage.setItem("uiLocale", uiLocale)
   }, [uiLocale])
+
+  React.useEffect(() => {
+    if (localeTouched) {
+      window.localStorage.setItem("uiLocaleTouched", "1")
+    } else {
+      window.localStorage.removeItem("uiLocaleTouched")
+    }
+  }, [localeTouched])
 
   React.useEffect(() => {
     if (!newBoardLanguageTouched) {
@@ -111,7 +139,7 @@ export function KanbanApp() {
 
   React.useEffect(() => {
     if (!user) {
-      setBoards([])
+      dispatch(boardsClear())
       return
     }
 
@@ -121,23 +149,24 @@ export function KanbanApp() {
       where(memberField, "==", true)
     )
 
+    dispatch(boardsLoading())
     const unsubscribe = onSnapshot(
       boardsQuery,
       (snapshot) => {
         const nextBoards = snapshot.docs.map((doc) => {
-          const data = doc.data() as BoardRecord
+          const data = doc.data() as Omit<Board, "id">
           return { id: doc.id, ...data }
         })
-
-        setBoards(nextBoards)
+        dispatch(boardsReceived(nextBoards))
       },
       (err) => {
         setError(err.message)
+        dispatch(boardsError(err.message))
       }
     )
 
     return () => unsubscribe()
-  }, [user])
+  }, [dispatch, user])
 
   React.useEffect(() => {
     if (!user?.email) {
@@ -172,6 +201,7 @@ export function KanbanApp() {
     if (!user) {
       setProfileReady(false)
       setProfileExists(false)
+      setLocaleTouched(false)
       return
     }
 
@@ -183,7 +213,13 @@ export function KanbanApp() {
         if (snapshot.exists()) {
           const data = snapshot.data() as { preferredLocale?: Locale }
           if (data.preferredLocale === "ru" || data.preferredLocale === "en") {
-            setUiLocale(data.preferredLocale)
+            if (localeTouchedRef.current) {
+              if (data.preferredLocale === uiLocaleRef.current) {
+                setLocaleTouched(false)
+              }
+            } else {
+              setUiLocale(data.preferredLocale)
+            }
           }
         }
         setProfileReady(true)
@@ -199,6 +235,10 @@ export function KanbanApp() {
 
   React.useEffect(() => {
     if (!user || !profileReady) {
+      return
+    }
+
+    if (!localeTouched && profileExists) {
       return
     }
 
@@ -218,10 +258,23 @@ export function KanbanApp() {
       payload.createdAt = serverTimestamp()
     }
 
-    setDoc(profileRef, payload, { merge: true }).catch(() => {
-      setError(uiCopy.board.errors.profileUpdateFailed)
-    })
-  }, [profileExists, profileReady, uiCopy.board.errors.profileUpdateFailed, uiLocale, user])
+    setDoc(profileRef, payload, { merge: true })
+      .then(() => {
+        if (localeTouched) {
+          setLocaleTouched(false)
+        }
+      })
+      .catch(() => {
+        setError(uiCopy.board.errors.profileUpdateFailed)
+      })
+  }, [
+    localeTouched,
+    profileExists,
+    profileReady,
+    uiCopy.board.errors.profileUpdateFailed,
+    uiLocale,
+    user,
+  ])
 
   const handleSignOut = async () => {
     setError(null)
@@ -251,7 +304,22 @@ export function KanbanApp() {
     setError(null)
 
     try {
-      await addDoc(collection(clientDb, "boards"), {
+      const docRef = doc(collection(clientDb, "boards"))
+      dispatch(
+        boardUpsertOptimistic({
+          id: docRef.id,
+          title: trimmed,
+          ownerId: user.uid,
+          members: {
+            [user.uid]: true,
+          },
+          roles: {
+            [user.uid]: "owner",
+          },
+          language: newBoardLanguage,
+        })
+      )
+      await setDoc(docRef, {
         title: trimmed,
         ownerId: user.uid,
         members: {
@@ -290,12 +358,20 @@ export function KanbanApp() {
 
     setLanguagePendingId(board.id)
     setError(null)
+    const previousLanguage = board.language ?? "ru"
+    dispatch(boardUpdateOptimistic({ id: board.id, changes: { language } }))
 
     try {
       await updateDoc(doc(clientDb, "boards", board.id), {
         language,
       })
     } catch (err) {
+      dispatch(
+        boardUpdateOptimistic({
+          id: board.id,
+          changes: { language: previousLanguage },
+        })
+      )
       setError(err instanceof Error ? err.message : boardCopy.board.errors.updateLanguageFailed)
     } finally {
       setLanguagePendingId(null)
@@ -404,7 +480,7 @@ export function KanbanApp() {
                 </div>
                 <Select
                   value={uiLocale}
-                  onValueChange={(value) => setUiLocale(value as Locale)}
+                  onValueChange={(value) => handleUiLocaleChange(value as Locale)}
                 >
                   <SelectTrigger className="h-9 w-36">
                     <SelectValue />

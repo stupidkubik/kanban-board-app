@@ -95,6 +95,10 @@ export default function SignInPage() {
   const [resetMode, setResetMode] = React.useState(false)
   const [resetEmail, setResetEmail] = React.useState("")
   const uiCopy = React.useMemo(() => getCopy(uiLocale), [uiLocale])
+  const handleUiLocaleChange = React.useCallback((value: Locale) => {
+    setUiLocale(value)
+    window.localStorage.setItem("uiLocaleTouched", "1")
+  }, [])
 
   React.useEffect(() => {
     const storedLocale = window.localStorage.getItem("uiLocale")
@@ -239,7 +243,7 @@ export default function SignInPage() {
               </div>
               <Select
                 value={uiLocale}
-                onValueChange={(value) => setUiLocale(value as Locale)}
+                onValueChange={(value) => handleUiLocaleChange(value as Locale)}
               >
                 <SelectTrigger className="h-9 w-36">
                   <SelectValue />
@@ -296,7 +300,7 @@ export default function SignInPage() {
             </div>
             <Select
               value={uiLocale}
-              onValueChange={(value) => setUiLocale(value as Locale)}
+              onValueChange={(value) => handleUiLocaleChange(value as Locale)}
             >
               <SelectTrigger className="h-9 w-36">
                 <SelectValue />
