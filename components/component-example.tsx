@@ -2,10 +2,12 @@
 
 import * as React from "react"
 
+import { cn } from "@/lib/utils"
 import {
   Example,
   ExampleWrapper,
 } from "@/components/example"
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +20,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -29,6 +32,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+
 import {
   Combobox,
   ComboboxContent,
@@ -37,6 +41,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/ui/combobox"
+
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -54,8 +59,10 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
+
 import {
   Select,
   SelectContent,
@@ -64,8 +71,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+
 import { Textarea } from "@/components/ui/textarea"
 import { PlusIcon, BluetoothIcon, DotsThreeVerticalIcon, FileIcon, FolderIcon, FolderOpenIcon, CodeIcon, DotsThreeOutlineIcon, MagnifyingGlassIcon, FloppyDiskIcon, DownloadIcon, EyeIcon, LayoutIcon, PaletteIcon, SunIcon, MoonIcon, MonitorIcon, UserIcon, CreditCardIcon, GearIcon, KeyboardIcon, TranslateIcon, BellIcon, EnvelopeIcon, ShieldIcon, QuestionIcon, FileTextIcon, SignOutIcon } from "@phosphor-icons/react"
+import styles from "@/components/component-example.module.css"
 
 export function ComponentExample() {
   return (
@@ -78,14 +87,13 @@ export function ComponentExample() {
 
 function CardExample() {
   return (
-    <Example title="Card" className="items-center justify-center">
-      <Card className="relative w-full max-w-sm overflow-hidden pt-0">
-        <div className="bg-primary absolute inset-0 z-30 aspect-video opacity-50 mix-blend-color" />
-        <img
+    <Example title="Card" className={styles.exampleCenter}>
+      <Card className={styles.cardPreview}>
+        <div className={styles.cardOverlay} />
+        <CardImage
           src="https://images.unsplash.com/photo-1604076850742-4c7221f3101b?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
           alt="Photo by mymind on Unsplash"
           title="Photo by mymind on Unsplash"
-          className="relative z-20 aspect-video w-full object-cover brightness-60 grayscale"
         />
         <CardHeader>
           <CardTitle>Observability Plus is replacing Monitoring</CardTitle>
@@ -121,13 +129,20 @@ function CardExample() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-          <Badge variant="secondary" className="ml-auto">
+          <Badge variant="secondary" className={styles.mlAuto}>
             Warning
           </Badge>
         </CardFooter>
       </Card>
     </Example>
   )
+}
+
+function CardImage({
+  className,
+  ...props
+}: React.ComponentProps<"img">) {
+  return <img className={cn(styles.cardImage, className)} {...props} />
 }
 
 const frameworks = [
@@ -148,7 +163,7 @@ function FormExample() {
 
   return (
     <Example title="Form">
-      <Card className="w-full max-w-md">
+      <Card className={styles.cardForm}>
         <CardHeader>
           <CardTitle>User Information</CardTitle>
           <CardDescription>Please fill in your details below</CardDescription>
@@ -158,10 +173,10 @@ function FormExample() {
                 <Button variant="ghost" size="icon">
                   <DotsThreeVerticalIcon
                   />
-                  <span className="sr-only">More options</span>
+                  <span className={styles.srOnly}>More options</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuContent align="end" className={styles.menuWidth}>
                 <DropdownMenuGroup>
                   <DropdownMenuLabel>File</DropdownMenuLabel>
                   <DropdownMenuItem>
@@ -425,7 +440,7 @@ function FormExample() {
         <CardContent>
           <form>
             <FieldGroup>
-              <div className="grid grid-cols-2 gap-4">
+              <div className={styles.twoColumnGrid}>
                 <Field>
                   <FieldLabel htmlFor="small-form-name">Name</FieldLabel>
                   <Input

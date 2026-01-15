@@ -1,0 +1,162 @@
+.page {
+  width: 100%;
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 40px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.cardHeader {
+  padding: 20px 24px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cardTitle {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.cardSubtitle {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.cardContent {
+  padding: 16px 24px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+}
+
+.muted {
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.label {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.formRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.input {
+  flex: 1 1 240px;
+  min-width: 220px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  background: #fff;
+}
+
+.select {
+  height: 38px;
+  min-width: 140px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  padding: 6px 10px;
+  background: #fff;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  border: 1px solid var(--color-border);
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.buttonOutline {
+  background: transparent;
+  color: var(--color-text);
+}
+
+.buttonGhost {
+  background: transparent;
+  border: 0;
+  color: var(--color-muted);
+  font-weight: 500;
+}
+
+.grid {
+  display: grid;
+  gap: 12px;
+}
+
+.boardCard {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.section {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.inviteRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.notice {
+  font-size: 13px;
+  color: var(--color-success);
+}
+
+.error {
+  font-size: 13px;
+  color: var(--color-danger);
+}

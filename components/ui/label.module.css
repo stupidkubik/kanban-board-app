@@ -1,0 +1,16 @@
+.label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--color-text);
+  user-select: none;
+}
+
+.label[aria-disabled="true"],
+.label[data-disabled="true"] {
+  opacity: 0.6;
+  pointer-events: none;
+}

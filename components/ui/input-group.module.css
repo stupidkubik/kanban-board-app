@@ -1,0 +1,149 @@
+.group {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.8);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.group:has([data-slot="input-group-control"]:focus-visible) {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+.group:has([aria-invalid="true"]) {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+}
+
+.group:has([data-align="block-start"]),
+.group:has([data-align="block-end"]),
+.group:has(textarea) {
+  height: auto;
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.addon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: text;
+  user-select: none;
+}
+
+.addon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.addon kbd {
+  border-radius: 999px;
+  padding: 2px 6px;
+  background: rgba(15, 23, 42, 0.08);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.addonInlineStart {
+  order: 0;
+  padding-left: 12px;
+}
+
+.addonInlineEnd {
+  order: 2;
+  padding-right: 12px;
+}
+
+.addonBlockStart {
+  order: 0;
+  width: 100%;
+  padding: 10px 12px 0;
+  justify-content: flex-start;
+}
+
+.addonBlockEnd {
+  order: 2;
+  width: 100%;
+  padding: 0 12px 10px;
+  justify-content: flex-start;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+}
+
+.buttonSizeXs {
+  height: 24px;
+  padding: 0 8px;
+}
+
+.buttonSizeSm {
+  height: 32px;
+  padding: 0 10px;
+}
+
+.buttonSizeIconXs {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+}
+
+.buttonSizeIconSm {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+}
+
+.text {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.text svg {
+  width: 16px;
+  height: 16px;
+}
+
+input.inputControl {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  height: 100%;
+  padding: 6px 12px;
+  min-width: 0;
+}
+
+input.inputControl:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+textarea.textareaControl {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 10px 12px;
+  min-height: 90px;
+  resize: none;
+}
+
+textarea.textareaControl:focus-visible {
+  outline: none;
+  box-shadow: none;
+}

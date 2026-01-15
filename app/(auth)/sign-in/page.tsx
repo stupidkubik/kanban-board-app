@@ -12,19 +12,10 @@ import {
   signInWithRedirect,
 } from "firebase/auth"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { useAuth } from "@/components/auth-provider"
 import { clientAuth } from "@/lib/firebase/client"
 import { getCopy, languageLabels, type Locale } from "@/lib/i18n"
+import styles from "./sign-in.module.css"
 
 const providers = {
   google: new GoogleAuthProvider(),
@@ -218,9 +209,7 @@ export default function SignInPage() {
 
   if (loading) {
     return (
-      <div className="mx-auto flex w-full max-w-md px-4 py-10 text-sm text-muted-foreground">
-        {uiCopy.auth.loading}
-      </div>
+      <div className={styles.loading}>{uiCopy.auth.loading}</div>
     )
   }
 
@@ -230,45 +219,40 @@ export default function SignInPage() {
 
   if (resetMode) {
     return (
-      <div className="mx-auto flex min-h-screen w-full max-w-md items-center px-4 py-10">
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>{uiCopy.auth.resetTitle}</CardTitle>
-            <CardDescription>{uiCopy.auth.resetSubtitle}</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                {uiCopy.common.interfaceLanguage}
-              </div>
-              <Select
+      <div className={styles.page}>
+        <div className={styles.card}>
+          <div className={styles.header}>
+            <h1 className={styles.title}>{uiCopy.auth.resetTitle}</h1>
+            <p className={styles.subtitle}>{uiCopy.auth.resetSubtitle}</p>
+          </div>
+          <div className={styles.content}>
+            <div className={styles.row}>
+              <div className={styles.rowLabel}>{uiCopy.common.interfaceLanguage}</div>
+              <select
+                className={styles.select}
                 value={uiLocale}
-                onValueChange={(value) => handleUiLocaleChange(value as Locale)}
+                onChange={(event) => handleUiLocaleChange(event.target.value as Locale)}
               >
-                <SelectTrigger className="h-9 w-36">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ru">{languageLabels.ru}</SelectItem>
-                  <SelectItem value="en">{languageLabels.en}</SelectItem>
-                </SelectContent>
-              </Select>
+                <option value="ru">{languageLabels.ru}</option>
+                <option value="en">{languageLabels.en}</option>
+              </select>
             </div>
-            <form className="flex flex-col gap-3" onSubmit={handlePasswordReset}>
-              <Input
+            <form className={styles.form} onSubmit={handlePasswordReset}>
+              <input
+                className={styles.input}
                 type="email"
                 placeholder={uiCopy.auth.emailPlaceholder}
                 value={resetEmail}
                 onChange={(event) => setResetEmail(event.target.value)}
                 required
               />
-              <Button type="submit" disabled={resetPending}>
+              <button className={styles.button} type="submit" disabled={resetPending}>
                 {resetPending ? uiCopy.auth.resetSending : uiCopy.auth.resetSend}
-              </Button>
+              </button>
             </form>
-            <Button
+            <button
+              className={`${styles.button} ${styles.buttonGhost}`}
               type="button"
-              variant="ghost"
               disabled={resetPending}
               onClick={() => {
                 setResetMode(false)
@@ -277,66 +261,62 @@ export default function SignInPage() {
               }}
             >
               {uiCopy.auth.resetBack}
-            </Button>
-            {notice ? <p className="text-sm text-emerald-600">{notice}</p> : null}
-            {error ? <p className="text-sm text-destructive">{error}</p> : null}
-          </CardContent>
-        </Card>
+            </button>
+            {notice ? <p className={styles.notice}>{notice}</p> : null}
+            {error ? <p className={styles.error}>{error}</p> : null}
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="mx-auto flex min-h-screen w-full max-w-md items-center px-4 py-10">
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>{uiCopy.auth.title}</CardTitle>
-          <CardDescription>{uiCopy.auth.subtitle}</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3">
-          <div className="flex items-center justify-between">
-            <div className="text-xs uppercase tracking-wide text-muted-foreground">
-              {uiCopy.common.interfaceLanguage}
-            </div>
-            <Select
+    <div className={styles.page}>
+      <div className={styles.card}>
+        <div className={styles.header}>
+          <h1 className={styles.title}>{uiCopy.auth.title}</h1>
+          <p className={styles.subtitle}>{uiCopy.auth.subtitle}</p>
+        </div>
+        <div className={styles.content}>
+          <div className={styles.row}>
+            <div className={styles.rowLabel}>{uiCopy.common.interfaceLanguage}</div>
+            <select
+              className={styles.select}
               value={uiLocale}
-              onValueChange={(value) => handleUiLocaleChange(value as Locale)}
+              onChange={(event) => handleUiLocaleChange(event.target.value as Locale)}
             >
-              <SelectTrigger className="h-9 w-36">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ru">{languageLabels.ru}</SelectItem>
-                <SelectItem value="en">{languageLabels.en}</SelectItem>
-              </SelectContent>
-            </Select>
+              <option value="ru">{languageLabels.ru}</option>
+              <option value="en">{languageLabels.en}</option>
+            </select>
           </div>
-          <form className="flex flex-col gap-3" onSubmit={handleEmailAuth}>
-            <Input
+          <form className={styles.form} onSubmit={handleEmailAuth}>
+            <input
+              className={styles.input}
               type="email"
               placeholder={uiCopy.auth.emailPlaceholder}
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
             />
-            <Input
+            <input
+              className={styles.input}
               type="password"
               placeholder={uiCopy.auth.passwordPlaceholder}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
             />
-            <Button type="submit" disabled={emailPending}>
+            <button className={styles.button} type="submit" disabled={emailPending}>
               {emailPending
                 ? uiCopy.auth.connecting
                 : mode === "sign-in"
                   ? uiCopy.auth.signInEmail
                   : uiCopy.auth.signUpEmail}
-            </Button>
+            </button>
             {mode === "sign-in" ? (
-              <Button
+              <button
+                className={`${styles.button} ${styles.buttonGhost}`}
                 type="button"
-                variant="ghost"
                 disabled={emailPending}
                 onClick={() => {
                   setResetEmail(email)
@@ -346,36 +326,31 @@ export default function SignInPage() {
                 }}
               >
                 {uiCopy.auth.forgotPassword}
-              </Button>
+              </button>
             ) : null}
-            <Button
+            <button
+              className={`${styles.button} ${styles.buttonGhost}`}
               type="button"
-              variant="ghost"
               disabled={emailPending}
               onClick={() => setMode(mode === "sign-in" ? "sign-up" : "sign-in")}
             >
               {mode === "sign-in"
                 ? uiCopy.auth.toggleToSignUp
                 : uiCopy.auth.toggleToSignIn}
-            </Button>
+            </button>
           </form>
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
-            {uiCopy.auth.orLabel}
-          </div>
-          <Button
+          <div className={styles.divider}>{uiCopy.auth.orLabel}</div>
+          <button
+            className={`${styles.button} ${styles.buttonGoogle}`}
             onClick={() => handleSignIn("google")}
             disabled={pendingProvider !== null || emailPending || sessionPending}
-            className="gap-2 border border-input bg-white text-slate-900 hover:bg-slate-50"
+            type="button"
           >
             {pendingProvider === "google" ? (
               uiCopy.auth.connecting
             ) : (
               <>
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 24 24"
-                  className="h-4 w-4"
-                >
+                <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16">
                   <path
                     fill="#EA4335"
                     d="M12 10.2v3.9h5.5c-.2 1.4-1.6 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1 0-3.3 2.7-6.1 6-6.1 1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.9 3.4 14.7 2.3 12 2.3 6.9 2.3 2.7 6.5 2.7 11.6s4.2 9.3 9.3 9.3c5.4 0 8.9-3.8 8.9-9.1 0-.6-.1-1.1-.2-1.6H12z"
@@ -396,11 +371,11 @@ export default function SignInPage() {
                 <span>{uiCopy.auth.googleButton}</span>
               </>
             )}
-          </Button>
-          {notice ? <p className="text-sm text-emerald-600">{notice}</p> : null}
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
-        </CardContent>
-      </Card>
+          </button>
+          {notice ? <p className={styles.notice}>{notice}</p> : null}
+          {error ? <p className={styles.error}>{error}</p> : null}
+        </div>
+      </div>
     </div>
   )
 }

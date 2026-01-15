@@ -16,16 +16,6 @@ import {
   where,
 } from "firebase/firestore"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { useAuth } from "@/components/auth-provider"
 import { clientAuth, clientDb } from "@/lib/firebase/client"
 import { getCopy, languageLabels, roleLabels, type Locale } from "@/lib/i18n"
@@ -41,6 +31,7 @@ import {
   type BoardRole,
 } from "@/lib/store/boards-slice"
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
+import styles from "@/components/kanban-app.module.css"
 
 type InviteRecord = {
   boardId: string
@@ -48,6 +39,7 @@ type InviteRecord = {
   email: string
   role: BoardRole
   invitedBy: string
+  createdAt?: number
 }
 
 type Invite = InviteRecord & { id: string }
@@ -65,6 +57,19 @@ const getMemberRole = (board: Board, uid: string) => {
   }
 
   return null
+}
+
+const toMillis = (value: unknown): number | undefined => {
+  if (!value || typeof value !== "object") {
+    return undefined
+  }
+
+  const maybeTimestamp = value as { toMillis?: () => number }
+  if (typeof maybeTimestamp.toMillis === "function") {
+    return maybeTimestamp.toMillis()
+  }
+
+  return undefined
 }
 
 export function KanbanApp() {
@@ -155,7 +160,23 @@ export function KanbanApp() {
       (snapshot) => {
         const nextBoards = snapshot.docs.map((doc) => {
           const data = doc.data() as Omit<Board, "id">
-          return { id: doc.id, ...data }
+          const board: Board = {
+            id: doc.id,
+            title: data.title,
+            ownerId: data.ownerId,
+            members: data.members ?? {},
+            roles: data.roles,
+            language: data.language,
+          }
+          const createdAt = toMillis((data as { createdAt?: unknown }).createdAt)
+          if (createdAt !== undefined) {
+            board.createdAt = createdAt
+          }
+          const updatedAt = toMillis((data as { updatedAt?: unknown }).updatedAt)
+          if (updatedAt !== undefined) {
+            board.updatedAt = updatedAt
+          }
+          return board
         })
         dispatch(boardsReceived(nextBoards))
       },
@@ -184,8 +205,20 @@ export function KanbanApp() {
       invitesQuery,
       (snapshot) => {
         const nextInvites = snapshot.docs.map((doc) => {
-          const data = doc.data() as InviteRecord
-          return { id: doc.id, ...data }
+          const data = doc.data() as InviteRecord & { createdAt?: unknown }
+          const invite: Invite = {
+            id: doc.id,
+            boardId: data.boardId,
+            boardTitle: data.boardTitle,
+            email: data.email,
+            role: data.role,
+            invitedBy: data.invitedBy,
+          }
+          const createdAt = toMillis(data.createdAt)
+          if (createdAt !== undefined) {
+            invite.createdAt = createdAt
+          }
+          return invite
         })
         setInvites(nextInvites)
       },
@@ -461,109 +494,109 @@ export function KanbanApp() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4 py-10">
-      <Card>
-        <CardHeader>
-          <CardTitle>{uiCopy.common.appTitle}</CardTitle>
-          <CardDescription>{uiCopy.common.appSubtitle}</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
+    <div className={styles.page}>
+      <section className={styles.card}>
+        <div className={styles.cardHeader}>
+          <h2 className={styles.cardTitle}>{uiCopy.common.appTitle}</h2>
+          <p className={styles.cardSubtitle}>{uiCopy.common.appSubtitle}</p>
+        </div>
+        <div className={styles.cardContent}>
           {user ? (
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="text-sm">
-                <div className="font-medium">{uiCopy.common.signedIn}</div>
-                <div className="text-muted-foreground">{user.email ?? user.uid}</div>
+            <div className={styles.row}>
+              <div className={styles.meta}>
+                <div>{uiCopy.common.signedIn}</div>
+                <div className={styles.muted}>{user.email ?? user.uid}</div>
               </div>
-              <div className="ml-auto flex flex-wrap items-center gap-2">
-                <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                  {uiCopy.common.interfaceLanguage}
-                </div>
-                <Select
+              <div className={styles.row}>
+                <div className={styles.label}>{uiCopy.common.interfaceLanguage}</div>
+                <select
+                  className={styles.select}
                   value={uiLocale}
-                  onValueChange={(value) => handleUiLocaleChange(value as Locale)}
+                  onChange={(event) => handleUiLocaleChange(event.target.value as Locale)}
                 >
-                  <SelectTrigger className="h-9 w-36">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ru">{languageLabels.ru}</SelectItem>
-                    <SelectItem value="en">{languageLabels.en}</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button variant="outline" onClick={handleSignOut}>
+                  <option value="ru">{languageLabels.ru}</option>
+                  <option value="en">{languageLabels.en}</option>
+                </select>
+                <button
+                  className={`${styles.button} ${styles.buttonOutline}`}
+                  onClick={handleSignOut}
+                  type="button"
+                >
                   {uiCopy.common.signOut}
-                </Button>
+                </button>
               </div>
             </div>
           ) : null}
-          {error ? <p className="text-sm text-destructive">{error}</p> : null}
-        </CardContent>
-      </Card>
+          {error ? <p className={styles.error}>{error}</p> : null}
+        </div>
+      </section>
 
       {user ? (
         <>
           {invites.length ? (
-            <Card>
-              <CardHeader>
-                <CardTitle>{uiCopy.board.invitationsTitle}</CardTitle>
-                <CardDescription>{uiCopy.board.invitationsSubtitle}</CardDescription>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3">
+            <section className={styles.card}>
+              <div className={styles.cardHeader}>
+                <h3 className={styles.cardTitle}>{uiCopy.board.invitationsTitle}</h3>
+                <p className={styles.cardSubtitle}>{uiCopy.board.invitationsSubtitle}</p>
+              </div>
+              <div className={styles.cardContent}>
                 {invites.map((invite) => (
-                  <div
-                    key={invite.id}
-                    className="flex flex-col gap-2 rounded-lg border border-border p-4"
-                  >
-                    <div className="font-medium">{invite.boardTitle}</div>
-                    <div className="text-xs text-muted-foreground">
+                  <div key={invite.id} className={styles.boardCard}>
+                    <div>{invite.boardTitle}</div>
+                    <div className={styles.muted}>
                       {uiCopy.board.roleLabel}: {roleLabels[uiLocale][invite.role]}
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      <Button onClick={() => handleAcceptInvite(invite)}>
+                    <div className={styles.row}>
+                      <button
+                        className={styles.button}
+                        onClick={() => handleAcceptInvite(invite)}
+                        type="button"
+                      >
                         {uiCopy.board.acceptInvite}
-                      </Button>
-                      <Button variant="outline" onClick={() => handleDeclineInvite(invite)}>
+                      </button>
+                      <button
+                        className={`${styles.button} ${styles.buttonOutline}`}
+                        onClick={() => handleDeclineInvite(invite)}
+                        type="button"
+                      >
                         {uiCopy.board.declineInvite}
-                      </Button>
+                      </button>
                     </div>
                   </div>
                 ))}
-              </CardContent>
-            </Card>
+              </div>
+            </section>
           ) : null}
-        <Card>
-          <CardHeader>
-            <CardTitle>{uiCopy.board.boardSectionTitle}</CardTitle>
-            <CardDescription>{uiCopy.board.boardSectionSubtitle}</CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">
-            <form className="flex flex-col gap-3 sm:flex-row" onSubmit={handleCreateBoard}>
-              <Input
+        <section className={styles.card}>
+          <div className={styles.cardHeader}>
+            <h3 className={styles.cardTitle}>{uiCopy.board.boardSectionTitle}</h3>
+            <p className={styles.cardSubtitle}>{uiCopy.board.boardSectionSubtitle}</p>
+          </div>
+          <div className={styles.cardContent}>
+            <form className={styles.formRow} onSubmit={handleCreateBoard}>
+              <input
+                className={styles.input}
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder={uiCopy.board.boardNamePlaceholder}
                 aria-label={uiCopy.board.boardNamePlaceholder}
               />
-              <Select
+              <select
+                className={styles.select}
                 value={newBoardLanguage}
-                onValueChange={(value) => {
-                  setNewBoardLanguage(value as BoardLanguage)
+                onChange={(event) => {
+                  setNewBoardLanguage(event.target.value as BoardLanguage)
                   setNewBoardLanguageTouched(true)
                 }}
               >
-                <SelectTrigger className="sm:w-40">
-                  <SelectValue placeholder="Language" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ru">{languageLabels.ru}</SelectItem>
-                  <SelectItem value="en">{languageLabels.en}</SelectItem>
-                </SelectContent>
-              </Select>
-              <Button type="submit" disabled={creating}>
+                <option value="ru">{languageLabels.ru}</option>
+                <option value="en">{languageLabels.en}</option>
+              </select>
+              <button className={styles.button} type="submit" disabled={creating}>
                 {creating ? uiCopy.board.creatingBoard : uiCopy.board.createBoard}
-              </Button>
+              </button>
             </form>
-            <div className="grid gap-3">
+            <div className={styles.grid}>
               {boards.length ? (
                 boards.map((board) => {
                   const role = getMemberRole(board, user.uid)
@@ -577,47 +610,37 @@ export function KanbanApp() {
                   const boardCopy = getCopy(currentLanguage)
 
                   return (
-                    <div
-                      key={board.id}
-                      className="flex flex-col gap-1 rounded-lg border border-border p-4"
-                    >
-                      <div className="font-medium">{board.title}</div>
-                      <div className="text-xs text-muted-foreground">
+                    <div key={board.id} className={styles.boardCard}>
+                      <div>{board.title}</div>
+                      <div className={styles.muted}>
                         {boardCopy.board.ownerLabel}: {board.ownerId}
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className={styles.muted}>
                         {boardCopy.board.roleLabel}:{" "}
                         {role
                           ? roleLabels[currentLanguage][role]
                           : roleLabels[currentLanguage].member}
                       </div>
-                      <div className="mt-3 flex flex-col gap-2">
-                        <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                          {boardCopy.board.boardLanguageLabel}
-                        </div>
-                        <Select
+                      <div className={styles.section}>
+                        <div className={styles.label}>{boardCopy.board.boardLanguageLabel}</div>
+                        <select
+                          className={styles.select}
                           value={currentLanguage}
-                          onValueChange={(value) =>
-                            handleLanguageChange(board, value as BoardLanguage)
+                          onChange={(event) =>
+                            handleLanguageChange(board, event.target.value as BoardLanguage)
                           }
                           disabled={!canEditLanguage || isLanguagePending}
                         >
-                          <SelectTrigger className="sm:w-40">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="ru">{languageLabels.ru}</SelectItem>
-                            <SelectItem value="en">{languageLabels.en}</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          <option value="ru">{languageLabels.ru}</option>
+                          <option value="en">{languageLabels.en}</option>
+                        </select>
                       </div>
                       {isOwner ? (
-                        <div className="mt-3 flex flex-col gap-2">
-                          <div className="text-xs uppercase tracking-wide text-muted-foreground">
-                            {boardCopy.board.inviteMember}
-                          </div>
-                          <div className="flex flex-col gap-2 sm:flex-row">
-                            <Input
+                        <div className={styles.section}>
+                          <div className={styles.label}>{boardCopy.board.inviteMember}</div>
+                          <div className={styles.inviteRow}>
+                            <input
+                              className={styles.input}
                               value={inviteEmail}
                               onChange={(event) =>
                                 setInviteEmailByBoard((prev) => ({
@@ -629,7 +652,7 @@ export function KanbanApp() {
                               aria-label={boardCopy.board.inviteEmailPlaceholder}
                             />
                             <select
-                              className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+                              className={styles.select}
                               value={inviteRole}
                               onChange={(event) =>
                                 setInviteRoleByBoard((prev) => ({
@@ -645,7 +668,8 @@ export function KanbanApp() {
                                 {roleLabels[currentLanguage].viewer}
                               </option>
                             </select>
-                            <Button
+                            <button
+                              className={styles.button}
                               type="button"
                               onClick={() => handleInvite(board)}
                               disabled={isInvitePending}
@@ -653,7 +677,7 @@ export function KanbanApp() {
                               {isInvitePending
                                 ? boardCopy.board.inviteSending
                                 : boardCopy.board.inviteButton}
-                            </Button>
+                            </button>
                           </div>
                         </div>
                       ) : null}
@@ -661,11 +685,11 @@ export function KanbanApp() {
                   )
                 })
               ) : (
-                <p className="text-sm text-muted-foreground">{uiCopy.board.noBoards}</p>
+                <p className={styles.muted}>{uiCopy.board.noBoards}</p>
               )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </section>
         </>
       ) : null}
     </div>

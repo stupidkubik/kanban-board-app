@@ -1,5 +1,7 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 
+import { authSignedOut } from "@/lib/store/auth-slice"
+
 export type BoardRole = "owner" | "editor" | "viewer"
 export type BoardLanguage = "ru" | "en"
 
@@ -10,6 +12,8 @@ export type Board = {
   members: Record<string, boolean>
   roles?: Record<string, BoardRole>
   language?: BoardLanguage
+  createdAt?: number
+  updatedAt?: number
   pending?: boolean
 }
 
@@ -88,6 +92,9 @@ const boardsSlice = createSlice({
     boardsClear() {
       return initialState
     },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(authSignedOut, () => initialState)
   },
 })
 
