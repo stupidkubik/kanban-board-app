@@ -15,7 +15,6 @@
     "clsx": "^2.1.1",
     "firebase": "^12.8.0",
     "firebase-admin": "^12.0.0",
-    "firebase-tools": "^14.19.0",
     "@reduxjs/toolkit": "^2.2.3",
     "next": "16.1.2",
     "radix-ui": "^1.4.3",
@@ -30,6 +29,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.1.2",
+    "firebase-tools": "^14.27.0",
     "typescript": "^5"
   }
 }
