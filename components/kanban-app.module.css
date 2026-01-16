@@ -74,6 +74,31 @@
   align-items: center;
 }
 
+.actionsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modalFields {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modalFooter {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
 .input {
   flex: 1 1 240px;
   min-width: 220px;
@@ -116,6 +141,18 @@
   color: var(--color-text);
 }
 
+.buttonOutlineDanger {
+  background: transparent;
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+}
+
+.buttonDanger {
+  background: var(--color-danger);
+  color: #fff;
+  border-color: var(--color-danger);
+}
+
 .buttonGhost {
   background: transparent;
   border: 0;
@@ -123,9 +160,42 @@
   font-weight: 500;
 }
 
-.grid {
+.boardGrid {
   display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.boardItem {
+  height: 100%;
+}
+
+.boardContent {
+  display: flex;
+  flex-direction: column;
   gap: 12px;
+}
+
+.boardFooter {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.boardActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.boardMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .boardCard {

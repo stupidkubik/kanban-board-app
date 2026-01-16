@@ -43,6 +43,7 @@ type CommonCopy = {
   signedIn: string
   signOut: string
   interfaceLanguage: string
+  cancel: string
 }
 
 type BoardCopy = {
@@ -51,6 +52,27 @@ type BoardCopy = {
   boardNamePlaceholder: string
   createBoard: string
   creatingBoard: string
+  renameBoard: string
+  renamingBoard: string
+  renameBoardTitle: string
+  renameBoardDescription: string
+  deleteBoard: string
+  deletingBoard: string
+  deleteBoardTitle: string
+  deleteBoardDescription: string
+  openBoard: string
+  columnsTitle: string
+  addColumn: string
+  columnNamePlaceholder: string
+  createColumn: string
+  creatingColumn: string
+  noColumns: string
+  deleteColumn: string
+  deleteColumnTitle: string
+  deleteColumnDescription: string
+  participantsTitle: string
+  onlyYou: string
+  youLabel: string
   noBoards: string
   ownerLabel: string
   roleLabel: string
@@ -68,6 +90,12 @@ type BoardCopy = {
     signInToCreate: string
     boardTitleRequired: string
     createBoardFailed: string
+    updateBoardFailed: string
+    deleteBoardFailed: string
+    columnTitleRequired: string
+    createColumnFailed: string
+    updateColumnFailed: string
+    deleteColumnFailed: string
     profileLoadFailed: string
     profileUpdateFailed: string
     signInToUpdate: string
@@ -75,6 +103,7 @@ type BoardCopy = {
     updateLanguageFailed: string
     signInToInvite: string
     onlyOwnerCanInvite: string
+    onlyOwnerCanDelete: string
     inviteInvalidEmail: string
     inviteSelf: string
     inviteFailed: string
@@ -97,6 +126,7 @@ const copy: Record<Locale, Copy> = {
       signedIn: "В системе",
       signOut: "Выйти",
       interfaceLanguage: "Язык интерфейса",
+      cancel: "Отмена",
     },
     auth: {
       title: "Вход в Kanban",
@@ -140,6 +170,27 @@ const copy: Record<Locale, Copy> = {
       boardNamePlaceholder: "Название доски",
       createBoard: "Создать доску",
       creatingBoard: "Создание...",
+      renameBoard: "Переименовать",
+      renamingBoard: "Переименование...",
+      renameBoardTitle: "Переименовать доску?",
+      renameBoardDescription: "Введите новое название доски.",
+      deleteBoard: "Удалить",
+      deletingBoard: "Удаление...",
+      deleteBoardTitle: "Удалить доску?",
+      deleteBoardDescription: "Доска будет удалена без возможности восстановления.",
+      openBoard: "Открыть",
+      columnsTitle: "Колонки",
+      addColumn: "Добавить колонку",
+      columnNamePlaceholder: "Название колонки",
+      createColumn: "Создать колонку",
+      creatingColumn: "Создание...",
+      noColumns: "Пока нет колонок.",
+      deleteColumn: "Удалить",
+      deleteColumnTitle: "Удалить колонку?",
+      deleteColumnDescription: "Колонка будет удалена без возможности восстановления.",
+      participantsTitle: "Участники",
+      onlyYou: "Пока на доске только вы.",
+      youLabel: "Вы",
       noBoards: "Пока нет досок.",
       ownerLabel: "Владелец",
       roleLabel: "Роль",
@@ -157,6 +208,12 @@ const copy: Record<Locale, Copy> = {
         signInToCreate: "Войдите, чтобы создать доску.",
         boardTitleRequired: "Название доски обязательно.",
         createBoardFailed: "Не удалось создать доску.",
+        updateBoardFailed: "Не удалось переименовать доску.",
+        deleteBoardFailed: "Не удалось удалить доску.",
+        columnTitleRequired: "Название колонки обязательно.",
+        createColumnFailed: "Не удалось создать колонку.",
+        updateColumnFailed: "Не удалось обновить колонку.",
+        deleteColumnFailed: "Не удалось удалить колонку.",
         profileLoadFailed: "Не удалось загрузить профиль пользователя.",
         profileUpdateFailed: "Не удалось обновить профиль пользователя.",
         signInToUpdate: "Войдите, чтобы изменить настройки доски.",
@@ -164,6 +221,7 @@ const copy: Record<Locale, Copy> = {
         updateLanguageFailed: "Не удалось обновить язык доски.",
         signInToInvite: "Войдите, чтобы пригласить участников.",
         onlyOwnerCanInvite: "Приглашать может только владелец доски.",
+        onlyOwnerCanDelete: "Удалять может только владелец доски.",
         inviteInvalidEmail: "Введите корректный email для приглашения.",
         inviteSelf: "Нельзя пригласить самого себя.",
         inviteFailed: "Не удалось отправить приглашение.",
@@ -179,6 +237,7 @@ const copy: Record<Locale, Copy> = {
       signedIn: "Signed in",
       signOut: "Sign out",
       interfaceLanguage: "Interface language",
+      cancel: "Cancel",
     },
     auth: {
       title: "Sign in to Kanban",
@@ -222,6 +281,27 @@ const copy: Record<Locale, Copy> = {
       boardNamePlaceholder: "Board name",
       createBoard: "Create board",
       creatingBoard: "Creating...",
+      renameBoard: "Rename",
+      renamingBoard: "Renaming...",
+      renameBoardTitle: "Rename board?",
+      renameBoardDescription: "Enter a new board name.",
+      deleteBoard: "Delete",
+      deletingBoard: "Deleting...",
+      deleteBoardTitle: "Delete board?",
+      deleteBoardDescription: "This board will be deleted permanently.",
+      openBoard: "Open",
+      columnsTitle: "Columns",
+      addColumn: "Add column",
+      columnNamePlaceholder: "Column title",
+      createColumn: "Create column",
+      creatingColumn: "Creating...",
+      noColumns: "No columns yet.",
+      deleteColumn: "Delete",
+      deleteColumnTitle: "Delete column?",
+      deleteColumnDescription: "This column will be deleted permanently.",
+      participantsTitle: "Participants",
+      onlyYou: "You are the only participant for now.",
+      youLabel: "You",
       noBoards: "No boards yet.",
       ownerLabel: "Owner",
       roleLabel: "Role",
@@ -239,6 +319,12 @@ const copy: Record<Locale, Copy> = {
         signInToCreate: "Sign in to create a board.",
         boardTitleRequired: "Board title is required.",
         createBoardFailed: "Create board error.",
+        updateBoardFailed: "Rename board error.",
+        deleteBoardFailed: "Delete board error.",
+        columnTitleRequired: "Column title is required.",
+        createColumnFailed: "Create column error.",
+        updateColumnFailed: "Update column error.",
+        deleteColumnFailed: "Delete column error.",
         profileLoadFailed: "Failed to load user profile.",
         profileUpdateFailed: "Failed to update user profile.",
         signInToUpdate: "Sign in to update board settings.",
@@ -246,6 +332,7 @@ const copy: Record<Locale, Copy> = {
         updateLanguageFailed: "Update language error.",
         signInToInvite: "Sign in to invite members.",
         onlyOwnerCanInvite: "Only the board owner can send invites.",
+        onlyOwnerCanDelete: "Only the board owner can delete boards.",
         inviteInvalidEmail: "Enter a valid email for invitation.",
         inviteSelf: "You can't invite yourself.",
         inviteFailed: "Invite error.",

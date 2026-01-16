@@ -132,7 +132,7 @@ export default function SignInPage() {
     }
 
     void syncSession()
-  }, [loading, router, sessionPending, user])
+  }, [loading, router, sessionPending, uiCopy.auth.errors, user])
 
   const handleSignIn = async (providerKey: ProviderKey) => {
     const provider = providers[providerKey]

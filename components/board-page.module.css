@@ -1,0 +1,238 @@
+.page {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 40px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.titleBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.subtitle {
+  margin: 0;
+  font-size: 14px;
+  color: var(--color-muted);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.inlineForm {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.participantsCard {
+  width: 100%;
+}
+
+.participantsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.participantRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.participantIdentity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.participantAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.participantAvatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.participantAvatarFallback {
+  text-transform: uppercase;
+}
+
+.participantInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.participantNameRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.participantName {
+  font-size: 14px;
+  word-break: break-word;
+}
+
+.participantBadge {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-muted);
+}
+
+.participantSecondary {
+  font-size: 12px;
+  color: var(--color-muted);
+  word-break: break-word;
+}
+
+.participantRole {
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  padding: 4px 10px;
+}
+
+.participantsEmpty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.inviteForm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.inviteLabel {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.inviteRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.inviteInput {
+  flex: 1 1 220px;
+}
+
+.inviteSelect {
+  height: 40px;
+  min-width: 140px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  padding: 6px 10px;
+  background: #fff;
+}
+
+.columnsGrid {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.columnCard {
+  height: 100%;
+}
+
+.columnHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.columnTitleButton {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.columnTitleButton:disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.columnTitleInput {
+  width: 100%;
+}
+
+.columnActions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.empty {
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+.error {
+  font-size: 13px;
+  color: var(--color-danger);
+}

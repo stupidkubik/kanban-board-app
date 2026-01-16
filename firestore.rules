@@ -31,7 +31,9 @@ service cloud.firestore {
     }
 
     function isMember() {
-      return isSignedIn() && resource.data.members[request.auth.uid] == true;
+      return isSignedIn()
+        && resource.data.members is map
+        && resource.data.members[request.auth.uid] == true;
     }
 
     function memberRole() {
@@ -46,12 +48,39 @@ service cloud.firestore {
       return !hasLanguage() || request.resource.data.language in ["ru", "en"];
     }
 
+    function boardKeysValid() {
+      return request.resource.data.keys().hasOnly([
+        "title",
+        "ownerId",
+        "members",
+        "roles",
+        "language",
+        "createdAt",
+        "updatedAt",
+        "createdBy"
+      ]);
+    }
+
+    function boardTitleValid() {
+      return request.resource.data.title is string
+        && request.resource.data.title.size() > 0;
+    }
+
+    function boardCreatedByValid() {
+      return !request.resource.data.keys().hasAny(["createdBy"])
+        || request.resource.data.createdBy == request.resource.data.ownerId;
+    }
+
     function isEditor() {
-      return isMember() && (memberRole() == "owner" || memberRole() == "editor" || memberRole() == null);
+      return isMember()
+        && (memberRole() == "owner" || memberRole() == "editor" || memberRole() == null);
     }
 
     function isOwner() {
-      return isSignedIn() && resource.data.ownerId == request.auth.uid;
+      return isSignedIn()
+        && resource.data.ownerId == request.auth.uid
+        && isMember()
+        && memberRole() == "owner";
     }
 
     function ownerUnchanged() {
@@ -64,6 +93,21 @@ service cloud.firestore {
 
     function rolesUnchanged() {
       return request.resource.data.roles == resource.data.roles;
+    }
+
+    function membersValid() {
+      return request.resource.data.members is map
+        && request.resource.data.members.values().hasOnly([true]);
+    }
+
+    function rolesValid() {
+      return request.resource.data.roles is map
+        && request.resource.data.roles.values().hasOnly(["owner", "editor", "viewer"]);
+    }
+
+    function membersRolesInSync() {
+      return request.resource.data.members.keys().hasOnly(request.resource.data.roles.keys())
+        && request.resource.data.roles.keys().hasOnly(request.resource.data.members.keys());
     }
 
     function onlyMembersAndRolesChanged() {
@@ -87,6 +131,8 @@ service cloud.firestore {
       return isSignedIn()
         && request.auth.token.email != null
         && hasInvite(boardId)
+        && resource.data.members is map
+        && request.resource.data.members is map
         && resource.data.roles is map
         && request.resource.data.roles is map
         && ownerUnchanged()
@@ -100,11 +146,24 @@ service cloud.firestore {
     match /boards/{boardId} {
       allow read: if isMember();
       allow create: if isSignedIn()
+        && boardKeysValid()
+        && boardTitleValid()
+        && boardCreatedByValid()
         && request.resource.data.ownerId == request.auth.uid
+        && membersValid()
+        && rolesValid()
+        && membersRolesInSync()
         && request.resource.data.members[request.auth.uid] == true
         && request.resource.data.roles[request.auth.uid] == "owner"
         && isLanguageValid();
-      allow update: if isLanguageValid() && ((isOwner()
+      allow update: if boardKeysValid()
+        && boardTitleValid()
+        && boardCreatedByValid()
+        && membersValid()
+        && rolesValid()
+        && membersRolesInSync()
+        && isLanguageValid()
+        && ((isOwner()
           && ownerUnchanged()
           && request.resource.data.members[request.auth.uid] == true
           && request.resource.data.roles[request.auth.uid] == "owner")
@@ -122,23 +181,136 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    function boardDoc(boardId) {
+      return get(/databases/$(database)/documents/boards/$(boardId));
+    }
+
+    function boardData(boardId) {
+      return boardDoc(boardId).data;
+    }
+
+    function boardExists(boardId) {
+      return exists(/databases/$(database)/documents/boards/$(boardId));
+    }
+
     function isBoardOwner(boardId) {
-      return isSignedIn() && get(/databases/$(database)/documents/boards/$(boardId)).data.ownerId == request.auth.uid;
+      return isSignedIn()
+        && boardExists(boardId)
+        && boardData(boardId).ownerId == request.auth.uid
+        && boardData(boardId).members is map
+        && boardData(boardId).members[request.auth.uid] == true
+        && boardRole(boardId) == "owner";
+    }
+
+    function boardRole(boardId) {
+      return boardData(boardId).roles is map ? boardData(boardId).roles[request.auth.uid] : null;
+    }
+
+    function isBoardMember(boardId) {
+      return isSignedIn()
+        && boardExists(boardId)
+        && boardData(boardId).members is map
+        && boardData(boardId).members[request.auth.uid] == true;
+    }
+
+    function isBoardEditor(boardId) {
+      return isBoardMember(boardId)
+        && (boardRole(boardId) == "owner"
+          || boardRole(boardId) == "editor"
+          || boardRole(boardId) == null);
+    }
+
+    function columnKeysValid() {
+      return request.resource.data.keys().hasOnly([
+        "title",
+        "order",
+        "createdAt",
+        "updatedAt"
+      ]);
+    }
+
+    function columnHasRequired() {
+      return request.resource.data.keys().hasAll([
+        "title",
+        "order",
+        "createdAt",
+        "updatedAt"
+      ]);
+    }
+
+    function columnTitleValid() {
+      return request.resource.data.title is string
+        && request.resource.data.title.size() > 0;
+    }
+
+    function columnOrderValid() {
+      return request.resource.data.order is number;
+    }
+
+    function columnTimestampsValid() {
+      return request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+    }
+
+    function memberProfileKeysValid() {
+      return request.resource.data.keys().hasOnly([
+        "displayName",
+        "photoURL",
+        "email",
+        "joinedAt"
+      ]);
+    }
+
+    function memberProfileDataValid() {
+      return (!request.resource.data.keys().hasAny(["displayName"])
+        || request.resource.data.displayName is string
+        || request.resource.data.displayName == null)
+      && (!request.resource.data.keys().hasAny(["photoURL"])
+        || request.resource.data.photoURL is string
+        || request.resource.data.photoURL == null)
+      && (!request.resource.data.keys().hasAny(["email"])
+        || request.resource.data.email is string
+        || request.resource.data.email == null)
+      && (!request.resource.data.keys().hasAny(["joinedAt"])
+        || request.resource.data.joinedAt is timestamp);
     }
 
     function isInvitee() {
-      return request.auth.token.email != null && request.auth.token.email == resource.data.email;
+      return isSignedIn()
+        && request.auth.token.email != null
+        && request.auth.token.email == resource.data.email;
     }
 
     match /boardInvites/{inviteId} {
       allow create: if isSignedIn()
         && request.resource.data.email is string
         && request.resource.data.boardId is string
-        && request.resource.data.invitedBy == request.auth.uid
+        && request.resource.data.invitedById == request.auth.uid
         && request.resource.data.role in ["editor", "viewer"]
         && isBoardOwner(request.resource.data.boardId);
       allow read: if isBoardOwner(resource.data.boardId) || isInvitee();
       allow delete: if isBoardOwner(resource.data.boardId) || isInvitee();
+    }
+
+    match /boards/{boardId}/columns/{columnId} {
+      allow read: if isBoardMember(boardId);
+      allow create, update: if isBoardEditor(boardId)
+        && columnKeysValid()
+        && columnHasRequired()
+        && columnTitleValid()
+        && columnOrderValid()
+        && columnTimestampsValid();
+      allow delete: if isBoardOwner(boardId);
+    }
+
+    match /boards/{boardId}/memberProfiles/{memberId} {
+      allow read: if isBoardMember(boardId);
+      allow create, update: if isSignedIn()
+        && request.auth.uid == memberId
+        && isBoardMember(boardId)
+        && memberProfileKeysValid()
+        && memberProfileDataValid();
+      allow delete: if false;
     }
 
     match /{document=**} {
