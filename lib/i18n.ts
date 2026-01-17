@@ -66,6 +66,13 @@ type BoardCopy = {
   columnNamePlaceholder: string
   createColumn: string
   creatingColumn: string
+  addCard: string
+  cardTitlePlaceholder: string
+  cardDescriptionPlaceholder: string
+  cardDueDateLabel: string
+  createCard: string
+  creatingCard: string
+  noCards: string
   noColumns: string
   deleteColumn: string
   deleteColumnTitle: string
@@ -96,6 +103,9 @@ type BoardCopy = {
     createColumnFailed: string
     updateColumnFailed: string
     deleteColumnFailed: string
+    cardTitleRequired: string
+    createCardFailed: string
+    updateCardFailed: string
     profileLoadFailed: string
     profileUpdateFailed: string
     signInToUpdate: string
@@ -184,6 +194,13 @@ const copy: Record<Locale, Copy> = {
       columnNamePlaceholder: "Название колонки",
       createColumn: "Создать колонку",
       creatingColumn: "Создание...",
+      addCard: "Добавить карточку",
+      cardTitlePlaceholder: "Название карточки",
+      cardDescriptionPlaceholder: "Описание",
+      cardDueDateLabel: "Дедлайн",
+      createCard: "Создать карточку",
+      creatingCard: "Создание...",
+      noCards: "Пока нет карточек.",
       noColumns: "Пока нет колонок.",
       deleteColumn: "Удалить",
       deleteColumnTitle: "Удалить колонку?",
@@ -214,6 +231,9 @@ const copy: Record<Locale, Copy> = {
         createColumnFailed: "Не удалось создать колонку.",
         updateColumnFailed: "Не удалось обновить колонку.",
         deleteColumnFailed: "Не удалось удалить колонку.",
+        cardTitleRequired: "Название карточки обязательно.",
+        createCardFailed: "Не удалось создать карточку.",
+        updateCardFailed: "Не удалось обновить карточку.",
         profileLoadFailed: "Не удалось загрузить профиль пользователя.",
         profileUpdateFailed: "Не удалось обновить профиль пользователя.",
         signInToUpdate: "Войдите, чтобы изменить настройки доски.",
@@ -295,6 +315,13 @@ const copy: Record<Locale, Copy> = {
       columnNamePlaceholder: "Column title",
       createColumn: "Create column",
       creatingColumn: "Creating...",
+      addCard: "Add card",
+      cardTitlePlaceholder: "Card title",
+      cardDescriptionPlaceholder: "Description",
+      cardDueDateLabel: "Due date",
+      createCard: "Create card",
+      creatingCard: "Creating...",
+      noCards: "No cards yet.",
       noColumns: "No columns yet.",
       deleteColumn: "Delete",
       deleteColumnTitle: "Delete column?",
@@ -325,6 +352,9 @@ const copy: Record<Locale, Copy> = {
         createColumnFailed: "Create column error.",
         updateColumnFailed: "Update column error.",
         deleteColumnFailed: "Delete column error.",
+        cardTitleRequired: "Card title is required.",
+        createCardFailed: "Create card error.",
+        updateCardFailed: "Update card error.",
         profileLoadFailed: "Failed to load user profile.",
         profileUpdateFailed: "Failed to update user profile.",
         signInToUpdate: "Sign in to update board settings.",

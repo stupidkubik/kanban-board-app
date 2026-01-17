@@ -5,6 +5,7 @@ import {
 import {
   FieldPath,
   collection,
+  doc,
   onSnapshot,
   orderBy,
   query,
@@ -14,24 +15,36 @@ import {
 import { clientDb } from "@/lib/firebase/client"
 import {
   createBoard as createBoardDocument,
+  createCard as createCardDocument,
   createColumn as createColumnDocument,
   deleteBoard as deleteBoardDocument,
+  deleteCard as deleteCardDocument,
   deleteColumn as deleteColumnDocument,
   updateBoardLanguage as updateBoardLanguageDocument,
   updateBoardTitle as updateBoardTitleDocument,
+  updateCard as updateCardDocument,
   updateColumn as updateColumnDocument,
   type CreateBoardInput,
+  type CreateCardInput,
   type CreateColumnInput,
   type DeleteBoardInput,
+  type DeleteCardInput,
   type DeleteColumnInput,
+  type UpdateCardInput,
   type UpdateBoardLanguageInput,
   type UpdateBoardTitleInput,
   type UpdateColumnInput,
 } from "@/lib/store/firestore-operations"
+import {
+  optimisticCreateCard,
+  optimisticDeleteCard,
+  optimisticMoveCard,
+} from "@/lib/store/optimistic-helpers"
 import type {
   Board,
   BoardMemberProfile,
   BoardRole,
+  Card,
   Column,
 } from "@/lib/types/boards"
 
@@ -62,6 +75,21 @@ type ColumnRecord = {
   updatedAt?: unknown
 }
 
+type CardRecord = {
+  columnId?: string
+  title?: string
+  description?: unknown
+  order?: number
+  createdById?: string
+  createdBy?: string
+  assigneeIds?: unknown
+  labels?: unknown
+  dueAt?: unknown
+  createdAt?: unknown
+  updatedAt?: unknown
+  archived?: boolean
+}
+
 type MemberProfileRecord = {
   displayName?: string | null
   photoURL?: string | null
@@ -70,6 +98,7 @@ type MemberProfileRecord = {
 }
 
 type MutationResult = { ok: true }
+type CreateBoardResult = MutationResult & { boardId: string }
 
 const mutationOk: MutationResult = { ok: true }
 
@@ -84,6 +113,35 @@ const toMillis = (value: unknown): number | undefined => {
   }
 
   return undefined
+}
+
+const getCachedColumns = (state: unknown, boardId: string) => {
+  const result = firestoreApi.endpoints.getColumns.select(boardId)(state)
+  return result.data ?? []
+}
+
+const getCachedCards = (
+  state: unknown,
+  args: { boardId: string; columnId?: string | null }
+) => {
+  const result = firestoreApi.endpoints.getCards.select(args)(state)
+  return result.data ?? []
+}
+
+const ensureCardId = (args: CreateCardInput) => {
+  if (!args.cardId) {
+    args.cardId = doc(
+      collection(clientDb, "boards", args.boardId, "cards")
+    ).id
+  }
+  return args.cardId
+}
+
+const ensureCardOrder = (args: CreateCardInput) => {
+  if (typeof args.order !== "number") {
+    args.order = Date.now()
+  }
+  return args.order
 }
 
 const normalizeBoard = (id: string, data: Omit<Board, "id"> & { createdBy?: string }) => {
@@ -165,10 +223,71 @@ const normalizeColumn = (boardId: string, id: string, data: ColumnRecord): Colum
   return column
 }
 
+const normalizeCard = (boardId: string, id: string, data: CardRecord): Card => {
+  const createdById =
+    typeof data.createdById === "string"
+      ? data.createdById
+      : typeof data.createdBy === "string"
+        ? data.createdBy
+        : ""
+
+  const card: Card = {
+    id,
+    boardId,
+    columnId: data.columnId ?? "",
+    title: data.title ?? "",
+    order: typeof data.order === "number" ? data.order : 0,
+    createdById,
+  }
+
+  if (typeof data.description === "string") {
+    card.description = data.description
+  }
+
+  if (Array.isArray(data.assigneeIds)) {
+    const assignees = data.assigneeIds.filter(
+      (assignee): assignee is string => typeof assignee === "string"
+    )
+    if (assignees.length) {
+      card.assigneeIds = assignees
+    }
+  }
+
+  if (Array.isArray(data.labels)) {
+    const labels = data.labels.filter(
+      (label): label is string => typeof label === "string"
+    )
+    if (labels.length) {
+      card.labels = labels
+    }
+  }
+
+  const dueAt = toMillis(data.dueAt)
+  if (dueAt !== undefined) {
+    card.dueAt = dueAt
+  }
+
+  const createdAt = toMillis(data.createdAt)
+  if (createdAt !== undefined) {
+    card.createdAt = createdAt
+  }
+
+  const updatedAt = toMillis(data.updatedAt)
+  if (updatedAt !== undefined) {
+    card.updatedAt = updatedAt
+  }
+
+  if (typeof data.archived === "boolean") {
+    card.archived = data.archived
+  }
+
+  return card
+}
+
 export const firestoreApi = createApi({
   reducerPath: "firestoreApi",
   baseQuery: fakeBaseQuery(),
-  tagTypes: ["Board", "Invite", "Column", "Member"],
+  tagTypes: ["Board", "Invite", "Column", "Member", "Card"],
   endpoints: (builder) => ({
     getBoards: builder.query<Board[], string | null>({
       queryFn: async () => ({ data: [] }),
@@ -265,15 +384,44 @@ export const firestoreApi = createApi({
         unsubscribe()
       },
     }),
-    createBoard: builder.mutation<MutationResult, CreateBoardInput>({
+    createBoard: builder.mutation<CreateBoardResult, CreateBoardInput>({
       async queryFn(args) {
         try {
-          await createBoardDocument(args)
-          return { data: mutationOk }
+          const boardId = await createBoardDocument(args)
+          return { data: { ...mutationOk, boardId } }
         } catch (error) {
           return {
             error: error instanceof Error ? error : new Error("Create board failed"),
           }
+        }
+      },
+      async onQueryStarted(args, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled
+          const createdAt = Date.now()
+          dispatch(
+            firestoreApi.util.updateQueryData(
+              "getBoards",
+              args.ownerId,
+              (draft) => {
+                if (draft.some((board) => board.id === data.boardId)) {
+                  return
+                }
+                draft.push({
+                  id: data.boardId,
+                  title: args.title,
+                  ownerId: args.ownerId,
+                  members: { [args.ownerId]: true },
+                  roles: { [args.ownerId]: "owner" },
+                  language: args.language,
+                  createdAt,
+                  updatedAt: createdAt,
+                })
+              }
+            )
+          )
+        } catch {
+          // ignore cache update if mutation fails
         }
       },
       invalidatesTags: [{ type: "Board", id: "LIST" }],
@@ -433,6 +581,71 @@ export const firestoreApi = createApi({
         unsubscribe()
       },
     }),
+    getCards: builder.query<
+      Card[],
+      { boardId: string; columnId?: string | null } | null
+    >({
+      queryFn: async () => ({ data: [] }),
+      keepUnusedDataFor: 0,
+      providesTags: (result, _error, args) => {
+        if (!args?.boardId) {
+          return [{ type: "Card" as const, id: "LIST" }]
+        }
+        const suffix = args.columnId ? `-${args.columnId}` : ""
+        const listId = `LIST-${args.boardId}${suffix}`
+        return result
+          ? [
+              { type: "Card" as const, id: listId },
+              ...result.map((card) => ({ type: "Card" as const, id: card.id })),
+            ]
+          : [{ type: "Card" as const, id: listId }]
+      },
+      async onCacheEntryAdded(
+        args,
+        { updateCachedData, cacheEntryRemoved }
+      ) {
+        if (!args?.boardId) {
+          await cacheEntryRemoved
+          return
+        }
+
+        const cardsCollection = collection(
+          clientDb,
+          "boards",
+          args.boardId,
+          "cards"
+        )
+        const cardsQuery = args.columnId
+          ? query(
+              cardsCollection,
+              where("columnId", "==", args.columnId),
+              orderBy("order", "asc")
+            )
+          : query(cardsCollection, orderBy("order", "asc"))
+
+        const unsubscribe = onSnapshot(
+          cardsQuery,
+          (snapshot) => {
+            const nextCards = snapshot.docs.map((docSnap) =>
+              normalizeCard(args.boardId, docSnap.id, docSnap.data() as CardRecord)
+            )
+            updateCachedData((draft) => {
+              draft.length = 0
+              draft.push(...nextCards)
+            })
+          },
+          (error) => {
+            console.error("Failed to load cards", error)
+            updateCachedData((draft) => {
+              draft.length = 0
+            })
+          }
+        )
+
+        await cacheEntryRemoved
+        unsubscribe()
+      },
+    }),
     createColumn: builder.mutation<MutationResult, CreateColumnInput>({
       async queryFn(args) {
         try {
@@ -479,18 +692,216 @@ export const firestoreApi = createApi({
         { type: "Column", id: `LIST-${arg.boardId}` },
       ],
     }),
+    createCard: builder.mutation<MutationResult, CreateCardInput>({
+      async queryFn(args) {
+        try {
+          ensureCardId(args)
+          ensureCardOrder(args)
+          await createCardDocument(args)
+          return { data: mutationOk }
+        } catch (error) {
+          return {
+            error: error instanceof Error ? error : new Error("Create card failed"),
+          }
+        }
+      },
+      async onQueryStarted(args, { dispatch, queryFulfilled }) {
+        const cardId = ensureCardId(args)
+        const order = ensureCardOrder(args)
+        const optimisticCard: Card = {
+          id: cardId,
+          boardId: args.boardId,
+          columnId: args.columnId,
+          title: args.title,
+          order,
+          createdById: args.createdById,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        }
+
+        if (typeof args.description === "string") {
+          optimisticCard.description = args.description
+        }
+        if (Array.isArray(args.assigneeIds)) {
+          optimisticCard.assigneeIds = args.assigneeIds
+        }
+        if (Array.isArray(args.labels)) {
+          optimisticCard.labels = args.labels
+        }
+        if (args.dueAt instanceof Date) {
+          optimisticCard.dueAt = args.dueAt.getTime()
+        }
+        if (typeof args.archived === "boolean") {
+          optimisticCard.archived = args.archived
+        }
+
+        const patchResult = optimisticCreateCard({
+          dispatch,
+          boardId: args.boardId,
+          card: optimisticCard,
+        })
+
+        try {
+          await queryFulfilled
+        } catch {
+          patchResult.undo()
+        }
+      },
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "Card", id: `LIST-${arg.boardId}` },
+        { type: "Card", id: `LIST-${arg.boardId}-${arg.columnId}` },
+      ],
+    }),
+    updateCard: builder.mutation<MutationResult, UpdateCardInput>({
+      async queryFn(args) {
+        try {
+          await updateCardDocument(args)
+          return { data: mutationOk }
+        } catch (error) {
+          return {
+            error: error instanceof Error ? error : new Error("Update card failed"),
+          }
+        }
+      },
+      async onQueryStarted(args, { dispatch, getState, queryFulfilled }) {
+        const state = getState()
+        const columns = getCachedColumns(state, args.boardId)
+        const columnIds = columns.map((column) => column.id)
+        const boardCards = getCachedCards(state, { boardId: args.boardId })
+        let currentCard = boardCards.find((card) => card.id === args.cardId)
+
+        if (!currentCard && columnIds.length) {
+          for (const columnId of columnIds) {
+            const columnCards = getCachedCards(state, {
+              boardId: args.boardId,
+              columnId,
+            })
+            const match = columnCards.find((card) => card.id === args.cardId)
+            if (match) {
+              currentCard = match
+              break
+            }
+          }
+        }
+
+        const nextColumnId = args.columnId ?? currentCard?.columnId
+        const nextOrder =
+          typeof args.order === "number" ? args.order : currentCard?.order
+
+        if (!nextColumnId || typeof nextOrder !== "number") {
+          try {
+            await queryFulfilled
+          } catch {
+            // ignore optimistic updates if missing cache data
+          }
+          return
+        }
+
+        if (
+          currentCard &&
+          nextColumnId === currentCard.columnId &&
+          nextOrder === currentCard.order
+        ) {
+          try {
+            await queryFulfilled
+          } catch {
+            // ignore optimistic updates if no change
+          }
+          return
+        }
+
+        const patchResult = optimisticMoveCard({
+          dispatch,
+          boardId: args.boardId,
+          cardId: args.cardId,
+          card: currentCard,
+          fromColumnId: currentCard?.columnId,
+          toColumnId: nextColumnId,
+          order: nextOrder,
+          columnIds,
+        })
+
+        try {
+          await queryFulfilled
+        } catch {
+          patchResult.undo()
+        }
+      },
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "Card", id: arg.cardId },
+        { type: "Card", id: `LIST-${arg.boardId}` },
+        ...(arg.columnId
+          ? [{ type: "Card" as const, id: `LIST-${arg.boardId}-${arg.columnId}` }]
+          : []),
+      ],
+    }),
+    deleteCard: builder.mutation<MutationResult, DeleteCardInput>({
+      async queryFn(args) {
+        try {
+          await deleteCardDocument(args)
+          return { data: mutationOk }
+        } catch (error) {
+          return {
+            error: error instanceof Error ? error : new Error("Delete card failed"),
+          }
+        }
+      },
+      async onQueryStarted(args, { dispatch, getState, queryFulfilled }) {
+        const state = getState()
+        const columns = getCachedColumns(state, args.boardId)
+        const columnIds = columns.map((column) => column.id)
+        const boardCards = getCachedCards(state, { boardId: args.boardId })
+        let currentCard = boardCards.find((card) => card.id === args.cardId)
+
+        if (!currentCard && columnIds.length) {
+          for (const columnId of columnIds) {
+            const columnCards = getCachedCards(state, {
+              boardId: args.boardId,
+              columnId,
+            })
+            const match = columnCards.find((card) => card.id === args.cardId)
+            if (match) {
+              currentCard = match
+              break
+            }
+          }
+        }
+
+        const patchResult = optimisticDeleteCard({
+          dispatch,
+          boardId: args.boardId,
+          cardId: args.cardId,
+          columnId: currentCard?.columnId,
+          columnIds,
+        })
+
+        try {
+          await queryFulfilled
+        } catch {
+          patchResult.undo()
+        }
+      },
+      invalidatesTags: (_result, _error, arg) => [
+        { type: "Card", id: arg.cardId },
+        { type: "Card", id: `LIST-${arg.boardId}` },
+      ],
+    }),
   }),
 })
 
 export const {
   useCreateBoardMutation,
+  useCreateCardMutation,
   useCreateColumnMutation,
+  useDeleteCardMutation,
   useDeleteBoardMutation,
   useDeleteColumnMutation,
   useGetBoardMembersQuery,
   useGetBoardsQuery,
+  useGetCardsQuery,
   useGetColumnsQuery,
   useGetInvitesQuery,
+  useUpdateCardMutation,
   useUpdateBoardTitleMutation,
   useUpdateColumnMutation,
   useUpdateBoardLanguageMutation,

@@ -252,6 +252,88 @@ service cloud.firestore {
         && request.resource.data.updatedAt is timestamp;
     }
 
+    function cardKeysValid() {
+      return request.resource.data.keys().hasOnly([
+        "columnId",
+        "title",
+        "description",
+        "order",
+        "createdById",
+        "assigneeIds",
+        "labels",
+        "dueAt",
+        "createdAt",
+        "updatedAt",
+        "archived"
+      ]);
+    }
+
+    function cardHasRequired() {
+      return request.resource.data.keys().hasAll([
+        "columnId",
+        "title",
+        "order",
+        "createdById",
+        "createdAt",
+        "updatedAt"
+      ]);
+    }
+
+    function cardColumnValid() {
+      return request.resource.data.columnId is string
+        && request.resource.data.columnId.size() > 0;
+    }
+
+    function cardTitleValid() {
+      return request.resource.data.title is string
+        && request.resource.data.title.size() > 0;
+    }
+
+    function cardOrderValid() {
+      return request.resource.data.order is number;
+    }
+
+    function cardCreatedByValid() {
+      return request.resource.data.createdById is string
+        && request.resource.data.createdById.size() > 0;
+    }
+
+    function cardDescriptionValid() {
+      return !request.resource.data.keys().hasAny(["description"])
+        || request.resource.data.description is string
+        || request.resource.data.description == null;
+    }
+
+    function cardAssigneesValid() {
+      return !request.resource.data.keys().hasAny(["assigneeIds"])
+        || request.resource.data.assigneeIds is list;
+    }
+
+    function cardLabelsValid() {
+      return !request.resource.data.keys().hasAny(["labels"])
+        || request.resource.data.labels is list;
+    }
+
+    function cardDueAtValid() {
+      return !request.resource.data.keys().hasAny(["dueAt"])
+        || request.resource.data.dueAt is timestamp
+        || request.resource.data.dueAt == null;
+    }
+
+    function cardArchivedValid() {
+      return !request.resource.data.keys().hasAny(["archived"])
+        || request.resource.data.archived is bool;
+    }
+
+    function cardTimestampsValid() {
+      return request.resource.data.createdAt is timestamp
+        && request.resource.data.updatedAt is timestamp;
+    }
+
+    function cardCreatedByUnchanged() {
+      return request.resource.data.createdById == resource.data.createdById;
+    }
+
     function memberProfileKeysValid() {
       return request.resource.data.keys().hasOnly([
         "displayName",
@@ -300,6 +382,38 @@ service cloud.firestore {
         && columnTitleValid()
         && columnOrderValid()
         && columnTimestampsValid();
+      allow delete: if isBoardOwner(boardId);
+    }
+
+    match /boards/{boardId}/cards/{cardId} {
+      allow read: if isBoardMember(boardId);
+      allow create: if isBoardEditor(boardId)
+        && cardKeysValid()
+        && cardHasRequired()
+        && cardColumnValid()
+        && cardTitleValid()
+        && cardOrderValid()
+        && cardCreatedByValid()
+        && cardDescriptionValid()
+        && cardAssigneesValid()
+        && cardLabelsValid()
+        && cardDueAtValid()
+        && cardArchivedValid()
+        && cardTimestampsValid();
+      allow update: if isBoardEditor(boardId)
+        && cardKeysValid()
+        && cardHasRequired()
+        && cardColumnValid()
+        && cardTitleValid()
+        && cardOrderValid()
+        && cardCreatedByValid()
+        && cardDescriptionValid()
+        && cardAssigneesValid()
+        && cardLabelsValid()
+        && cardDueAtValid()
+        && cardArchivedValid()
+        && cardTimestampsValid()
+        && cardCreatedByUnchanged();
       allow delete: if isBoardOwner(boardId);
     }
 

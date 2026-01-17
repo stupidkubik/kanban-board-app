@@ -1,8 +1,8 @@
 .page {
   width: 100%;
-  max-width: 980px;
-  margin: 0 auto;
-  padding: 40px 16px;
+  min-height: 100vh;
+  margin: 0;
+  padding: 32px 24px 48px;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -195,6 +195,26 @@
   height: 100%;
 }
 
+.columnCardDropActive {
+  border-color: rgba(37, 99, 235, 0.4);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.12);
+}
+
+.columnDropZone {
+  height: 100%;
+}
+
+.columnDropZoneOver {
+  background: rgba(15, 23, 42, 0.04);
+  border-radius: var(--radius-sm);
+}
+
+.columnBody {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
 .columnHeader {
   display: flex;
   align-items: center;
@@ -225,6 +245,80 @@
   display: flex;
   gap: 6px;
   align-items: center;
+}
+
+.cardList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cardItem {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px;
+  background: var(--color-surface);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cardPlaceholder {
+  border: 2px dashed rgba(37, 99, 235, 0.35);
+  border-radius: var(--radius-sm);
+  min-height: 48px;
+  background: rgba(37, 99, 235, 0.05);
+}
+
+.cardDragging {
+  opacity: 0.6;
+}
+
+.cardTitle {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cardDescription {
+  font-size: 12px;
+  color: var(--color-muted);
+  white-space: pre-wrap;
+}
+
+.cardMeta {
+  font-size: 11px;
+  color: var(--color-muted);
+}
+
+.cardsEmpty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.cardForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cardFormRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.cardDateInput {
+  min-width: 140px;
+}
+
+.addCardButton {
+  justify-content: flex-start;
+  padding-left: 0;
 }
 
 .empty {

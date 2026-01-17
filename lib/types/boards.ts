@@ -28,3 +28,19 @@ export type Column = {
   createdAt?: number
   updatedAt?: number
 }
+
+export type Card = {
+  id: string
+  boardId: string
+  columnId: string
+  title: string
+  description?: string
+  order: number
+  createdById: string
+  assigneeIds?: string[]
+  labels?: string[]
+  dueAt?: number
+  createdAt?: number
+  updatedAt?: number
+  archived?: boolean
+}

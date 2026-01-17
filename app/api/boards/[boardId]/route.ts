@@ -51,6 +51,7 @@ export async function DELETE(
     }
 
     await deleteByQuery(boardRef.collection("columns"))
+    await deleteByQuery(boardRef.collection("cards"))
     await deleteByQuery(boardRef.collection("memberProfiles"))
     await deleteByQuery(
       adminDb.collection("boardInvites").where("boardId", "==", boardId)

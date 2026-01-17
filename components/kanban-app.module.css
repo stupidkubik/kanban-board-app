@@ -1,8 +1,8 @@
 .page {
   width: 100%;
-  max-width: 920px;
-  margin: 0 auto;
-  padding: 40px 16px;
+  min-height: 100vh;
+  margin: 0;
+  padding: 32px 24px 48px;
   display: flex;
   flex-direction: column;
   gap: 24px;

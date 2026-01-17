@@ -83,22 +83,23 @@ Example:
 }
 ```
 
-### cards storage options
-You can choose one of two layouts. The app currently does not store cards yet.
+### boards/{boardId}/cards/{cardId}
+Cards are stored in a board-level subcollection so we can query the entire board
+once and group by `columnId` on the client. This scales better for large boards
+than nesting cards under each column.
 
-Option A (recommended for board-wide queries):
-- `boards/{boardId}/cards/{cardId}`
-  - `columnId` (string)
-  - `title` (string)
-  - `description` (string, optional)
-  - `order` (number)
-  - `createdById` (string)
-  - `assigneeIds` (array<string>, optional)
-  - `labels` (array<string>, optional)
-  - `dueAt` (Timestamp, optional)
-  - `createdAt` (Timestamp)
-  - `updatedAt` (Timestamp, optional)
-  - `archived` (bool, optional)
+Fields:
+- `columnId` (string)
+- `title` (string)
+- `description` (string, optional)
+- `order` (number)
+- `createdById` (string)
+- `assigneeIds` (array<string>, optional)
+- `labels` (array<string>, optional)
+- `dueAt` (Timestamp, optional)
+- `createdAt` (Timestamp)
+- `updatedAt` (Timestamp, optional)
+- `archived` (bool, optional)
 
 Example:
 ```json
@@ -113,10 +114,6 @@ Example:
   "createdAt": "<timestamp>"
 }
 ```
-
-Option B (cards inside columns):
-- `boards/{boardId}/columns/{columnId}/cards/{cardId}`
-  - same fields as above, minus `columnId`
 
 ### boardInvites/{inviteId}
 Pending invitations. Document id format: `boardId__email`.
@@ -163,7 +160,7 @@ Example:
 ## Suggested indexes
 - `boards` where `members.{uid} == true`
 - `boardInvites` where `email == <email>`
-- `boards/{boardId}/cards` where `columnId` + `order` (if using Option A)
+- `boards/{boardId}/cards` where `columnId` + `order`
 
 ## Migrations / backward compatibility
 The app previously used some different field names. The client includes fallbacks
