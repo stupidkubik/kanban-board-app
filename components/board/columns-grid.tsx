@@ -230,7 +230,7 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
 
   return (
     <DndContext
-      sensors={canEdit ? dndSensors : []}
+      sensors={dndSensors}
       collisionDetection={closestCenter}
       onDragStart={onDragStart}
       onDragOver={onDragOver}

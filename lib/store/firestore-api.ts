@@ -293,7 +293,8 @@ export const firestoreApi = createApi({
   endpoints: (builder) => ({
     getBoards: builder.query<Board[], string | null>({
       queryFn: async () => ({ data: [] }),
-      keepUnusedDataFor: 0,
+      keepUnusedDataFor: 60,
+      refetchOnMountOrArgChange: true,
       providesTags: (result) =>
         result
           ? [
