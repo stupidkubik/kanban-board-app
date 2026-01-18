@@ -467,7 +467,6 @@ export const firestoreApi = createApi({
           // ignore cache update if mutation fails
         }
       },
-      invalidatesTags: [{ type: "Board", id: "LIST" }],
     }),
     updateBoardLanguage: builder.mutation<MutationResult, UpdateBoardLanguageInput>({
       async queryFn(args) {
