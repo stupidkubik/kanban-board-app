@@ -452,4 +452,4 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
       </div>
     </DndContext>
   )
-}
+})

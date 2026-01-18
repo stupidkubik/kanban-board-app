@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import Image from "next/image"
 
 import { getCopy, roleLabels, type Locale } from "@/lib/i18n"
