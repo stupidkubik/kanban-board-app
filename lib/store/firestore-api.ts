@@ -43,6 +43,8 @@ import {
   type MemberProfileRecord,
 } from "@/lib/store/firestore-normalizers"
 
+export type { Invite } from "@/lib/store/firestore-normalizers"
+
 type MutationResult = { ok: true }
 type CreateBoardResult = MutationResult & { boardId: string }
 
