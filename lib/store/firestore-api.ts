@@ -69,6 +69,7 @@ export const firestoreApi = createApi({
   baseQuery: fakeBaseQuery(),
   tagTypes: ["Board", "Invite", "Column", "Member", "Card"],
   endpoints: (builder) => ({
+    // Firestore listeners drive the cache; queryFn is a stub and onCacheEntryAdded updates it.
     getBoards: builder.query<Board[], string | null>({
       queryFn: async () => ({ data: [] }),
       keepUnusedDataFor: 60,

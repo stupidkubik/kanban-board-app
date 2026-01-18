@@ -2,42 +2,46 @@
 
 Realtime kanban with Firebase Auth + Firestore, optimistic UI, and drag-and-drop.
 
-## Features
-- Boards, columns, and cards with ordering.
-- Realtime updates via Firestore listeners.
-- Optimistic updates on drag-and-drop.
-- Board invites and roles (owner/editor/viewer).
-- UI built with shadcn/ui components.
+## Functionality
+- Sign in with email/password or Google, plus password reset.
+- Create/rename/delete boards and set a board language (ru/en).
+- Invite members by email with roles (owner/editor/viewer); viewers are read-only.
+- Manage columns and cards (title, description, due date) and drag cards between columns.
+- Realtime sync via Firestore listeners with optimistic UI for create/move/delete.
+- UI language stored per user in `users/{uid}` (ru/en).
 
 ## Tech Stack
-- Next.js (App Router)
-- React + Redux Toolkit Query
-- Firebase Auth + Firestore
+- Next.js (App Router) + React 19 + TypeScript
+- Redux Toolkit Query + Redux (cache, optimistic updates, UI state)
+- Firebase Auth + Firestore (client SDK)
+- Firebase Admin SDK (server API routes)
 - dnd-kit for drag-and-drop
+- shadcn/ui + Radix UI + CSS Modules
 
 ## Architecture
 ```text
 Browser (Next.js App Router)
   ├─ UI (shadcn/ui + dnd-kit)
-  ├─ Redux Toolkit Query
+  ├─ Redux Toolkit Query cache
   │   ├─ Firestore listeners (onSnapshot)
-  │   └─ Optimistic updates (local cache patches)
-  └─ Firebase Auth (client)
+  │   └─ Optimistic patches (create/move/delete cards)
+  └─ Firebase Auth (client SDK)
         │
-        ├─ Firestore (boards/columns/cards)
-        └─ boardInvites + memberProfiles
+        ├─ Firestore (boards/columns/cards/memberProfiles/users)
+        └─ boardInvites
 
 Server (Next.js API routes)
-  ├─ Firebase Admin SDK
-  └─ Session cookies (Auth)
+  ├─ /api/auth/session (session cookies)
+  └─ /api/boards/[boardId] (Admin SDK delete of board + subcollections)
 ```
 
 ## Data Model (Firestore)
 - `boards/{boardId}`
 - `boards/{boardId}/columns/{columnId}`
-- `boards/{boardId}/cards/{cardId}` with `columnId` + `order`
+- `boards/{boardId}/cards/{cardId}` with `columnId` + `order` (board-level cards)
 - `boardInvites/{boardId__email}`
 - `boards/{boardId}/memberProfiles/{userId}`
+- `users/{uid}` (preferredLocale, email)
 
 See `schema.md` for more details.
 
@@ -79,4 +83,5 @@ If neither is set, the app attempts `applicationDefault()` and a default file
 
 ## Notes
 - Card order uses numeric gaps to avoid reindexing entire columns.
+- Cards live under each board for board-level queries; the client groups by column.
 - Firestore listeners keep multiple clients in sync in near-realtime.

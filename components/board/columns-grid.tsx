@@ -248,6 +248,7 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
             const isDropTarget = hoveredColumnId === column.id
             const showPlaceholder =
               !!activeCardId && !!activeCardColumnId && isDropTarget
+            // Compute where to render the drop placeholder so the list height stays stable.
             const placeholderIndex = (() => {
               if (!showPlaceholder) {
                 return -1

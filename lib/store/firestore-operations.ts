@@ -144,6 +144,7 @@ export const updateBoardTitle = async ({ boardId, title }: UpdateBoardTitleInput
   })
 }
 
+// Board deletion uses the API route so the server can cascade subcollection deletes.
 export const deleteBoard = async ({ boardId }: DeleteBoardInput) => {
   const response = await fetch(`/api/boards/${boardId}`, {
     method: "DELETE",
