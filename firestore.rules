@@ -73,7 +73,7 @@ service cloud.firestore {
 
     function isEditor() {
       return isMember()
-        && (memberRole() == "owner" || memberRole() == "editor" || memberRole() == null);
+        && (memberRole() in ["owner", "editor"]);
     }
 
     function isOwner() {
@@ -215,9 +215,11 @@ service cloud.firestore {
 
     function isBoardEditor(boardId) {
       return isBoardMember(boardId)
-        && (boardRole(boardId) == "owner"
-          || boardRole(boardId) == "editor"
-          || boardRole(boardId) == null);
+        && (boardRole(boardId) in ["owner", "editor"]);
+    }
+
+    function hasBoardRole(boardId) {
+      return boardRole(boardId) in ["owner", "editor", "viewer"];
     }
 
     function columnKeysValid() {
@@ -250,6 +252,10 @@ service cloud.firestore {
     function columnTimestampsValid() {
       return request.resource.data.createdAt is timestamp
         && request.resource.data.updatedAt is timestamp;
+    }
+
+    function columnCreatedAtUnchanged() {
+      return request.resource.data.createdAt == resource.data.createdAt;
     }
 
     function cardKeysValid() {
@@ -334,6 +340,10 @@ service cloud.firestore {
       return request.resource.data.createdById == resource.data.createdById;
     }
 
+    function cardCreatedAtUnchanged() {
+      return request.resource.data.createdAt == resource.data.createdAt;
+    }
+
     function memberProfileKeysValid() {
       return request.resource.data.keys().hasOnly([
         "displayName",
@@ -375,18 +385,25 @@ service cloud.firestore {
     }
 
     match /boards/{boardId}/columns/{columnId} {
-      allow read: if isBoardMember(boardId);
-      allow create, update: if isBoardEditor(boardId)
+      allow read: if isBoardMember(boardId) && hasBoardRole(boardId);
+      allow create: if isBoardEditor(boardId)
         && columnKeysValid()
         && columnHasRequired()
         && columnTitleValid()
         && columnOrderValid()
         && columnTimestampsValid();
+      allow update: if isBoardEditor(boardId)
+        && columnKeysValid()
+        && columnHasRequired()
+        && columnTitleValid()
+        && columnOrderValid()
+        && columnTimestampsValid()
+        && columnCreatedAtUnchanged();
       allow delete: if isBoardOwner(boardId);
     }
 
     match /boards/{boardId}/cards/{cardId} {
-      allow read: if isBoardMember(boardId);
+      allow read: if isBoardMember(boardId) && hasBoardRole(boardId);
       allow create: if isBoardEditor(boardId)
         && cardKeysValid()
         && cardHasRequired()
@@ -413,7 +430,8 @@ service cloud.firestore {
         && cardDueAtValid()
         && cardArchivedValid()
         && cardTimestampsValid()
-        && cardCreatedByUnchanged();
+        && cardCreatedByUnchanged()
+        && cardCreatedAtUnchanged();
       allow delete: if isBoardOwner(boardId);
     }
 

@@ -41,6 +41,11 @@
   align-items: center;
 }
 
+.readOnlyNotice {
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
 .inlineForm {
   display: flex;
   flex-wrap: wrap;

@@ -326,6 +326,7 @@ export function BoardPage() {
 
   const role = board ? getMemberRole(board, user?.uid) : null
   const canEdit = role !== "viewer" && !!board
+  const isViewer = role === "viewer"
   const isOwner = board?.ownerId === user?.uid
   const memberProfilesById = React.useMemo(() => {
     return new Map(memberProfiles.map((member) => [member.id, member]))
@@ -652,6 +653,9 @@ export function BoardPage() {
 
   const handleDragStart = React.useCallback(
     ({ active }: DragStartEvent) => {
+      if (!canEdit) {
+        return
+      }
       const activeId = String(active.id)
       const columnId =
         (active.data.current as DragCardData | undefined)?.columnId ??
@@ -882,35 +886,44 @@ export function BoardPage() {
           <p className={styles.subtitle}>{uiCopy.board.columnsTitle}</p>
         </div>
         <div className={styles.actions}>
-          {showAddColumn ? (
-            <form className={styles.inlineForm} onSubmit={handleCreateColumn}>
-              <Input
-                className={styles.columnTitleInput}
-                value={newColumnTitle}
-                onChange={(event) => setNewColumnTitle(event.target.value)}
-                placeholder={uiCopy.board.columnNamePlaceholder}
-                aria-label={uiCopy.board.columnNamePlaceholder}
-                disabled={!canEdit || creatingColumn}
-              />
-              <Button type="submit" disabled={!canEdit || creatingColumn}>
-                {creatingColumn ? uiCopy.board.creatingColumn : uiCopy.board.createColumn}
+          {canEdit ? (
+            showAddColumn ? (
+              <form className={styles.inlineForm} onSubmit={handleCreateColumn}>
+                <Input
+                  className={styles.columnTitleInput}
+                  value={newColumnTitle}
+                  onChange={(event) => setNewColumnTitle(event.target.value)}
+                  placeholder={uiCopy.board.columnNamePlaceholder}
+                  aria-label={uiCopy.board.columnNamePlaceholder}
+                  disabled={!canEdit || creatingColumn}
+                />
+                <Button type="submit" disabled={!canEdit || creatingColumn}>
+                  {creatingColumn
+                    ? uiCopy.board.creatingColumn
+                    : uiCopy.board.createColumn}
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setShowAddColumn(false)
+                    setNewColumnTitle("")
+                  }}
+                >
+                  {uiCopy.common.cancel}
+                </Button>
+              </form>
+            ) : (
+              <Button type="button" onClick={() => setShowAddColumn(true)}>
+                {uiCopy.board.addColumn}
               </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  setShowAddColumn(false)
-                  setNewColumnTitle("")
-                }}
-              >
-                {uiCopy.common.cancel}
-              </Button>
-            </form>
-          ) : (
-            <Button type="button" onClick={() => setShowAddColumn(true)} disabled={!canEdit}>
-              {uiCopy.board.addColumn}
-            </Button>
-          )}
+            )
+          ) : null}
+          {isViewer ? (
+            <span className={styles.readOnlyNotice}>
+              {uiCopy.board.readOnlyNotice}
+            </span>
+          ) : null}
         </div>
       </div>
       {error ? <p className={styles.error}>{error}</p> : null}
@@ -1021,7 +1034,7 @@ export function BoardPage() {
         </Card>
       ) : null}
       <DndContext
-        sensors={sensors}
+        sensors={canEdit ? sensors : []}
         collisionDetection={closestCenter}
         onDragStart={handleDragStart}
         onDragOver={handleDragOver}
@@ -1039,7 +1052,8 @@ export function BoardPage() {
               const isEditing = editingId === column.id
               const isDeleting = deletePendingId === column.id
               const cardsInColumn = cardsByColumn.get(column.id) ?? []
-              const showAddCard = showAddCardByColumn[column.id] ?? false
+              const showAddCard =
+                canEdit && (showAddCardByColumn[column.id] ?? false)
               const isDropTarget = hoveredColumnId === column.id
               const showPlaceholder =
                 !!activeCardId && !!activeCardColumnId && isDropTarget
@@ -1084,7 +1098,7 @@ export function BoardPage() {
                         disabled={!canEdit || updatingColumn}
                         autoFocus
                       />
-                    ) : (
+                    ) : canEdit ? (
                       <Button
                         variant="ghost"
                         size="sm"
@@ -1095,6 +1109,8 @@ export function BoardPage() {
                       >
                         <CardTitle>{column.title}</CardTitle>
                       </Button>
+                    ) : (
+                      <CardTitle>{column.title}</CardTitle>
                     )}
                     <div className={styles.columnActions}>
                       {isOwner ? (
@@ -1250,7 +1266,7 @@ export function BoardPage() {
                           </Button>
                         </div>
                       </form>
-                    ) : (
+                    ) : canEdit ? (
                       <Button
                         type="button"
                         variant="ghost"
@@ -1261,11 +1277,10 @@ export function BoardPage() {
                             [column.id]: true,
                           }))
                         }
-                        disabled={!canEdit}
                       >
                         {uiCopy.board.addCard}
                       </Button>
-                    )}
+                    ) : null}
                   </CardContent>
                 </ColumnDropZone>
                 </Card>

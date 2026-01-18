@@ -99,6 +99,7 @@ type BoardCopy = {
   invitationsSubtitle: string
   acceptInvite: string
   declineInvite: string
+  readOnlyNotice: string
   errors: {
     signOutFailed: string
     signInToCreate: string
@@ -235,6 +236,7 @@ const copy: Record<Locale, Copy> = {
       invitationsSubtitle: "Доступ появится после принятия приглашения.",
       acceptInvite: "Принять",
       declineInvite: "Отклонить",
+      readOnlyNotice: "Режим только чтение: изменения недоступны.",
       errors: {
         signOutFailed: "Ошибка выхода.",
         signInToCreate: "Войдите, чтобы создать доску.",
@@ -364,6 +366,7 @@ const copy: Record<Locale, Copy> = {
       invitationsSubtitle: "Board access is granted only after acceptance.",
       acceptInvite: "Accept",
       declineInvite: "Decline",
+      readOnlyNotice: "Read-only mode: editing is disabled.",
       errors: {
         signOutFailed: "Sign out error.",
         signInToCreate: "Sign in to create a board.",
