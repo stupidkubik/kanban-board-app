@@ -3,6 +3,16 @@ import { FieldPath, collection, doc } from "firebase/firestore"
 import type { Board, BoardMemberProfile, BoardRole, Card, Column } from "@/lib/types/boards"
 import { clientDb } from "@/lib/firebase/client"
 
+export type Invite = {
+  id: string
+  boardId: string
+  boardTitle: string
+  email: string
+  role: BoardRole
+  invitedById: string
+  createdAt?: number
+}
+
 export type InviteRecord = {
   boardId: string
   boardTitle: string
@@ -79,8 +89,8 @@ export const normalizeBoard = (id: string, data: Omit<Board, "id"> & { createdBy
   return board
 }
 
-export const normalizeInvite = (id: string, data: InviteRecord) => {
-  const invite = {
+export const normalizeInvite = (id: string, data: InviteRecord): Invite => {
+  const invite: Invite = {
     id,
     boardId: data.boardId,
     boardTitle: data.boardTitle,

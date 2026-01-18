@@ -26,13 +26,7 @@ import {
 } from "@/lib/store/firestore-operations"
 import { optimisticCreateCard, optimisticDeleteCard, optimisticMoveCard } from "@/lib/store/optimistic-helpers"
 import type { RootState } from "@/lib/store"
-import type {
-  Board,
-  BoardMemberProfile,
-  BoardRole,
-  Card,
-  Column,
-} from "@/lib/types/boards"
+import type { Board, BoardMemberProfile, Card, Column } from "@/lib/types/boards"
 import {
   ensureCardId,
   ensureCardOrder,
@@ -42,21 +36,12 @@ import {
   normalizeColumn,
   normalizeInvite,
   normalizeMemberProfile,
+  type Invite,
   type CardRecord,
   type ColumnRecord,
   type InviteRecord,
   type MemberProfileRecord,
 } from "@/lib/store/firestore-normalizers"
-
-export type Invite = {
-  id: string
-  boardId: string
-  boardTitle: string
-  email: string
-  role: BoardRole
-  invitedById: string
-  createdAt?: number
-}
 
 type MutationResult = { ok: true }
 type CreateBoardResult = MutationResult & { boardId: string }
