@@ -2,8 +2,7 @@
 
 import * as React from "react"
 
-import { type BoardCopy } from "@/lib/types/board-ui"
-import { type EditingCardDraft } from "@/lib/store/board-ui-slice"
+import { type BoardCopy, type EditingCardDraft } from "@/lib/types/board-ui"
 import {
   AlertDialog,
   AlertDialogCancel,

@@ -24,4 +24,3 @@ export type Participant = {
 }
 
 export type BoardCopy = ReturnType<typeof import("@/lib/i18n").getCopy>
-
