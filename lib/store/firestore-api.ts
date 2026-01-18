@@ -58,45 +58,6 @@ export type Invite = {
   createdAt?: number
 }
 
-type InviteRecord = {
-  boardId: string
-  boardTitle: string
-  email: string
-  role: BoardRole
-  invitedById?: string
-  invitedBy?: string
-  createdAt?: unknown
-}
-
-type ColumnRecord = {
-  title: string
-  order?: number
-  createdAt?: unknown
-  updatedAt?: unknown
-}
-
-type CardRecord = {
-  columnId?: string
-  title?: string
-  description?: unknown
-  order?: number
-  createdById?: string
-  createdBy?: string
-  assigneeIds?: unknown
-  labels?: unknown
-  dueAt?: unknown
-  createdAt?: unknown
-  updatedAt?: unknown
-  archived?: boolean
-}
-
-type MemberProfileRecord = {
-  displayName?: string | null
-  photoURL?: string | null
-  email?: string | null
-  joinedAt?: unknown
-}
-
 type MutationResult = { ok: true }
 type CreateBoardResult = MutationResult & { boardId: string }
 
