@@ -7,6 +7,8 @@ import { doc, setDoc, serverTimestamp } from "firebase/firestore"
 
 import { clientDb } from "@/lib/firebase/client"
 import { getCopy, languageLabels, roleLabels, type Locale } from "@/lib/i18n"
+import { canEditBoard as canEditBoardAccess, canInviteMembers, getMemberRole } from "@/lib/permissions"
+import { isValidEmail } from "@/lib/validation"
 import { type Board, type BoardLanguage, type BoardRole } from "@/lib/types/boards"
 import {
   useDeleteBoardMutation,
@@ -36,25 +38,6 @@ import {
 } from "@/components/ui/select"
 import styles from "@/components/kanban-app.module.css"
 
-const isValidEmail = (value: string) => /\S+@\S+\.\S+/.test(value)
-
-const getMemberRole = (board: Board, uid: string) => {
-  if (!board.members[uid]) {
-    return null
-  }
-
-  const explicitRole = board.roles?.[uid]
-  if (explicitRole) {
-    return explicitRole
-  }
-
-  if (board.ownerId === uid) {
-    return "owner"
-  }
-
-  return "editor"
-}
-
 type KanbanBoardCardProps = {
   board: Board
   onError: (message: string | null) => void
@@ -77,7 +60,7 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
   const [deletePending, setDeletePending] = React.useState(false)
 
   const role = getMemberRole(board, user.uid)
-  const isOwner = board.ownerId === user.uid
+  const isOwner = canInviteMembers(board, user.uid)
   const currentLanguage = board.language ?? "ru"
   const uiCopy = React.useMemo(() => getCopy(uiLocale), [uiLocale])
   const boardCopy = React.useMemo(() => getCopy(currentLanguage), [currentLanguage])
@@ -85,8 +68,8 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
     () => getCopy(board.language ?? uiLocale),
     [board.language, uiLocale]
   )
-  const canEditLanguage = role !== "viewer"
-  const canEditBoard = role !== "viewer"
+  const canEditBoard = canEditBoardAccess(board, user.uid)
+  const canEditLanguage = canEditBoard
 
   const handleLanguageChange = async (language: BoardLanguage) => {
     if (role === "viewer") {

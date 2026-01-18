@@ -339,6 +339,46 @@ export const firestoreApi = createApi({
         unsubscribe()
       },
     }),
+    getBoard: builder.query<Board | null, string | null>({
+      queryFn: async () => ({ data: null }),
+      keepUnusedDataFor: 60,
+      providesTags: (_result, _error, boardId) =>
+        boardId
+          ? [{ type: "Board" as const, id: boardId }]
+          : [{ type: "Board" as const, id: "DETAIL" }],
+      async onCacheEntryAdded(
+        boardId,
+        { updateCachedData, cacheEntryRemoved }
+      ) {
+        if (!boardId) {
+          await cacheEntryRemoved
+          return
+        }
+
+        const boardRef = doc(clientDb, "boards", boardId)
+
+        const unsubscribe = onSnapshot(
+          boardRef,
+          (snapshot) => {
+            updateCachedData(() => {
+              if (!snapshot.exists()) {
+                return null
+              }
+              return normalizeBoard(
+                boardId,
+                snapshot.data() as Omit<Board, "id"> & { createdBy?: string }
+              )
+            })
+          },
+          () => {
+            updateCachedData(() => null)
+          }
+        )
+
+        await cacheEntryRemoved
+        unsubscribe()
+      },
+    }),
     getInvites: builder.query<Invite[], string | null>({
       queryFn: async () => ({ data: [] }),
       keepUnusedDataFor: 0,
@@ -899,6 +939,7 @@ export const {
   useDeleteBoardMutation,
   useDeleteColumnMutation,
   useGetBoardMembersQuery,
+  useGetBoardQuery,
   useGetBoardsQuery,
   useGetCardsQuery,
   useGetColumnsQuery,
