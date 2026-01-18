@@ -1,16 +1,5 @@
-import {
-  createApi,
-  fakeBaseQuery,
-} from "@reduxjs/toolkit/query/react"
-import {
-  FieldPath,
-  collection,
-  doc,
-  onSnapshot,
-  orderBy,
-  query,
-  where,
-} from "firebase/firestore"
+import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react"
+import { collection, doc, onSnapshot, orderBy, query, where } from "firebase/firestore"
 
 import { clientDb } from "@/lib/firebase/client"
 import {
@@ -35,11 +24,7 @@ import {
   type UpdateBoardTitleInput,
   type UpdateColumnInput,
 } from "@/lib/store/firestore-operations"
-import {
-  optimisticCreateCard,
-  optimisticDeleteCard,
-  optimisticMoveCard,
-} from "@/lib/store/optimistic-helpers"
+import { optimisticCreateCard, optimisticDeleteCard, optimisticMoveCard } from "@/lib/store/optimistic-helpers"
 import type { RootState } from "@/lib/store"
 import type {
   Board,
@@ -48,6 +33,20 @@ import type {
   Card,
   Column,
 } from "@/lib/types/boards"
+import {
+  ensureCardId,
+  ensureCardOrder,
+  memberFieldPath,
+  normalizeBoard,
+  normalizeCard,
+  normalizeColumn,
+  normalizeInvite,
+  normalizeMemberProfile,
+  type CardRecord,
+  type ColumnRecord,
+  type InviteRecord,
+  type MemberProfileRecord,
+} from "@/lib/store/firestore-normalizers"
 
 export type Invite = {
   id: string
@@ -103,19 +102,6 @@ type CreateBoardResult = MutationResult & { boardId: string }
 
 const mutationOk: MutationResult = { ok: true }
 
-const toMillis = (value: unknown): number | undefined => {
-  if (!value || typeof value !== "object") {
-    return undefined
-  }
-
-  const maybeTimestamp = value as { toMillis?: () => number }
-  if (typeof maybeTimestamp.toMillis === "function") {
-    return maybeTimestamp.toMillis()
-  }
-
-  return undefined
-}
-
 // Read RTK Query cache to seed optimistic updates.
 const getCachedColumns = (state: RootState, boardId: string) => {
   const result = firestoreApi.endpoints.getColumns.select(boardId)(state)
@@ -128,162 +114,6 @@ const getCachedCards = (
 ) => {
   const result = firestoreApi.endpoints.getCards.select(args)(state)
   return result.data ?? []
-}
-
-const ensureCardId = (args: CreateCardInput) => {
-  if (!args.cardId) {
-    args.cardId = doc(
-      collection(clientDb, "boards", args.boardId, "cards")
-    ).id
-  }
-  return args.cardId
-}
-
-const ensureCardOrder = (args: CreateCardInput) => {
-  if (typeof args.order !== "number") {
-    args.order = Date.now()
-  }
-  return args.order
-}
-
-const normalizeBoard = (id: string, data: Omit<Board, "id"> & { createdBy?: string }) => {
-  const ownerId = data.ownerId ?? data.createdBy ?? ""
-  const board: Board = {
-    id,
-    title: data.title,
-    ownerId,
-    members: data.members ?? {},
-    roles: data.roles,
-    language: data.language,
-  }
-
-  const createdAt = toMillis((data as { createdAt?: unknown }).createdAt)
-  if (createdAt !== undefined) {
-    board.createdAt = createdAt
-  }
-
-  const updatedAt = toMillis((data as { updatedAt?: unknown }).updatedAt)
-  if (updatedAt !== undefined) {
-    board.updatedAt = updatedAt
-  }
-
-  return board
-}
-
-const normalizeInvite = (id: string, data: InviteRecord) => {
-  const invite: Invite = {
-    id,
-    boardId: data.boardId,
-    boardTitle: data.boardTitle,
-    email: data.email,
-    role: data.role,
-    invitedById: data.invitedById ?? data.invitedBy ?? "",
-  }
-
-  const createdAt = toMillis(data.createdAt)
-  if (createdAt !== undefined) {
-    invite.createdAt = createdAt
-  }
-
-  return invite
-}
-
-const normalizeMemberProfile = (id: string, data: MemberProfileRecord) => {
-  const profile: BoardMemberProfile = {
-    id,
-    displayName: data.displayName ?? null,
-    photoURL: data.photoURL ?? null,
-    email: data.email ?? null,
-  }
-
-  const joinedAt = toMillis(data.joinedAt)
-  if (joinedAt !== undefined) {
-    profile.joinedAt = joinedAt
-  }
-
-  return profile
-}
-
-const normalizeColumn = (boardId: string, id: string, data: ColumnRecord): Column => {
-  const column: Column = {
-    id,
-    boardId,
-    title: data.title,
-    order: typeof data.order === "number" ? data.order : 0,
-  }
-
-  const createdAt = toMillis(data.createdAt)
-  if (createdAt !== undefined) {
-    column.createdAt = createdAt
-  }
-
-  const updatedAt = toMillis(data.updatedAt)
-  if (updatedAt !== undefined) {
-    column.updatedAt = updatedAt
-  }
-
-  return column
-}
-
-const normalizeCard = (boardId: string, id: string, data: CardRecord): Card => {
-  const createdById =
-    typeof data.createdById === "string"
-      ? data.createdById
-      : typeof data.createdBy === "string"
-        ? data.createdBy
-        : ""
-
-  const card: Card = {
-    id,
-    boardId,
-    columnId: data.columnId ?? "",
-    title: data.title ?? "",
-    order: typeof data.order === "number" ? data.order : 0,
-    createdById,
-  }
-
-  if (typeof data.description === "string") {
-    card.description = data.description
-  }
-
-  if (Array.isArray(data.assigneeIds)) {
-    const assignees = data.assigneeIds.filter(
-      (assignee): assignee is string => typeof assignee === "string"
-    )
-    if (assignees.length) {
-      card.assigneeIds = assignees
-    }
-  }
-
-  if (Array.isArray(data.labels)) {
-    const labels = data.labels.filter(
-      (label): label is string => typeof label === "string"
-    )
-    if (labels.length) {
-      card.labels = labels
-    }
-  }
-
-  const dueAt = toMillis(data.dueAt)
-  if (dueAt !== undefined) {
-    card.dueAt = dueAt
-  }
-
-  const createdAt = toMillis(data.createdAt)
-  if (createdAt !== undefined) {
-    card.createdAt = createdAt
-  }
-
-  const updatedAt = toMillis(data.updatedAt)
-  if (updatedAt !== undefined) {
-    card.updatedAt = updatedAt
-  }
-
-  if (typeof data.archived === "boolean") {
-    card.archived = data.archived
-  }
-
-  return card
 }
 
 export const firestoreApi = createApi({
@@ -310,7 +140,7 @@ export const firestoreApi = createApi({
           return
         }
 
-        const memberField = new FieldPath("members", uid)
+        const memberField = memberFieldPath(uid)
         const boardsQuery = query(
           collection(clientDb, "boards"),
           where(memberField, "==", true)
