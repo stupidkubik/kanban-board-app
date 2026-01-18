@@ -40,6 +40,7 @@ import {
   optimisticDeleteCard,
   optimisticMoveCard,
 } from "@/lib/store/optimistic-helpers"
+import type { RootState } from "@/lib/store"
 import type {
   Board,
   BoardMemberProfile,
@@ -115,13 +116,13 @@ const toMillis = (value: unknown): number | undefined => {
   return undefined
 }
 
-const getCachedColumns = (state: unknown, boardId: string) => {
+const getCachedColumns = (state: RootState, boardId: string) => {
   const result = firestoreApi.endpoints.getColumns.select(boardId)(state)
   return result.data ?? []
 }
 
 const getCachedCards = (
-  state: unknown,
+  state: RootState,
   args: { boardId: string; columnId?: string | null }
 ) => {
   const result = firestoreApi.endpoints.getCards.select(args)(state)
@@ -764,7 +765,7 @@ export const firestoreApi = createApi({
         }
       },
       async onQueryStarted(args, { dispatch, getState, queryFulfilled }) {
-        const state = getState()
+        const state = getState() as RootState
         const columns = getCachedColumns(state, args.boardId)
         const columnIds = columns.map((column) => column.id)
         const boardCards = getCachedCards(state, { boardId: args.boardId })
@@ -847,7 +848,7 @@ export const firestoreApi = createApi({
         }
       },
       async onQueryStarted(args, { dispatch, getState, queryFulfilled }) {
-        const state = getState()
+        const state = getState() as RootState
         const columns = getCachedColumns(state, args.boardId)
         const columnIds = columns.map((column) => column.id)
         const boardCards = getCachedCards(state, { boardId: args.boardId })

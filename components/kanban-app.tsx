@@ -11,6 +11,14 @@ import { getCopy, languageLabels, type Locale } from "@/lib/i18n"
 import { useGetBoardsQuery, useGetInvitesQuery } from "@/lib/store/firestore-api"
 import { KanbanBoardsSection } from "@/components/kanban-boards-section"
 import { KanbanInvitesSection } from "@/components/kanban-invites-section"
+import { Button } from "@/components/ui/button"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import styles from "@/components/kanban-app.module.css"
 
 export function KanbanApp() {
@@ -172,21 +180,21 @@ export function KanbanApp() {
               </div>
               <div className={styles.row}>
                 <div className={styles.label}>{uiCopy.common.interfaceLanguage}</div>
-                <select
-                  className={styles.select}
+                <Select
                   value={uiLocale}
-                  onChange={(event) => handleUiLocaleChange(event.target.value as Locale)}
+                  onValueChange={(value) => handleUiLocaleChange(value as Locale)}
                 >
-                  <option value="ru">{languageLabels.ru}</option>
-                  <option value="en">{languageLabels.en}</option>
-                </select>
-                <button
-                  className={`${styles.button} ${styles.buttonOutline}`}
-                  onClick={handleSignOut}
-                  type="button"
-                >
+                  <SelectTrigger aria-label={uiCopy.common.interfaceLanguage}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ru">{languageLabels.ru}</SelectItem>
+                    <SelectItem value="en">{languageLabels.en}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" onClick={handleSignOut} type="button">
                   {uiCopy.common.signOut}
-                </button>
+                </Button>
               </div>
             </div>
           ) : null}

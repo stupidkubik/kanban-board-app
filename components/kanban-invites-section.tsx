@@ -6,6 +6,7 @@ import { deleteDoc, doc, setDoc, serverTimestamp, writeBatch } from "firebase/fi
 import { clientDb } from "@/lib/firebase/client"
 import { getCopy, roleLabels, type Locale } from "@/lib/i18n"
 import { type Invite } from "@/lib/store/firestore-api"
+import { Button } from "@/components/ui/button"
 import styles from "@/components/kanban-app.module.css"
 
 type KanbanInvitesSectionProps = {
@@ -81,20 +82,16 @@ export function KanbanInvitesSection({
               {uiCopy.board.roleLabel}: {roleLabels[uiLocale][invite.role]}
             </div>
             <div className={styles.row}>
-              <button
-                className={styles.button}
-                onClick={() => handleAcceptInvite(invite)}
-                type="button"
-              >
+              <Button onClick={() => handleAcceptInvite(invite)} type="button">
                 {uiCopy.board.acceptInvite}
-              </button>
-              <button
-                className={`${styles.button} ${styles.buttonOutline}`}
+              </Button>
+              <Button
+                variant="outline"
                 onClick={() => handleDeclineInvite(invite)}
                 type="button"
               >
                 {uiCopy.board.declineInvite}
-              </button>
+              </Button>
             </div>
           </div>
         ))}

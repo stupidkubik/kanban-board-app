@@ -13,6 +13,15 @@ import {
 } from "firebase/auth"
 
 import { useAuth } from "@/components/auth-provider"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { clientAuth } from "@/lib/firebase/client"
 import { getCopy, languageLabels, type Locale } from "@/lib/i18n"
 import styles from "./sign-in.module.css"
@@ -228,30 +237,33 @@ export default function SignInPage() {
           <div className={styles.content}>
             <div className={styles.row}>
               <div className={styles.rowLabel}>{uiCopy.common.interfaceLanguage}</div>
-              <select
-                className={styles.select}
+              <Select
                 value={uiLocale}
-                onChange={(event) => handleUiLocaleChange(event.target.value as Locale)}
+                onValueChange={(value) => handleUiLocaleChange(value as Locale)}
               >
-                <option value="ru">{languageLabels.ru}</option>
-                <option value="en">{languageLabels.en}</option>
-              </select>
+                <SelectTrigger aria-label={uiCopy.common.interfaceLanguage}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ru">{languageLabels.ru}</SelectItem>
+                  <SelectItem value="en">{languageLabels.en}</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <form className={styles.form} onSubmit={handlePasswordReset}>
-              <input
-                className={styles.input}
+              <Input
                 type="email"
                 placeholder={uiCopy.auth.emailPlaceholder}
                 value={resetEmail}
                 onChange={(event) => setResetEmail(event.target.value)}
                 required
               />
-              <button className={styles.button} type="submit" disabled={resetPending}>
+              <Button type="submit" disabled={resetPending}>
                 {resetPending ? uiCopy.auth.resetSending : uiCopy.auth.resetSend}
-              </button>
+              </Button>
             </form>
-            <button
-              className={`${styles.button} ${styles.buttonGhost}`}
+            <Button
+              variant="ghost"
               type="button"
               disabled={resetPending}
               onClick={() => {
@@ -261,7 +273,7 @@ export default function SignInPage() {
               }}
             >
               {uiCopy.auth.resetBack}
-            </button>
+            </Button>
             {notice ? <p className={styles.notice}>{notice}</p> : null}
             {error ? <p className={styles.error}>{error}</p> : null}
           </div>
@@ -280,42 +292,44 @@ export default function SignInPage() {
         <div className={styles.content}>
           <div className={styles.row}>
             <div className={styles.rowLabel}>{uiCopy.common.interfaceLanguage}</div>
-            <select
-              className={styles.select}
+            <Select
               value={uiLocale}
-              onChange={(event) => handleUiLocaleChange(event.target.value as Locale)}
+              onValueChange={(value) => handleUiLocaleChange(value as Locale)}
             >
-              <option value="ru">{languageLabels.ru}</option>
-              <option value="en">{languageLabels.en}</option>
-            </select>
+              <SelectTrigger aria-label={uiCopy.common.interfaceLanguage}>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ru">{languageLabels.ru}</SelectItem>
+                <SelectItem value="en">{languageLabels.en}</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <form className={styles.form} onSubmit={handleEmailAuth}>
-            <input
-              className={styles.input}
+            <Input
               type="email"
               placeholder={uiCopy.auth.emailPlaceholder}
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
             />
-            <input
-              className={styles.input}
+            <Input
               type="password"
               placeholder={uiCopy.auth.passwordPlaceholder}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
             />
-            <button className={styles.button} type="submit" disabled={emailPending}>
+            <Button type="submit" disabled={emailPending}>
               {emailPending
                 ? uiCopy.auth.connecting
                 : mode === "sign-in"
                   ? uiCopy.auth.signInEmail
                   : uiCopy.auth.signUpEmail}
-            </button>
+            </Button>
             {mode === "sign-in" ? (
-              <button
-                className={`${styles.button} ${styles.buttonGhost}`}
+              <Button
+                variant="ghost"
                 type="button"
                 disabled={emailPending}
                 onClick={() => {
@@ -326,10 +340,10 @@ export default function SignInPage() {
                 }}
               >
                 {uiCopy.auth.forgotPassword}
-              </button>
+              </Button>
             ) : null}
-            <button
-              className={`${styles.button} ${styles.buttonGhost}`}
+            <Button
+              variant="ghost"
               type="button"
               disabled={emailPending}
               onClick={() => setMode(mode === "sign-in" ? "sign-up" : "sign-in")}
@@ -337,11 +351,12 @@ export default function SignInPage() {
               {mode === "sign-in"
                 ? uiCopy.auth.toggleToSignUp
                 : uiCopy.auth.toggleToSignIn}
-            </button>
+            </Button>
           </form>
           <div className={styles.divider}>{uiCopy.auth.orLabel}</div>
-          <button
-            className={`${styles.button} ${styles.buttonGoogle}`}
+          <Button
+            variant="outline"
+            className={styles.buttonGoogle}
             onClick={() => handleSignIn("google")}
             disabled={pendingProvider !== null || emailPending || sessionPending}
             type="button"
@@ -371,7 +386,7 @@ export default function SignInPage() {
                 <span>{uiCopy.auth.googleButton}</span>
               </>
             )}
-          </button>
+          </Button>
           {notice ? <p className={styles.notice}>{notice}</p> : null}
           {error ? <p className={styles.error}>{error}</p> : null}
         </div>

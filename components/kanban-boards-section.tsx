@@ -17,6 +17,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import styles from "@/components/kanban-app.module.css"
 
 type KanbanBoardsSectionProps = {
@@ -93,9 +102,9 @@ export function KanbanBoardsSection({
         <div className={styles.actionsRow}>
           <AlertDialog open={createOpen} onOpenChange={setCreateOpen}>
             <AlertDialogTrigger asChild>
-              <button className={styles.button} type="button">
+              <Button type="button">
                 {uiCopy.board.createBoard}
-              </button>
+              </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -106,32 +115,35 @@ export function KanbanBoardsSection({
               </AlertDialogHeader>
               <form className={styles.modalForm} onSubmit={handleCreateBoardSubmit}>
                 <div className={styles.modalFields}>
-                  <input
-                    className={styles.input}
+                  <Input
                     value={title}
                     onChange={(event) => setTitle(event.target.value)}
                     placeholder={uiCopy.board.boardNamePlaceholder}
                     aria-label={uiCopy.board.boardNamePlaceholder}
                   />
-                  <select
-                    className={styles.select}
+                  <Select
                     value={newBoardLanguage}
-                    onChange={(event) => {
-                      setNewBoardLanguage(event.target.value as BoardLanguage)
+                    onValueChange={(value) => {
+                      setNewBoardLanguage(value as BoardLanguage)
                       setNewBoardLanguageTouched(true)
                     }}
                   >
-                    <option value="ru">{languageLabels.ru}</option>
-                    <option value="en">{languageLabels.en}</option>
-                  </select>
+                    <SelectTrigger aria-label={uiCopy.board.boardLanguageLabel}>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ru">{languageLabels.ru}</SelectItem>
+                      <SelectItem value="en">{languageLabels.en}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <AlertDialogFooter className={styles.modalFooter}>
                   <AlertDialogCancel type="button">
                     {uiCopy.common.cancel}
                   </AlertDialogCancel>
-                  <button className={styles.button} type="submit" disabled={creating}>
+                  <Button type="submit" disabled={creating}>
                     {creating ? uiCopy.board.creatingBoard : uiCopy.board.createBoard}
-                  </button>
+                  </Button>
                 </AlertDialogFooter>
               </form>
             </AlertDialogContent>

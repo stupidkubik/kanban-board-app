@@ -15,6 +15,7 @@ import {
 } from "@/lib/store/firestore-api"
 import {
   AlertDialog,
+  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -24,6 +25,15 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import styles from "@/components/kanban-app.module.css"
 
 const isValidEmail = (value: string) => /\S+@\S+\.\S+/.test(value)
@@ -211,39 +221,51 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
       <CardContent className={styles.boardContent}>
         <div className={styles.section}>
           <div className={styles.label}>{boardCopy.board.boardLanguageLabel}</div>
-          <select
-            className={styles.select}
+          <Select
             value={currentLanguage}
-            onChange={(event) =>
-              handleLanguageChange(event.target.value as BoardLanguage)
-            }
+            onValueChange={(value) => handleLanguageChange(value as BoardLanguage)}
             disabled={!canEditLanguage || languagePending}
           >
-            <option value="ru">{languageLabels.ru}</option>
-            <option value="en">{languageLabels.en}</option>
-          </select>
+            <SelectTrigger
+              size="sm"
+              aria-label={boardCopy.board.boardLanguageLabel}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ru">{languageLabels.ru}</SelectItem>
+              <SelectItem value="en">{languageLabels.en}</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
         {isOwner ? (
           <div className={styles.section}>
             <div className={styles.label}>{boardCopy.board.inviteMember}</div>
             <div className={styles.inviteRow}>
-              <input
+              <Input
                 className={styles.input}
                 value={inviteEmail}
                 onChange={(event) => setInviteEmail(event.target.value)}
                 placeholder={boardCopy.board.inviteEmailPlaceholder}
                 aria-label={boardCopy.board.inviteEmailPlaceholder}
               />
-              <select
-                className={styles.select}
+              <Select
                 value={inviteRole}
-                onChange={(event) => setInviteRole(event.target.value as BoardRole)}
+                onValueChange={(value) => setInviteRole(value as BoardRole)}
               >
-                <option value="editor">{roleLabels[currentLanguage].editor}</option>
-                <option value="viewer">{roleLabels[currentLanguage].viewer}</option>
-              </select>
-              <button
-                className={styles.button}
+                <SelectTrigger size="sm" aria-label={boardCopy.board.roleLabel}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="editor">
+                    {roleLabels[currentLanguage].editor}
+                  </SelectItem>
+                  <SelectItem value="viewer">
+                    {roleLabels[currentLanguage].viewer}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+              <Button
                 type="button"
                 onClick={handleInvite}
                 disabled={invitePending}
@@ -251,19 +273,16 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                 {invitePending
                   ? boardCopy.board.inviteSending
                   : boardCopy.board.inviteButton}
-              </button>
+              </Button>
             </div>
           </div>
         ) : null}
       </CardContent>
       <CardFooter>
         <div className={styles.boardFooter}>
-          <Link
-            className={`${styles.button} ${styles.buttonOutline}`}
-            href={`/boards/${board.id}`}
-          >
-            {boardCopy.board.openBoard}
-          </Link>
+          <Button asChild variant="outline">
+            <Link href={`/boards/${board.id}`}>{boardCopy.board.openBoard}</Link>
+          </Button>
           <div className={styles.boardActions}>
             {canEditBoard ? (
               <AlertDialog
@@ -279,13 +298,9 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                 }}
               >
                 <AlertDialogTrigger asChild>
-                  <button
-                    className={`${styles.button} ${styles.buttonOutline}`}
-                    type="button"
-                    disabled={renamePending}
-                  >
+                  <Button type="button" variant="outline" disabled={renamePending}>
                     {boardCopy.board.renameBoard}
-                  </button>
+                  </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
@@ -304,7 +319,7 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                     }}
                   >
                     <div className={styles.modalFields}>
-                      <input
+                      <Input
                         className={styles.input}
                         value={renameTitle}
                         onChange={(event) => setRenameTitle(event.target.value)}
@@ -316,15 +331,11 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                       <AlertDialogCancel type="button">
                         {uiCopy.common.cancel}
                       </AlertDialogCancel>
-                      <button
-                        className={styles.button}
-                        type="submit"
-                        disabled={renamePending}
-                      >
+                      <Button type="submit" disabled={renamePending}>
                         {renamePending
                           ? boardCopy.board.renamingBoard
                           : boardCopy.board.renameBoard}
-                      </button>
+                      </Button>
                     </AlertDialogFooter>
                   </form>
                 </AlertDialogContent>
@@ -342,13 +353,9 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                 }}
               >
                 <AlertDialogTrigger asChild>
-                  <button
-                    className={`${styles.button} ${styles.buttonOutlineDanger}`}
-                    type="button"
-                    disabled={deletePending}
-                  >
+                  <Button type="button" variant="destructive" disabled={deletePending}>
                     {boardCopy.board.deleteBoard}
-                  </button>
+                  </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
@@ -363,16 +370,16 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                     <AlertDialogCancel type="button">
                       {uiCopy.common.cancel}
                     </AlertDialogCancel>
-                    <button
-                      className={`${styles.button} ${styles.buttonDanger}`}
+                    <AlertDialogAction
                       type="button"
+                      variant="destructive"
                       onClick={handleDeleteBoard}
                       disabled={deletePending}
                     >
                       {deletePending
                         ? boardCopy.board.deletingBoard
                         : boardCopy.board.deleteBoard}
-                    </button>
+                    </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
               </AlertDialog>

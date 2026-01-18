@@ -67,13 +67,6 @@
   color: var(--color-muted);
 }
 
-.formRow {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-}
-
 .actionsRow {
   display: flex;
   flex-wrap: wrap;
@@ -102,62 +95,6 @@
 .input {
   flex: 1 1 240px;
   min-width: 220px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  background: #fff;
-}
-
-.select {
-  height: 38px;
-  min-width: 140px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
-  padding: 6px 10px;
-  background: #fff;
-}
-
-.button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border-radius: var(--radius-sm);
-  padding: 10px 14px;
-  border: 1px solid var(--color-border);
-  background: var(--color-primary);
-  color: var(--color-primary-contrast);
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.buttonOutline {
-  background: transparent;
-  color: var(--color-text);
-}
-
-.buttonOutlineDanger {
-  background: transparent;
-  color: var(--color-danger);
-  border-color: var(--color-danger);
-}
-
-.buttonDanger {
-  background: var(--color-danger);
-  color: #fff;
-  border-color: var(--color-danger);
-}
-
-.buttonGhost {
-  background: transparent;
-  border: 0;
-  color: var(--color-muted);
-  font-weight: 500;
 }
 
 .boardGrid {
@@ -219,11 +156,6 @@
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
-}
-
-.notice {
-  font-size: 13px;
-  color: var(--color-success);
 }
 
 .error {

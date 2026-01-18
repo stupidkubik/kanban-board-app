@@ -1,8 +1,10 @@
 "use client"
 
 import * as React from "react"
+import Image from "next/image"
 import { useParams } from "next/navigation"
 import { collection, doc, setDoc, serverTimestamp } from "firebase/firestore"
+import { TrashIcon } from "@phosphor-icons/react"
 import {
   DndContext,
   KeyboardSensor,
@@ -27,6 +29,7 @@ import { useAuth } from "@/components/auth-provider"
 import {
   useCreateCardMutation,
   useCreateColumnMutation,
+  useDeleteCardMutation,
   useDeleteColumnMutation,
   useGetBoardMembersQuery,
   useGetBoardsQuery,
@@ -53,6 +56,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import styles from "@/components/board-page.module.css"
 
 const isNonEmpty = (value: string) => value.trim().length > 0
@@ -86,9 +96,35 @@ const getNextOrderValue = (before?: number, after?: number) => {
   return Date.now()
 }
 
+const formatDateInput = (value?: number) => {
+  if (!value) {
+    return ""
+  }
+  const date = new Date(value)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, "0")
+  const day = String(date.getDate()).padStart(2, "0")
+  return `${year}-${month}-${day}`
+}
+
+const parseDateInput = (value: string) => {
+  if (!value) {
+    return null
+  }
+  const [year, month, day] = value.split("-").map((part) => Number(part))
+  if (!year || !month || !day) {
+    return null
+  }
+  return new Date(year, month - 1, day)
+}
+
 type SortableCardItemProps = {
   card: BoardCard
   canEdit: boolean
+  canDelete: boolean
+  onEdit: (card: BoardCard) => void
+  onDelete: (card: BoardCard) => void
+  deleteLabel: string
   dueLabel: string
   formatDueDate: (value?: number) => string | null
 }
@@ -96,6 +132,10 @@ type SortableCardItemProps = {
 const SortableCardItem = ({
   card,
   canEdit,
+  canDelete,
+  onEdit,
+  onDelete,
+  deleteLabel,
   dueLabel,
   formatDueDate,
 }: SortableCardItemProps) => {
@@ -120,8 +160,42 @@ const SortableCardItem = ({
       }
       {...attributes}
       {...listeners}
+      onClick={() => {
+        if (canEdit && !isDragging) {
+          onEdit(card)
+        }
+      }}
+      role={canEdit ? "button" : undefined}
+      tabIndex={canEdit ? 0 : -1}
+      onKeyDown={(event) => {
+        if (!canEdit || isDragging) {
+          return
+        }
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault()
+          onEdit(card)
+        }
+      }}
     >
-      <div className={styles.cardTitle}>{card.title}</div>
+      <div className={styles.cardHeaderRow}>
+        <div className={styles.cardTitle}>{card.title}</div>
+        {canDelete ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-xs"
+            className={styles.cardActionButton}
+            aria-label={deleteLabel}
+            onClick={(event) => {
+              event.stopPropagation()
+              onDelete(card)
+            }}
+            onPointerDown={(event) => event.stopPropagation()}
+          >
+            <TrashIcon size={16} />
+          </Button>
+        ) : null}
+      </div>
       {card.description ? (
         <div className={styles.cardDescription}>{card.description}</div>
       ) : null}
@@ -191,6 +265,14 @@ export function BoardPage() {
   const [inviteEmail, setInviteEmail] = React.useState("")
   const [inviteRole, setInviteRole] = React.useState<BoardRole>("editor")
   const [invitePending, setInvitePending] = React.useState(false)
+  const [editCardOpen, setEditCardOpen] = React.useState(false)
+  const [editingCardId, setEditingCardId] = React.useState<string | null>(null)
+  const [editingCardTitle, setEditingCardTitle] = React.useState("")
+  const [editingCardDescription, setEditingCardDescription] = React.useState("")
+  const [editingCardDue, setEditingCardDue] = React.useState("")
+  const [deleteCardOpen, setDeleteCardOpen] = React.useState(false)
+  const [deleteCardId, setDeleteCardId] = React.useState<string | null>(null)
+  const [deleteCardTitle, setDeleteCardTitle] = React.useState("")
   const [hoveredColumnId, setHoveredColumnId] = React.useState<string | null>(null)
   const [activeCardId, setActiveCardId] = React.useState<string | null>(null)
   const [activeCardColumnId, setActiveCardColumnId] = React.useState<string | null>(null)
@@ -233,7 +315,8 @@ export function BoardPage() {
   })
 
   const [createCard, { isLoading: creatingCard }] = useCreateCardMutation()
-  const [updateCard] = useUpdateCardMutation()
+  const [updateCard, { isLoading: updatingCard }] = useUpdateCardMutation()
+  const [deleteCard, { isLoading: deletingCard }] = useDeleteCardMutation()
   const [createColumn, { isLoading: creatingColumn }] =
     useCreateColumnMutation()
   const [updateColumn, { isLoading: updatingColumn }] =
@@ -354,7 +437,7 @@ export function BoardPage() {
 
     const description = (newCardDescriptionByColumn[columnId] ?? "").trim()
     const dueInput = newCardDueByColumn[columnId] ?? ""
-    const dueAt = dueInput ? new Date(dueInput) : undefined
+    const dueAt = dueInput ? parseDateInput(dueInput) : null
     const order = Date.now()
     const cardRef = doc(collection(clientDb, "boards", boardId, "cards"))
 
@@ -365,7 +448,7 @@ export function BoardPage() {
         columnId,
         title,
         description: description.length ? description : undefined,
-        dueAt: dueAt && !Number.isNaN(dueAt.getTime()) ? dueAt : undefined,
+        dueAt: dueAt ?? undefined,
         createdById: user.uid,
         order,
       }).unwrap()
@@ -379,6 +462,95 @@ export function BoardPage() {
         err instanceof Error
           ? err.message
           : uiCopy.board.errors.createCardFailed
+      )
+    }
+  }
+
+  const resetEditCard = () => {
+    setEditCardOpen(false)
+    setEditingCardId(null)
+    setEditingCardTitle("")
+    setEditingCardDescription("")
+    setEditingCardDue("")
+  }
+
+  const startEditingCard = (card: BoardCard) => {
+    if (!canEdit) {
+      return
+    }
+    setEditingCardId(card.id)
+    setEditingCardTitle(card.title)
+    setEditingCardDescription(card.description ?? "")
+    setEditingCardDue(formatDateInput(card.dueAt))
+    setEditCardOpen(true)
+  }
+
+  const handleUpdateCard = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    if (!boardId || !editingCardId) {
+      return
+    }
+
+    const title = editingCardTitle.trim()
+    if (!isNonEmpty(title)) {
+      setError(uiCopy.board.errors.cardTitleRequired)
+      return
+    }
+
+    setError(null)
+
+    const description = editingCardDescription.trim()
+    const dueAt = editingCardDue ? parseDateInput(editingCardDue) : null
+
+    try {
+      await updateCard({
+        boardId,
+        cardId: editingCardId,
+        title,
+        description: description.length ? description : null,
+        dueAt,
+      }).unwrap()
+      resetEditCard()
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : uiCopy.board.errors.updateCardFailed
+      )
+    }
+  }
+
+  const resetDeleteCard = () => {
+    setDeleteCardOpen(false)
+    setDeleteCardId(null)
+    setDeleteCardTitle("")
+  }
+
+  const startDeletingCard = (card: BoardCard) => {
+    if (!isOwner) {
+      setError(uiCopy.board.errors.onlyOwnerCanDelete)
+      return
+    }
+    setDeleteCardId(card.id)
+    setDeleteCardTitle(card.title)
+    setDeleteCardOpen(true)
+  }
+
+  const handleDeleteCard = async () => {
+    if (!boardId || !deleteCardId) {
+      return
+    }
+
+    setError(null)
+
+    try {
+      await deleteCard({ boardId, cardId: deleteCardId }).unwrap()
+      resetDeleteCard()
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : uiCopy.board.errors.deleteCardFailed
       )
     }
   }
@@ -614,6 +786,94 @@ export function BoardPage() {
 
   return (
     <div className={styles.page}>
+      <AlertDialog
+        open={editCardOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            resetEditCard()
+          } else {
+            setEditCardOpen(true)
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{uiCopy.board.editCardTitle}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {uiCopy.board.editCardDescription}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <form className={styles.cardForm} onSubmit={handleUpdateCard}>
+            <Input
+              value={editingCardTitle}
+              onChange={(event) => setEditingCardTitle(event.target.value)}
+              placeholder={uiCopy.board.cardTitlePlaceholder}
+              aria-label={uiCopy.board.cardTitlePlaceholder}
+              disabled={!canEdit || updatingCard}
+              autoFocus
+            />
+            <Textarea
+              value={editingCardDescription}
+              onChange={(event) => setEditingCardDescription(event.target.value)}
+              placeholder={uiCopy.board.cardDescriptionPlaceholder}
+              aria-label={uiCopy.board.cardDescriptionPlaceholder}
+              rows={4}
+              disabled={!canEdit || updatingCard}
+            />
+            <div className={styles.cardFormRow}>
+              <Input
+                className={styles.cardDateInput}
+                value={editingCardDue}
+                onChange={(event) => setEditingCardDue(event.target.value)}
+                type="date"
+                aria-label={uiCopy.board.cardDueDateLabel}
+                disabled={!canEdit || updatingCard}
+              />
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel type="button">
+                {uiCopy.common.cancel}
+              </AlertDialogCancel>
+              <Button type="submit" disabled={!canEdit || updatingCard}>
+                {updatingCard ? uiCopy.board.savingCard : uiCopy.board.saveCard}
+              </Button>
+            </AlertDialogFooter>
+          </form>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog
+        open={deleteCardOpen}
+        onOpenChange={(open) => {
+          if (!open) {
+            resetDeleteCard()
+          } else {
+            setDeleteCardOpen(true)
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{uiCopy.board.deleteCardTitle}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {uiCopy.board.deleteCardDescription}
+              {deleteCardTitle ? ` "${deleteCardTitle}"` : ""}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel type="button">
+              {uiCopy.common.cancel}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              type="button"
+              variant="destructive"
+              onClick={handleDeleteCard}
+              disabled={!isOwner || deletingCard}
+            >
+              {uiCopy.board.deleteCard}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       <div className={styles.header}>
         <div className={styles.titleBlock}>
           <h1 className={styles.title}>{board?.title ?? "Board"}</h1>
@@ -666,10 +926,13 @@ export function BoardPage() {
                       <div className={styles.participantIdentity}>
                         <div className={styles.participantAvatar}>
                           {participant.photoURL ? (
-                            <img
+                            <Image
                               className={styles.participantAvatarImage}
                               src={participant.photoURL}
                               alt={participant.name}
+                              width={36}
+                              height={36}
+                              unoptimized
                             />
                           ) : (
                             <span className={styles.participantAvatarFallback}>
@@ -717,17 +980,29 @@ export function BoardPage() {
                         type="email"
                         disabled={invitePending}
                       />
-                      <select
-                        className={styles.inviteSelect}
+                      <Select
                         value={inviteRole}
-                        onChange={(event) =>
-                          setInviteRole(event.target.value as BoardRole)
+                        onValueChange={(value) =>
+                          setInviteRole(value as BoardRole)
                         }
                         disabled={invitePending}
                       >
-                        <option value="editor">{roleLabels[uiLocale].editor}</option>
-                        <option value="viewer">{roleLabels[uiLocale].viewer}</option>
-                      </select>
+                        <SelectTrigger
+                          size="sm"
+                          className={styles.inviteSelect}
+                          aria-label={uiCopy.board.roleLabel}
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="editor">
+                            {roleLabels[uiLocale].editor}
+                          </SelectItem>
+                          <SelectItem value="viewer">
+                            {roleLabels[uiLocale].viewer}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
                       <Button type="submit" disabled={invitePending}>
                         {invitePending
                           ? uiCopy.board.inviteSending
@@ -808,14 +1083,16 @@ export function BoardPage() {
                         autoFocus
                       />
                     ) : (
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
                         className={styles.columnTitleButton}
                         type="button"
                         onClick={() => startEditing(column)}
                         disabled={!canEdit}
                       >
                         <CardTitle>{column.title}</CardTitle>
-                      </button>
+                      </Button>
                     )}
                     <div className={styles.columnActions}>
                       {isOwner ? (
@@ -875,6 +1152,10 @@ export function BoardPage() {
                             <SortableCardItem
                               card={card}
                               canEdit={canEdit}
+                              canDelete={isOwner}
+                              onEdit={startEditingCard}
+                              onDelete={startDeletingCard}
+                              deleteLabel={uiCopy.board.deleteCard}
                               dueLabel={uiCopy.board.cardDueDateLabel}
                               formatDueDate={formatDueDate}
                             />
