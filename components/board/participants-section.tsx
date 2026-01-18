@@ -4,6 +4,7 @@ import Image from "next/image"
 
 import { getCopy, roleLabels, type Locale } from "@/lib/i18n"
 import { type BoardRole } from "@/lib/types/boards"
+import { type Participant } from "@/lib/types/board-ui"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -15,15 +16,6 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import styles from "@/components/board-page.module.css"
-
-export type Participant = {
-  id: string
-  name: string
-  secondaryLabel: string | null
-  photoURL: string | null | undefined
-  role: "owner" | "editor" | "viewer" | "member"
-  isYou: boolean
-}
 
 type ParticipantsSectionProps = {
   uiCopy: ReturnType<typeof getCopy>

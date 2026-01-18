@@ -16,7 +16,8 @@ import { sortableKeyboardCoordinates } from "@dnd-kit/sortable"
 
 import { useAuth } from "@/components/auth-provider"
 import { ColumnsGrid } from "@/components/board/columns-grid"
-import { ParticipantsSection, type Participant } from "@/components/board/participants-section"
+import { ParticipantsSection } from "@/components/board/participants-section"
+import { HeaderSection } from "@/components/board/header-section"
 import {
   useCreateCardMutation,
   useCreateColumnMutation,
@@ -45,20 +46,11 @@ import {
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
 import { isNonEmpty, isValidEmail } from "@/lib/validation"
 import { type BoardRole, type Card as BoardCard, type Column } from "@/lib/types/boards"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+import { type Participant } from "@/lib/types/board-ui"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { CardDeleteDialog } from "@/components/board/card-delete-dialog"
+import { CardEditDialog } from "@/components/board/card-edit-dialog"
 import styles from "@/components/board-page.module.css"
 type DragCardData = { columnId?: string }
 
@@ -771,165 +763,46 @@ export function BoardPage() {
 
   return (
     <div className={styles.page}>
-      <AlertDialog
+      <CardEditDialog
         open={editCardOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            resetEditCard()
-          }
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{uiCopy.board.editCardTitle}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {uiCopy.board.editCardDescription}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <form className={styles.cardForm} onSubmit={handleUpdateCard}>
-            <Input
-              value={editingCard.title}
-              onChange={(event) =>
-                boardId &&
-                dispatch(
-                  updateEditingCardField({
-                    boardId,
-                    field: "title",
-                    value: event.target.value,
-                  })
-                )
-              }
-              placeholder={uiCopy.board.cardTitlePlaceholder}
-              aria-label={uiCopy.board.cardTitlePlaceholder}
-              disabled={!canEdit || updatingCard}
-              autoFocus
-            />
-            <Textarea
-              value={editingCard.description}
-              onChange={(event) =>
-                boardId &&
-                dispatch(
-                  updateEditingCardField({
-                    boardId,
-                    field: "description",
-                    value: event.target.value,
-                  })
-                )
-              }
-              placeholder={uiCopy.board.cardDescriptionPlaceholder}
-              aria-label={uiCopy.board.cardDescriptionPlaceholder}
-              rows={4}
-              disabled={!canEdit || updatingCard}
-            />
-            <div className={styles.cardFormRow}>
-              <Input
-                className={styles.cardDateInput}
-                value={editingCard.due}
-                onChange={(event) =>
-                  boardId &&
-                  dispatch(
-                    updateEditingCardField({
-                      boardId,
-                      field: "due",
-                      value: event.target.value,
-                    })
-                  )
-                }
-                type="date"
-                aria-label={uiCopy.board.cardDueDateLabel}
-                disabled={!canEdit || updatingCard}
-              />
-            </div>
-            <AlertDialogFooter>
-              <AlertDialogCancel type="button">
-                {uiCopy.common.cancel}
-              </AlertDialogCancel>
-              <Button type="submit" disabled={!canEdit || updatingCard}>
-                {updatingCard ? uiCopy.board.savingCard : uiCopy.board.saveCard}
-              </Button>
-            </AlertDialogFooter>
-          </form>
-        </AlertDialogContent>
-      </AlertDialog>
-      <AlertDialog
+        canEdit={canEdit}
+        updatingCard={updatingCard}
+        uiCopy={uiCopy}
+        editingCard={editingCard}
+        onFieldChange={(field, value) =>
+          boardId &&
+          dispatch(
+            updateEditingCardField({
+              boardId,
+              field,
+              value,
+            })
+          )
+        }
+        onSubmit={handleUpdateCard}
+        onClose={resetEditCard}
+      />
+      <CardDeleteDialog
         open={deleteCardOpen}
-        onOpenChange={(open) => {
-          if (!open) {
-            resetDeleteCard()
-          } else {
-            setDeleteCardOpen(true)
-          }
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{uiCopy.board.deleteCardTitle}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {uiCopy.board.deleteCardDescription}
-              {deleteCardTitle ? ` "${deleteCardTitle}"` : ""}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel type="button">
-              {uiCopy.common.cancel}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              type="button"
-              variant="destructive"
-              onClick={handleDeleteCard}
-              disabled={!isOwner || deletingCard}
-            >
-              {uiCopy.board.deleteCard}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      <div className={styles.header}>
-        <div className={styles.titleBlock}>
-          <h1 className={styles.title}>{board?.title ?? "Board"}</h1>
-          <p className={styles.subtitle}>{uiCopy.board.columnsTitle}</p>
-        </div>
-        <div className={styles.actions}>
-          {canEdit ? (
-            showAddColumn ? (
-              <form className={styles.inlineForm} onSubmit={handleCreateColumn}>
-                <Input
-                  className={styles.columnTitleInput}
-                  value={newColumnTitle}
-                  onChange={(event) => setNewColumnTitle(event.target.value)}
-                  placeholder={uiCopy.board.columnNamePlaceholder}
-                  aria-label={uiCopy.board.columnNamePlaceholder}
-                  disabled={!canEdit || creatingColumn}
-                />
-                <Button type="submit" disabled={!canEdit || creatingColumn}>
-                  {creatingColumn
-                    ? uiCopy.board.creatingColumn
-                    : uiCopy.board.createColumn}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={() => {
-                    setShowAddColumn(false)
-                    setNewColumnTitle("")
-                  }}
-                >
-                  {uiCopy.common.cancel}
-                </Button>
-              </form>
-            ) : (
-              <Button type="button" onClick={() => setShowAddColumn(true)}>
-                {uiCopy.board.addColumn}
-              </Button>
-            )
-          ) : null}
-          {isViewer ? (
-            <span className={styles.readOnlyNotice}>
-              {uiCopy.board.readOnlyNotice}
-            </span>
-          ) : null}
-        </div>
-      </div>
+        deleteCardTitle={deleteCardTitle}
+        isOwner={isOwner}
+        deletingCard={deletingCard}
+        uiCopy={uiCopy}
+        onConfirm={handleDeleteCard}
+        onClose={resetDeleteCard}
+      />
+      <HeaderSection
+        uiCopy={uiCopy}
+        boardTitle={board?.title ?? "Board"}
+        canEdit={canEdit}
+        isViewer={isViewer}
+        showAddColumn={showAddColumn}
+        creatingColumn={creatingColumn}
+        newColumnTitle={newColumnTitle}
+        onNewColumnTitleChange={setNewColumnTitle}
+        onToggleAddColumn={setShowAddColumn}
+        onCreateColumn={handleCreateColumn}
+      />
       {error ? <p className={styles.error}>{error}</p> : null}
       {board ? (
         <ParticipantsSection

@@ -1,18 +1,6 @@
 import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
 
-type AddCardDraft = {
-  open: boolean
-  title: string
-  description: string
-  due: string
-}
-
-type EditingCardDraft = {
-  id: string | null
-  title: string
-  description: string
-  due: string
-}
+import type { AddCardDraft, EditingCardDraft } from "@/lib/types/board-ui"
 
 type BoardUiState = {
   addCardByColumn: Record<string, AddCardDraft>
