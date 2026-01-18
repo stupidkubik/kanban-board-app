@@ -101,6 +101,12 @@ Fields:
 - `updatedAt` (Timestamp, optional)
 - `archived` (bool, optional)
 
+Ordering notes:
+- `order` is a numeric sort key. It is not required to be sequential.
+- New positions are computed using gaps between neighbors (avg / +/- gap).
+- Moving a card updates both `columnId` and `order`.
+- If neighbors are missing, `order` can fall back to a timestamp-like number.
+
 Example:
 ```json
 {

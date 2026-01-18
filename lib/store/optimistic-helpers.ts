@@ -91,6 +91,7 @@ export const optimisticMoveCard = ({
   order,
   columnIds,
 }: MoveCardOptimisticArgs): PatchResult => {
+  // Patch board-level and per-column caches to keep UI consistent.
   const patches: PatchResult[] = []
 
   patches.push(

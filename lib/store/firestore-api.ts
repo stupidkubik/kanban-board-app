@@ -116,6 +116,7 @@ const toMillis = (value: unknown): number | undefined => {
   return undefined
 }
 
+// Read RTK Query cache to seed optimistic updates.
 const getCachedColumns = (state: RootState, boardId: string) => {
   const result = firestoreApi.endpoints.getColumns.select(boardId)(state)
   return result.data ?? []

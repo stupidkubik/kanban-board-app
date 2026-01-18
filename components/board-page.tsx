@@ -75,6 +75,7 @@ const getColumnDropId = (columnId: string) => `${columnDropPrefix}${columnId}`
 const getColumnIdFromDropId = (value: string) =>
   value.startsWith(columnDropPrefix) ? value.slice(columnDropPrefix.length) : null
 
+// Keep gaps so we can insert cards without reindexing whole columns.
 const ORDER_GAP = 1000
 
 const getNextOrderValue = (before?: number, after?: number) => {
@@ -592,6 +593,7 @@ export function BoardPage() {
         }
       }
 
+      // Compute new order using neighbor gaps to avoid full reindex.
       const beforeCard = filteredCards[targetIndex - 1]
       const afterCard = filteredCards[targetIndex]
       const nextOrder = getNextOrderValue(beforeCard?.order, afterCard?.order)
