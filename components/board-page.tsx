@@ -47,8 +47,6 @@ import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
 import { isNonEmpty, isValidEmail } from "@/lib/validation"
 import { type BoardRole, type Card as BoardCard, type Column } from "@/lib/types/boards"
 import { type Participant } from "@/lib/types/board-ui"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { CardDeleteDialog } from "@/components/board/card-delete-dialog"
 import { CardEditDialog } from "@/components/board/card-edit-dialog"
 import styles from "@/components/board-page.module.css"
@@ -427,7 +425,7 @@ export function BoardPage() {
         })
       )
     },
-    [boardId, canEdit, dispatch, formatDateInput]
+    [boardId, canEdit, dispatch]
   )
 
   const handleUpdateCard = React.useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
@@ -617,7 +615,7 @@ export function BoardPage() {
       setActiveCardId(activeId)
       setActiveCardColumnId(columnId)
     },
-    [cardColumnById]
+    [cardColumnById, canEdit]
   )
 
   const formatDueDate = (value?: number) => {
@@ -669,9 +667,9 @@ export function BoardPage() {
     }
   }, [
     boardId,
-    canEdit,
     editingId,
     editingTitle,
+    cancelEditing,
     uiCopy.board.errors.columnTitleRequired,
     uiCopy.board.errors.updateColumnFailed,
     updateColumn,

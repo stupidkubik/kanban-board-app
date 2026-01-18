@@ -18,11 +18,6 @@ const initialEditingCard: EditingCardDraft = {
   due: "",
 }
 
-const initialBoardUiState: BoardUiState = {
-  addCardByColumn: {},
-  editingCard: initialEditingCard,
-}
-
 const initialState: State = {
   byBoard: {},
 }
