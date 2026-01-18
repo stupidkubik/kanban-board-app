@@ -399,7 +399,7 @@ export function BoardPage() {
       addCardDrafts,
       createCard,
       dispatch,
-      uiCopy.board.cardTitleRequired,
+      uiCopy.board.errors.cardTitleRequired,
       uiCopy.board.errors.createCardFailed,
       user,
     ]
