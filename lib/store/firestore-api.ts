@@ -527,8 +527,8 @@ export const firestoreApi = createApi({
     createCard: builder.mutation<MutationResult, CreateCardInput>({
       async queryFn(args) {
         try {
-          ensureCardId(args)
-          ensureCardOrder(args)
+          args.cardId = ensureCardId(args.boardId, args.cardId)
+          args.order = ensureCardOrder(args.order)
           await createCardDocument(args)
           return { data: mutationOk }
         } catch (error) {
@@ -538,8 +538,8 @@ export const firestoreApi = createApi({
         }
       },
       async onQueryStarted(args, { dispatch, queryFulfilled }) {
-        const cardId = ensureCardId(args)
-        const order = ensureCardOrder(args)
+        const cardId = ensureCardId(args.boardId, args.cardId)
+        const order = ensureCardOrder(args.order)
         const optimisticCard: Card = {
           id: cardId,
           boardId: args.boardId,
