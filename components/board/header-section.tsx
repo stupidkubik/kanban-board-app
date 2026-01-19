@@ -49,8 +49,13 @@ export function HeaderSection({
                 placeholder={uiCopy.board.columnNamePlaceholder}
                 aria-label={uiCopy.board.columnNamePlaceholder}
                 disabled={!canEdit || creatingColumn}
+                data-testid="new-column-title"
               />
-              <Button type="submit" disabled={!canEdit || creatingColumn}>
+              <Button
+                type="submit"
+                disabled={!canEdit || creatingColumn}
+                data-testid="create-column-submit"
+              >
                 {creatingColumn
                   ? uiCopy.board.creatingColumn
                   : uiCopy.board.createColumn}
@@ -67,7 +72,11 @@ export function HeaderSection({
               </Button>
             </form>
           ) : (
-            <Button type="button" onClick={() => onToggleAddColumn(true)}>
+            <Button
+              type="button"
+              onClick={() => onToggleAddColumn(true)}
+              data-testid="add-column-trigger"
+            >
               {uiCopy.board.addColumn}
             </Button>
           )

@@ -54,7 +54,7 @@
   min-width: 140px;
   max-height: var(--radix-select-content-available-height);
   overflow: hidden;
-  z-index: 50;
+  z-index: 60;
   transform-origin: var(--radix-select-content-transform-origin);
 }
 

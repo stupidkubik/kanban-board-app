@@ -75,6 +75,8 @@ const SortableCardItem = ({
       className={
         isDragging ? `${styles.cardItem} ${styles.cardDragging}` : styles.cardItem
       }
+      data-testid={`card-${card.id}`}
+      data-card-title={card.title}
       {...attributes}
       {...listeners}
       onClick={() => {
@@ -129,10 +131,11 @@ const SortableCardItem = ({
 
 type ColumnDropZoneProps = {
   id: string
+  testId?: string
   children: React.ReactNode
 }
 
-const ColumnDropZone = ({ id, children }: ColumnDropZoneProps) => {
+const ColumnDropZone = ({ id, testId, children }: ColumnDropZoneProps) => {
   const { setNodeRef, isOver } = useDroppable({ id })
 
   return (
@@ -141,6 +144,7 @@ const ColumnDropZone = ({ id, children }: ColumnDropZoneProps) => {
       className={
         isOver ? `${styles.columnDropZone} ${styles.columnDropZoneOver}` : styles.columnDropZone
       }
+      data-testid={testId}
     >
       {children}
     </div>
@@ -268,6 +272,8 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
                     ? `${styles.columnCard} ${styles.columnCardDropActive}`
                     : styles.columnCard
                 }
+                data-testid={`column-${column.id}`}
+                data-column-title={column.title}
               >
                 <CardHeader>
                   <div className={styles.columnHeader}>
@@ -344,7 +350,10 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
                     </div>
                   </div>
                 </CardHeader>
-                <ColumnDropZone id={getColumnDropId(column.id)}>
+                <ColumnDropZone
+                  id={getColumnDropId(column.id)}
+                  testId={`column-drop-${column.id}`}
+                >
                   <CardContent className={styles.columnBody}>
                     <SortableContext
                       items={cardsInColumn.map((card) => card.id)}
@@ -393,6 +402,7 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
                           placeholder={uiCopy.board.cardTitlePlaceholder}
                           aria-label={uiCopy.board.cardTitlePlaceholder}
                           disabled={!canEdit || creatingCard}
+                          data-testid={`new-card-title-${column.id}`}
                         />
                         <Textarea
                           value={newCardDescriptionByColumn[column.id] ?? ""}
@@ -403,6 +413,7 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
                           aria-label={uiCopy.board.cardDescriptionPlaceholder}
                           rows={3}
                           disabled={!canEdit || creatingCard}
+                          data-testid={`new-card-description-${column.id}`}
                         />
                         <div className={styles.cardFormRow}>
                           <Input
@@ -414,10 +425,12 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
                             type="date"
                             aria-label={uiCopy.board.cardDueDateLabel}
                             disabled={!canEdit || creatingCard}
+                            data-testid={`new-card-due-${column.id}`}
                           />
                           <Button
                             type="submit"
                             disabled={!canEdit || creatingCard}
+                            data-testid={`create-card-${column.id}`}
                           >
                             {creatingCard
                               ? uiCopy.board.creatingCard
@@ -427,6 +440,7 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
                             type="button"
                             variant="ghost"
                             onClick={() => onCancelCreateCard(column.id)}
+                            data-testid={`cancel-card-${column.id}`}
                           >
                             {uiCopy.common.cancel}
                           </Button>
@@ -438,6 +452,7 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
                         variant="ghost"
                         className={styles.addCardButton}
                         onClick={() => onToggleAddCard(column.id, true)}
+                        data-testid={`add-card-${column.id}`}
                       >
                         {uiCopy.board.addCard}
                       </Button>

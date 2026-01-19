@@ -1,8 +1,14 @@
 import { NextResponse } from "next/server"
 
+import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { clearSessionCookie, createSessionCookie } from "@/lib/firebase/session"
 
 export async function POST(request: Request) {
+  const appCheck = await verifyAppCheckToken(request)
+  if (!appCheck.ok) {
+    return NextResponse.json({ error: appCheck.error }, { status: 401 })
+  }
+
   let idToken = ""
 
   try {
@@ -21,7 +27,12 @@ export async function POST(request: Request) {
   return NextResponse.json({ status: "ok" })
 }
 
-export async function DELETE() {
+export async function DELETE(request: Request) {
+  const appCheck = await verifyAppCheckToken(request)
+  if (!appCheck.ok) {
+    return NextResponse.json({ error: appCheck.error }, { status: 401 })
+  }
+
   await clearSessionCookie()
   return NextResponse.json({ status: "ok" })
 }

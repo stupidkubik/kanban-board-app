@@ -184,7 +184,12 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
   }
 
   return (
-    <Card className={styles.boardItem}>
+    <Card
+      className={styles.boardItem}
+      data-testid="board-card"
+      data-board-id={board.id}
+      data-board-title={board.title}
+    >
       <CardHeader>
         <CardTitle>{board.title}</CardTitle>
         <CardDescription>
@@ -231,6 +236,7 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                 onChange={(event) => setInviteEmail(event.target.value)}
                 placeholder={boardCopy.board.inviteEmailPlaceholder}
                 aria-label={boardCopy.board.inviteEmailPlaceholder}
+                data-testid="invite-email"
               />
               <Select
                 value={inviteRole}
@@ -252,6 +258,7 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                 type="button"
                 onClick={handleInvite}
                 disabled={invitePending}
+                data-testid="invite-submit"
               >
                 {invitePending
                   ? boardCopy.board.inviteSending
@@ -264,7 +271,9 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
       <CardFooter>
         <div className={styles.boardFooter}>
           <Button asChild variant="outline">
-            <Link href={`/boards/${board.id}`}>{boardCopy.board.openBoard}</Link>
+            <Link href={`/boards/${board.id}`} data-testid="open-board">
+              {boardCopy.board.openBoard}
+            </Link>
           </Button>
           <div className={styles.boardActions}>
             {canEditBoard ? (

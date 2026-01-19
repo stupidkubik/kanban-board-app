@@ -102,7 +102,7 @@ export function KanbanBoardsSection({
         <div className={styles.actionsRow}>
           <AlertDialog open={createOpen} onOpenChange={setCreateOpen}>
             <AlertDialogTrigger asChild>
-              <Button type="button">
+              <Button type="button" data-testid="create-board-trigger">
                 {uiCopy.board.createBoard}
               </Button>
             </AlertDialogTrigger>
@@ -120,6 +120,7 @@ export function KanbanBoardsSection({
                     onChange={(event) => setTitle(event.target.value)}
                     placeholder={uiCopy.board.boardNamePlaceholder}
                     aria-label={uiCopy.board.boardNamePlaceholder}
+                    data-testid="create-board-title"
                   />
                   <Select
                     value={newBoardLanguage}
@@ -141,7 +142,11 @@ export function KanbanBoardsSection({
                   <AlertDialogCancel type="button">
                     {uiCopy.common.cancel}
                   </AlertDialogCancel>
-                  <Button type="submit" disabled={creating}>
+                  <Button
+                    type="submit"
+                    disabled={creating}
+                    data-testid="create-board-submit"
+                  >
                     {creating ? uiCopy.board.creatingBoard : uiCopy.board.createBoard}
                   </Button>
                 </AlertDialogFooter>

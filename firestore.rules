@@ -127,10 +127,19 @@ service cloud.firestore {
       return inviteDoc(boardId).data.role;
     }
 
+    function inviteDocMatches(boardId) {
+      return hasInvite(boardId)
+        && request.auth.token.email != null
+        && inviteDoc(boardId).data.boardId == boardId
+        && inviteDoc(boardId).data.email == request.auth.token.email;
+    }
+
     function canAcceptInvite(boardId) {
       return isSignedIn()
         && request.auth.token.email != null
         && hasInvite(boardId)
+        && inviteDocMatches(boardId)
+        && inviteRole(boardId) in ["editor", "viewer"]
         && resource.data.members is map
         && request.resource.data.members is map
         && resource.data.roles is map
@@ -373,12 +382,63 @@ service cloud.firestore {
         && request.auth.token.email == resource.data.email;
     }
 
+    function inviteKeysValid() {
+      return request.resource.data.keys().hasOnly([
+        "boardId",
+        "boardTitle",
+        "email",
+        "role",
+        "invitedById",
+        "createdAt"
+      ]);
+    }
+
+    function inviteHasRequired() {
+      return request.resource.data.keys().hasAll([
+        "boardId",
+        "boardTitle",
+        "email",
+        "role",
+        "invitedById",
+        "createdAt"
+      ]);
+    }
+
+    function inviteEmailValid() {
+      return request.resource.data.email is string
+        && request.resource.data.email.size() > 0;
+    }
+
+    function inviteBoardTitleValid() {
+      return request.resource.data.boardTitle is string
+        && request.resource.data.boardTitle.size() > 0;
+    }
+
+    function inviteCreatedAtValid() {
+      return request.resource.data.createdAt is timestamp;
+    }
+
+    function inviteIdMatches(inviteId) {
+      return inviteId == request.resource.data.boardId + "__" + request.resource.data.email;
+    }
+
+    function inviteBoardMatchesTitle() {
+      return boardExists(request.resource.data.boardId)
+        && request.resource.data.boardTitle == boardData(request.resource.data.boardId).title;
+    }
+
     match /boardInvites/{inviteId} {
       allow create: if isSignedIn()
-        && request.resource.data.email is string
+        && inviteKeysValid()
+        && inviteHasRequired()
+        && inviteEmailValid()
+        && inviteBoardTitleValid()
+        && inviteCreatedAtValid()
         && request.resource.data.boardId is string
         && request.resource.data.invitedById == request.auth.uid
         && request.resource.data.role in ["editor", "viewer"]
+        && inviteIdMatches(inviteId)
+        && inviteBoardMatchesTitle()
         && isBoardOwner(request.resource.data.boardId);
       allow read: if isBoardOwner(resource.data.boardId) || isInvitee();
       allow delete: if isBoardOwner(resource.data.boardId) || isInvitee();

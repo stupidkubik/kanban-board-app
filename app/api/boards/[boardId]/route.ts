@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import type { Query } from "firebase-admin/firestore"
 
 import { adminDb } from "@/lib/firebase/admin"
+import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { getSession } from "@/lib/firebase/session"
 
 const DELETE_BATCH_SIZE = 500
@@ -24,9 +25,14 @@ const deleteByQuery = async (query: Query) => {
 }
 
 export async function DELETE(
-  _request: Request,
+  request: Request,
   { params }: { params: { boardId: string } | Promise<{ boardId: string }> }
 ) {
+  const appCheck = await verifyAppCheckToken(request)
+  if (!appCheck.ok) {
+    return NextResponse.json({ error: appCheck.error }, { status: 401 })
+  }
+
   const { boardId } = await params
   const session = await getSession()
   if (!session) {

@@ -47,54 +47,15 @@ import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
 import { isNonEmpty, isValidEmail } from "@/lib/validation"
 import { type BoardRole, type Card as BoardCard, type Column } from "@/lib/types/boards"
 import { type Participant } from "@/lib/types/board-ui"
+import {
+  formatDateInput,
+  getNextOrderValue,
+  parseDateInput,
+} from "@/lib/board-order"
 import { CardDeleteDialog } from "@/components/board/card-delete-dialog"
 import { CardEditDialog } from "@/components/board/card-edit-dialog"
 import styles from "@/components/board-page.module.css"
 type DragCardData = { columnId?: string }
-
-// Keep gaps so we can insert cards without reindexing whole columns.
-const ORDER_GAP = 1000
-
-const getNextOrderValue = (before?: number, after?: number) => {
-  if (typeof before === "number" && typeof after === "number") {
-    const middle = (before + after) / 2
-    if (Number.isFinite(middle)) {
-      return middle
-    }
-  }
-
-  if (typeof before === "number") {
-    return before + ORDER_GAP
-  }
-
-  if (typeof after === "number") {
-    return after - ORDER_GAP
-  }
-
-  return Date.now()
-}
-
-const formatDateInput = (value?: number) => {
-  if (!value) {
-    return ""
-  }
-  const date = new Date(value)
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, "0")
-  const day = String(date.getDate()).padStart(2, "0")
-  return `${year}-${month}-${day}`
-}
-
-const parseDateInput = (value: string) => {
-  if (!value) {
-    return null
-  }
-  const [year, month, day] = value.split("-").map((part) => Number(part))
-  if (!year || !month || !day) {
-    return null
-  }
-  return new Date(year, month - 1, day)
-}
 
 export function BoardPage() {
   const params = useParams<{ boardId?: string | string[] }>()

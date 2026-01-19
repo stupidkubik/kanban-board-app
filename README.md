@@ -74,12 +74,35 @@ Admin SDK credentials (server):
 If neither is set, the app attempts `applicationDefault()` and a default file
 `kanban-mvp-1baf2-firebase-adminsdk-fbsvc-ae0f47a077.json` in the project root.
 
+App Check (recommended):
+```
+NEXT_PUBLIC_FIREBASE_APP_CHECK_SITE_KEY=...
+NEXT_PUBLIC_RECAPTCHA_SITE_KEY=...
+NEXT_PUBLIC_FIREBASE_APP_CHECK_DEBUG=true
+FIREBASE_APPCHECK_ENFORCE=true
+```
+
 ## Scripts
 - `npm run dev` - local dev server
 - `npm run build` - production build
 - `npm run start` - run production server
 - `npm run lint` - lint
 - `npm run smoke` - seed data (see `scripts/smoke-kanban.mjs`)
+- `npm run test` - unit/component tests (Vitest)
+- `npm run test:rules` - Firestore rules tests (emulator)
+- `npm run cypress:open` - Cypress UI runner
+- `npm run cypress:run` - Cypress headless run
+
+## Testing
+Environment for Cypress:
+```
+CYPRESS_E2E_EMAIL=...
+CYPRESS_E2E_PASSWORD=...
+```
+
+Notes:
+- `npm run test:rules` запускает Firestore emulator через `firebase emulators:exec`.
+- E2E тесты предполагают, что App Check отключен локально либо настроен debug-токен.
 
 ## Notes
 - Card order uses numeric gaps to avoid reindexing entire columns.
