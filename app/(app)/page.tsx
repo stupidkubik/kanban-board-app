@@ -1,4 +1,4 @@
-import { KanbanApp } from "@/components/kanban-app"
+import { KanbanApp } from "@/features/home/ui/kanban-app"
 
 export default function Page() {
   return <KanbanApp />

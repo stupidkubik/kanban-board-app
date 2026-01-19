@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "format": "eslint . --fix",
     "smoke": "node scripts/smoke-kanban.mjs",
     "test": "vitest",
     "test:unit": "vitest run",

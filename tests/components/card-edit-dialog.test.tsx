@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 import { fireEvent, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
-import { CardEditDialog } from "@/components/board/card-edit-dialog"
+import { CardEditDialog } from "@/features/cards/ui/card-edit-dialog"
 import { getCopy } from "@/lib/i18n"
 
 const uiCopy = getCopy("en")

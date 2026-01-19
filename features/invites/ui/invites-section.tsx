@@ -7,7 +7,7 @@ import { clientDb } from "@/lib/firebase/client"
 import { getCopy, roleLabels, type Locale } from "@/lib/i18n"
 import { type Invite } from "@/lib/store/firestore-api"
 import { Button } from "@/components/ui/button"
-import styles from "@/components/kanban-app.module.css"
+import styles from "@/features/home/ui/kanban-app.module.css"
 
 type KanbanInvitesSectionProps = {
   invites: Invite[]

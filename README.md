@@ -35,6 +35,24 @@ Server (Next.js API routes)
   └─ /api/boards/[boardId] (Admin SDK delete of board + subcollections)
 ```
 
+## Feature Modules
+```text
+features/
+  board/        board page shell + status
+  cards/        card data, model hooks, UI
+  columns/      columns model + UI
+  participants/ participants model + UI
+  boards/       boards list + board card
+  invites/      invite list/accept/decline
+  home/         home page shell
+```
+Shared layers:
+```text
+lib/            Firebase, store, types, utils
+components/ui   shared UI primitives (Radix/shadcn)
+app/            Next.js routes
+```
+
 ## Data Model (Firestore)
 - `boards/{boardId}`
 - `boards/{boardId}/columns/{columnId}`
@@ -87,6 +105,7 @@ FIREBASE_APPCHECK_ENFORCE=true
 - `npm run build` - production build
 - `npm run start` - run production server
 - `npm run lint` - lint
+- `npm run format` - auto-fix lint issues
 - `npm run smoke` - seed data (see `scripts/smoke-kanban.mjs`)
 - `npm run test` - unit/component tests (Vitest)
 - `npm run test:rules` - Firestore rules tests (emulator)

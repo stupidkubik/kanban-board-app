@@ -1,4 +1,4 @@
-import { BoardPage } from "@/components/board-page"
+import { BoardPage } from "@/features/board/ui/board-page"
 
 export default function Page() {
   return <BoardPage />

@@ -12,12 +12,14 @@ export type EditingCardDraft = {
   due: string
 }
 
+import type { BoardRoleLabel } from "@/lib/types/boards"
+
 export type Participant = {
   id: string
   name: string
   secondaryLabel: string | null
   photoURL: string | null | undefined
-  role: "owner" | "editor" | "viewer" | "member"
+  role: BoardRoleLabel
   isYou: boolean
 }
 

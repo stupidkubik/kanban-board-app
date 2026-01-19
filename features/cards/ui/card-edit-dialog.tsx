@@ -15,7 +15,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import styles from "@/components/board-page.module.css"
+import styles from "@/features/board/ui/board-page.module.css"
 
 type CardEditDialogProps = {
   open: boolean

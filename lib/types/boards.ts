@@ -1,4 +1,5 @@
 export type BoardRole = "owner" | "editor" | "viewer"
+export type BoardRoleLabel = BoardRole | "member"
 export type BoardLanguage = "ru" | "en"
 
 export type BoardMemberProfile = {

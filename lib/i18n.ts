@@ -1,3 +1,5 @@
+import type { BoardRoleLabel } from "@/lib/types/boards"
+
 export type Locale = "ru" | "en"
 
 type AuthCopy = {
@@ -405,7 +407,7 @@ export const languageLabels: Record<Locale, string> = {
   en: "English",
 }
 
-export const roleLabels: Record<Locale, Record<"owner" | "editor" | "viewer" | "member", string>> = {
+export const roleLabels: Record<Locale, Record<BoardRoleLabel, string>> = {
   ru: {
     owner: "Владелец",
     editor: "Редактор",

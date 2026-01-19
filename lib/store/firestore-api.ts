@@ -4,44 +4,52 @@ import { collection, doc, onSnapshot, orderBy, query, where } from "firebase/fir
 import { clientDb } from "@/lib/firebase/client"
 import {
   createBoard as createBoardDocument,
-  createCard as createCardDocument,
   createColumn as createColumnDocument,
   deleteBoard as deleteBoardDocument,
-  deleteCard as deleteCardDocument,
   deleteColumn as deleteColumnDocument,
   updateBoardLanguage as updateBoardLanguageDocument,
   updateBoardTitle as updateBoardTitleDocument,
-  updateCard as updateCardDocument,
   updateColumn as updateColumnDocument,
   type CreateBoardInput,
-  type CreateCardInput,
   type CreateColumnInput,
   type DeleteBoardInput,
-  type DeleteCardInput,
   type DeleteColumnInput,
-  type UpdateCardInput,
   type UpdateBoardLanguageInput,
   type UpdateBoardTitleInput,
   type UpdateColumnInput,
 } from "@/lib/store/firestore-operations"
-import { optimisticCreateCard, optimisticDeleteCard, optimisticMoveCard } from "@/lib/store/optimistic-helpers"
+import {
+  createCard as createCardDocument,
+  deleteCard as deleteCardDocument,
+  updateCard as updateCardDocument,
+  type CreateCardInput,
+  type DeleteCardInput,
+  type UpdateCardInput,
+} from "@/features/cards/data/card-operations"
+import {
+  optimisticCreateCard,
+  optimisticDeleteCard,
+  optimisticMoveCard,
+} from "@/features/cards/model/optimistic-helpers"
 import type { RootState } from "@/lib/store"
 import type { Board, BoardMemberProfile, Card, Column } from "@/lib/types/boards"
 import {
-  ensureCardId,
-  ensureCardOrder,
   memberFieldPath,
   normalizeBoard,
-  normalizeCard,
   normalizeColumn,
   normalizeInvite,
   normalizeMemberProfile,
   type Invite,
-  type CardRecord,
   type ColumnRecord,
   type InviteRecord,
   type MemberProfileRecord,
 } from "@/lib/store/firestore-normalizers"
+import {
+  ensureCardId,
+  ensureCardOrder,
+  normalizeCard,
+  type CardRecord,
+} from "@/features/cards/model/card-normalizers"
 
 export type { Invite } from "@/lib/store/firestore-normalizers"
 

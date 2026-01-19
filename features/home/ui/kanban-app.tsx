@@ -9,8 +9,8 @@ import { useAuth } from "@/components/auth-provider"
 import { clientAuth, clientDb } from "@/lib/firebase/client"
 import { getCopy, languageLabels, type Locale } from "@/lib/i18n"
 import { useGetBoardsQuery, useGetInvitesQuery } from "@/lib/store/firestore-api"
-import { KanbanBoardsSection } from "@/components/kanban-boards-section"
-import { KanbanInvitesSection } from "@/components/kanban-invites-section"
+import { KanbanBoardsSection } from "@/features/boards/ui/boards-section"
+import { KanbanInvitesSection } from "@/features/invites/ui/invites-section"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import styles from "@/components/kanban-app.module.css"
+import styles from "@/features/home/ui/kanban-app.module.css"
 
 export function KanbanApp() {
   const router = useRouter()

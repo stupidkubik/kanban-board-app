@@ -5,7 +5,7 @@ import * as React from "react"
 import { type BoardCopy } from "@/lib/types/board-ui"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import styles from "@/components/board-page.module.css"
+import styles from "@/features/board/ui/board-page.module.css"
 
 type HeaderSectionProps = {
   uiCopy: BoardCopy

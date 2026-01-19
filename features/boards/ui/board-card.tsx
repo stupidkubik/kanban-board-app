@@ -36,7 +36,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import styles from "@/components/kanban-app.module.css"
+import styles from "@/features/home/ui/kanban-app.module.css"
 
 type KanbanBoardCardProps = {
   board: Board

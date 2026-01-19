@@ -16,9 +16,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import styles from "@/components/board-page.module.css"
+import styles from "@/features/board/ui/board-page.module.css"
 
-type ParticipantsSectionProps = {
+type ParticipantsSectionViewProps = {
   uiCopy: ReturnType<typeof getCopy>
   uiLocale: Locale
   participants: Participant[]
@@ -31,7 +31,7 @@ type ParticipantsSectionProps = {
   onInviteSubmit: (event: React.FormEvent<HTMLFormElement>) => void
 }
 
-export const ParticipantsSection = React.memo(function ParticipantsSection({
+export const ParticipantsSectionView = React.memo(function ParticipantsSectionView({
   uiCopy,
   uiLocale,
   participants,
@@ -42,7 +42,7 @@ export const ParticipantsSection = React.memo(function ParticipantsSection({
   onInviteEmailChange,
   onInviteRoleChange,
   onInviteSubmit,
-}: ParticipantsSectionProps) {
+}: ParticipantsSectionViewProps) {
   return (
     <Card className={styles.participantsCard} size="sm">
       <CardHeader>

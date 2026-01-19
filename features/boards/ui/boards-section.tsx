@@ -6,7 +6,7 @@ import { type User } from "firebase/auth"
 import { getCopy, languageLabels, type Locale } from "@/lib/i18n"
 import { type Board, type BoardLanguage } from "@/lib/types/boards"
 import { useCreateBoardMutation } from "@/lib/store/firestore-api"
-import { KanbanBoardCard } from "@/components/kanban-board-card"
+import { KanbanBoardCard } from "@/features/boards/ui/board-card"
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -26,7 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import styles from "@/components/kanban-app.module.css"
+import styles from "@/features/home/ui/kanban-app.module.css"
 
 type KanbanBoardsSectionProps = {
   boards: Board[]
