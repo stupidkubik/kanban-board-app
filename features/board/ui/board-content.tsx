@@ -45,6 +45,7 @@ export const BoardContent = React.memo(function BoardContent({
   const [error, setError] = React.useState<string | null>(null)
   const {
     columns,
+    isColumnsLoading,
     showAddColumn,
     newColumnTitle,
     setNewColumnTitle,
@@ -110,6 +111,7 @@ export const BoardContent = React.memo(function BoardContent({
         uiLocale={uiLocale}
         setError={setError}
         columns={columns}
+        isColumnsLoading={isColumnsLoading}
         dndSensors={sensors}
         editingId={editingId}
         editingTitle={editingTitle}

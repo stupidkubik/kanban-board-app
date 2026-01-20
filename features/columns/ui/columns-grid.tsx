@@ -91,6 +91,7 @@ type ColumnsGridProps = {
   onStartEditingCard: (card: BoardCard) => void
   onStartDeletingCard: (card: BoardCard) => void
   formatDueDate: (value?: number) => string | null
+  isCardsLoading: boolean
 }
 
 export const ColumnsGrid = React.memo(function ColumnsGrid({
@@ -131,6 +132,7 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
   onStartEditingCard,
   onStartDeletingCard,
   formatDueDate,
+  isCardsLoading,
 }: ColumnsGridProps) {
   return (
     <DndContext
@@ -141,7 +143,7 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
       onDragEnd={onDragEnd}
       onDragCancel={onDragCancel}
     >
-      <div className={styles.columnsGrid}>
+      <div className={styles.columnsGrid} aria-busy={isCardsLoading}>
         {columns.length ? (
           columns.map((column) => {
             const isEditing = editingId === column.id
@@ -248,6 +250,7 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
                       canEdit={canEdit}
                       canDelete={isOwner}
                       uiCopy={uiCopy}
+                      isLoading={isCardsLoading}
                       activeCardId={activeCardId}
                       activeCardColumnId={activeCardColumnId}
                       hoveredColumnId={hoveredColumnId}

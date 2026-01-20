@@ -113,6 +113,7 @@ type CardsColumnBodyProps = {
   canEdit: boolean
   canDelete: boolean
   uiCopy: ReturnType<typeof getCopy>
+  isLoading: boolean
   activeCardId: string | null
   activeCardColumnId: string | null
   hoveredColumnId: string | null
@@ -139,6 +140,7 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
   canEdit,
   canDelete,
   uiCopy,
+  isLoading,
   activeCardId,
   activeCardColumnId,
   hoveredColumnId,
@@ -172,40 +174,55 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
     return index >= 0 ? index : cards.length
   })()
 
+  const showCardsSkeleton = isLoading && cards.length === 0
+
   return (
     <>
-      <SortableContext
-        items={cards.map((card) => card.id)}
-        strategy={verticalListSortingStrategy}
-      >
-        <ul className={styles.cardList}>
-          {cards.map((card, index) => (
-            <React.Fragment key={card.id}>
-              {showPlaceholder && placeholderIndex === index ? (
-                <li
-                  className={styles.cardPlaceholder}
-                  aria-hidden
-                />
-              ) : null}
-              <SortableCardItem
-                card={card}
-                canEdit={canEdit}
-                canDelete={canDelete}
-                onEdit={onStartEditingCard}
-                onDelete={onStartDeletingCard}
-                deleteLabel={uiCopy.board.deleteCard}
-                dueLabel={dueLabel}
-                formatDueDate={formatDueDate}
+      {showCardsSkeleton ? (
+        <ul className={styles.cardList} aria-busy="true">
+          {Array.from({ length: 3 }).map((_, index) => (
+            <li key={`card-skeleton-${columnId}-${index}`} className={styles.cardItem}>
+              <div className={`${styles.skeletonBlock} ${styles.skeletonLine}`} />
+              <div
+                className={`${styles.skeletonBlock} ${styles.skeletonLine} ${styles.skeletonLineShort}`}
               />
-            </React.Fragment>
+            </li>
           ))}
-          {showPlaceholder &&
-          placeholderIndex >= cards.length ? (
-            <li className={styles.cardPlaceholder} aria-hidden />
-          ) : null}
         </ul>
-      </SortableContext>
-      {!cards.length ? (
+      ) : (
+        <SortableContext
+          items={cards.map((card) => card.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <ul className={styles.cardList}>
+            {cards.map((card, index) => (
+              <React.Fragment key={card.id}>
+                {showPlaceholder && placeholderIndex === index ? (
+                  <li
+                    className={styles.cardPlaceholder}
+                    aria-hidden
+                  />
+                ) : null}
+                <SortableCardItem
+                  card={card}
+                  canEdit={canEdit}
+                  canDelete={canDelete}
+                  onEdit={onStartEditingCard}
+                  onDelete={onStartDeletingCard}
+                  deleteLabel={uiCopy.board.deleteCard}
+                  dueLabel={dueLabel}
+                  formatDueDate={formatDueDate}
+                />
+              </React.Fragment>
+            ))}
+            {showPlaceholder &&
+            placeholderIndex >= cards.length ? (
+              <li className={styles.cardPlaceholder} aria-hidden />
+            ) : null}
+          </ul>
+        </SortableContext>
+      )}
+      {!cards.length && !showCardsSkeleton ? (
         <p className={styles.cardsEmpty}>{uiCopy.board.noCards}</p>
       ) : null}
       {showAddCard ? (

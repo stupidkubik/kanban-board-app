@@ -63,9 +63,11 @@ export const useBoardCards = ({
     data: cards = [],
     cardsByColumn = new Map<string, BoardCard[]>(),
     cardColumnById = new Map<string, string>(),
+    isLoading: isCardsLoading,
+    isFetching: isCardsFetching,
   } = useGetCardsQuery(boardId ? { boardId } : null, {
     skip: !boardId,
-    selectFromResult: ({ data }) => {
+    selectFromResult: ({ data, isLoading, isFetching }) => {
       const cardsList = data ?? []
       const byColumn = new Map<string, BoardCard[]>()
       const columnByCard = new Map<string, string>()
@@ -84,7 +86,13 @@ export const useBoardCards = ({
 
       byColumn.forEach((list) => list.sort((a, b) => a.order - b.order))
 
-      return { data: cardsList, cardsByColumn: byColumn, cardColumnById: columnByCard }
+      return {
+        data: cardsList,
+        cardsByColumn: byColumn,
+        cardColumnById: columnByCard,
+        isLoading,
+        isFetching,
+      }
     },
   })
 
@@ -490,6 +498,7 @@ export const useBoardCards = ({
     cards,
     cardsByColumn,
     cardColumnById,
+    isCardsLoading: isCardsLoading || isCardsFetching,
     creatingCard,
     updatingCard,
     deletingCard,

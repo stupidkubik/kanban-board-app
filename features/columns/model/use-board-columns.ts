@@ -23,6 +23,7 @@ type UseBoardColumnsParams = {
 
 type UseBoardColumnsResult = {
   columns: Column[]
+  isColumnsLoading: boolean
   showAddColumn: boolean
   newColumnTitle: string
   setNewColumnTitle: (value: string) => void
@@ -53,7 +54,11 @@ export function useBoardColumns({
   const [editingTitle, setEditingTitle] = React.useState("")
   const [deletePendingId, setDeletePendingId] = React.useState<string | null>(null)
 
-  const { data: columns = [] } = useGetColumnsQuery(boardId ?? null, {
+  const {
+    data: columns = [],
+    isLoading: isColumnsLoading,
+    isFetching: isColumnsFetching,
+  } = useGetColumnsQuery(boardId ?? null, {
     skip: !boardId,
   })
   const [createColumn, { isLoading: creatingColumn }] =
@@ -173,6 +178,7 @@ export function useBoardColumns({
 
   return {
     columns,
+    isColumnsLoading: isColumnsLoading || isColumnsFetching,
     showAddColumn,
     newColumnTitle,
     setNewColumnTitle,

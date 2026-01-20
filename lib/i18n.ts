@@ -46,6 +46,7 @@ type CommonCopy = {
   signOut: string
   interfaceLanguage: string
   cancel: string
+  loading: string
 }
 
 type BoardCopy = {
@@ -148,6 +149,7 @@ const copy: Record<Locale, Copy> = {
       signOut: "Выйти",
       interfaceLanguage: "Язык интерфейса",
       cancel: "Отмена",
+      loading: "Загрузка...",
     },
     auth: {
       title: "Вход в Kanban",
@@ -278,6 +280,7 @@ const copy: Record<Locale, Copy> = {
       signOut: "Sign out",
       interfaceLanguage: "Interface language",
       cancel: "Cancel",
+      loading: "Loading...",
     },
     auth: {
       title: "Sign in to Kanban",

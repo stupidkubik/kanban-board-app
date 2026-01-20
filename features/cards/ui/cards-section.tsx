@@ -11,6 +11,7 @@ import { ColumnsGrid } from "@/features/columns/ui/columns-grid"
 import { CardDeleteDialog } from "@/features/cards/ui/card-delete-dialog"
 import { CardEditDialog } from "@/features/cards/ui/card-edit-dialog"
 import { useBoardCards } from "@/features/cards/model/use-board-cards"
+import { ColumnsSkeleton } from "@/features/columns/ui/columns-skeleton"
 
 type CardsSectionProps = {
   boardId: string | null
@@ -21,6 +22,7 @@ type CardsSectionProps = {
   uiLocale: Locale
   setError: (message: string | null) => void
   columns: Column[]
+  isColumnsLoading: boolean
   dndSensors: DndContextProps["sensors"]
   editingId: string | null
   editingTitle: string
@@ -42,6 +44,7 @@ export const CardsSection = React.memo(function CardsSection({
   uiLocale,
   setError,
   columns,
+  isColumnsLoading,
   dndSensors,
   editingId,
   editingTitle,
@@ -88,6 +91,7 @@ export const CardsSection = React.memo(function CardsSection({
     handleDragEnd,
     handleDragCancel,
     formatDueDate,
+    isCardsLoading,
   } = useBoardCards({
     boardId,
     user,
@@ -97,6 +101,8 @@ export const CardsSection = React.memo(function CardsSection({
     uiLocale,
     setError,
   })
+
+  const showColumnsSkeleton = isColumnsLoading && columns.length === 0
 
   return (
     <>
@@ -119,45 +125,50 @@ export const CardsSection = React.memo(function CardsSection({
         onConfirm={handleDeleteCard}
         onClose={resetDeleteCard}
       />
-      <ColumnsGrid
-        columns={columns}
-        cardsByColumn={cardsByColumn}
-        canEdit={canEdit}
-        isOwner={isOwner}
-        uiCopy={uiCopy}
-        dndSensors={dndSensors}
-        hoveredColumnId={hoveredColumnId}
-        activeCardId={activeCardId}
-        activeCardColumnId={activeCardColumnId}
-        overCardId={overCardId}
-        onDragStart={handleDragStart}
-        onDragOver={handleDragOver}
-        onDragEnd={handleDragEnd}
-        onDragCancel={handleDragCancel}
-        editingId={editingId}
-        editingTitle={editingTitle}
-        onEditingTitleChange={onEditingTitleChange}
-        onStartEditing={onStartEditing}
-        onCancelEditing={onCancelEditing}
-        onCommitEditing={onCommitEditing}
-        updatingColumn={updatingColumn}
-        deletePendingId={deletePendingId}
-        onDeleteColumn={onDeleteColumn}
-        creatingCard={creatingCard}
-        showAddCardByColumn={showAddCardByColumn}
-        onToggleAddCard={toggleAddCard}
-        newCardTitleByColumn={newCardTitleByColumn}
-        onChangeCardTitle={handleCardTitleChange}
-        newCardDescriptionByColumn={newCardDescriptionByColumn}
-        onChangeCardDescription={handleCardDescriptionChange}
-        newCardDueByColumn={newCardDueByColumn}
-        onChangeCardDue={handleCardDueChange}
-        onCreateCard={handleCreateCard}
-        onCancelCreateCard={cancelCreateCard}
-        onStartEditingCard={startEditingCard}
-        onStartDeletingCard={startDeletingCard}
-        formatDueDate={formatDueDate}
-      />
+      {showColumnsSkeleton ? (
+        <ColumnsSkeleton ariaLabel={uiCopy.common.loading} />
+      ) : (
+        <ColumnsGrid
+          columns={columns}
+          cardsByColumn={cardsByColumn}
+          canEdit={canEdit}
+          isOwner={isOwner}
+          uiCopy={uiCopy}
+          dndSensors={dndSensors}
+          hoveredColumnId={hoveredColumnId}
+          activeCardId={activeCardId}
+          activeCardColumnId={activeCardColumnId}
+          overCardId={overCardId}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+          editingId={editingId}
+          editingTitle={editingTitle}
+          onEditingTitleChange={onEditingTitleChange}
+          onStartEditing={onStartEditing}
+          onCancelEditing={onCancelEditing}
+          onCommitEditing={onCommitEditing}
+          updatingColumn={updatingColumn}
+          deletePendingId={deletePendingId}
+          onDeleteColumn={onDeleteColumn}
+          creatingCard={creatingCard}
+          showAddCardByColumn={showAddCardByColumn}
+          onToggleAddCard={toggleAddCard}
+          newCardTitleByColumn={newCardTitleByColumn}
+          onChangeCardTitle={handleCardTitleChange}
+          newCardDescriptionByColumn={newCardDescriptionByColumn}
+          onChangeCardDescription={handleCardDescriptionChange}
+          newCardDueByColumn={newCardDueByColumn}
+          onChangeCardDue={handleCardDueChange}
+          onCreateCard={handleCreateCard}
+          onCancelCreateCard={cancelCreateCard}
+          onStartEditingCard={startEditingCard}
+          onStartDeletingCard={startDeletingCard}
+          formatDueDate={formatDueDate}
+          isCardsLoading={isCardsLoading}
+        />
+      )}
     </>
   )
 })
