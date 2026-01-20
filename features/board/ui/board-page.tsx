@@ -16,7 +16,7 @@ export function BoardPage() {
   const boardId = Array.isArray(params?.boardId)
     ? params.boardId[0]
     : params?.boardId
-  const [uiLocale, setUiLocale] = React.useState<Locale>("ru")
+  const [uiLocale, setUiLocale] = React.useState<Locale>("en")
 
   const uiCopy = React.useMemo(() => getCopy(uiLocale), [uiLocale])
 

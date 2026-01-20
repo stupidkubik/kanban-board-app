@@ -49,7 +49,7 @@ export function KanbanBoardsSection({
   const [title, setTitle] = React.useState("")
   const [createOpen, setCreateOpen] = React.useState(false)
   const [newBoardLanguage, setNewBoardLanguage] =
-    React.useState<BoardLanguage>("ru")
+    React.useState<BoardLanguage>("en")
   const [newBoardLanguageTouched, setNewBoardLanguageTouched] =
     React.useState(false)
 

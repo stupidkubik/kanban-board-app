@@ -11,6 +11,7 @@ import {
   authSignedIn,
   authSignedOut,
 } from "@/lib/store/auth-slice"
+import { firestoreApi } from "@/lib/store/firestore-api"
 import { useAppDispatch } from "@/lib/store/hooks"
 
 type AuthContextValue = {
@@ -44,6 +45,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           )
         } else {
           dispatch(authSignedOut())
+          dispatch(firestoreApi.util.resetApiState())
         }
       },
       (error) => {

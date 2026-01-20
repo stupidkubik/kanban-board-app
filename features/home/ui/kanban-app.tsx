@@ -13,6 +13,9 @@ import { KanbanBoardsSection } from "@/features/boards/ui/boards-section"
 import { KanbanInvitesSection } from "@/features/invites/ui/invites-section"
 import { useNotifications } from "@/features/notifications/ui/notifications-provider"
 import { Button } from "@/components/ui/button"
+import { firestoreApi } from "@/lib/store/firestore-api"
+import { useAppDispatch } from "@/lib/store/hooks"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 import {
   Select,
   SelectContent,
@@ -24,6 +27,7 @@ import styles from "@/features/home/ui/kanban-app.module.css"
 
 export function KanbanApp() {
   const router = useRouter()
+  const dispatch = useAppDispatch()
   const { user } = useAuth()
   const { data: boards = [] } = useGetBoardsQuery(user?.uid ?? null, {
     skip: !user?.uid,
@@ -31,7 +35,7 @@ export function KanbanApp() {
   const { data: invites = [] } = useGetInvitesQuery(user?.email ?? null, {
     skip: !user?.email,
   })
-  const [uiLocale, setUiLocale] = React.useState<Locale>("ru")
+  const [uiLocale, setUiLocale] = React.useState<Locale>("en")
   const [localeTouched, setLocaleTouched] = React.useState(false)
   const [error, setError] = React.useState<string | null>(null)
   const [profileReady, setProfileReady] = React.useState(false)
@@ -43,7 +47,7 @@ export function KanbanApp() {
     setLocaleTouched(true)
   }, [])
   const localeTouchedRef = React.useRef(false)
-  const uiLocaleRef = React.useRef<Locale>("ru")
+  const uiLocaleRef = React.useRef<Locale>("en")
 
   React.useEffect(() => {
     localeTouchedRef.current = localeTouched
@@ -164,6 +168,7 @@ export function KanbanApp() {
   const handleSignOut = async () => {
     setError(null)
     try {
+      dispatch(firestoreApi.util.resetApiState())
       await fetch("/api/auth/session", { method: "DELETE" })
       await signOut(clientAuth)
       router.replace("/sign-in")
@@ -200,6 +205,14 @@ export function KanbanApp() {
                     <SelectItem value="en">{languageLabels.en}</SelectItem>
                   </SelectContent>
                 </Select>
+                <ThemeToggle
+                  labels={{
+                    light: uiCopy.common.themeLight,
+                    dark: uiCopy.common.themeDark,
+                    switchToLight: uiCopy.common.themeSwitchToLight,
+                    switchToDark: uiCopy.common.themeSwitchToDark,
+                  }}
+                />
                 <Button variant="outline" onClick={handleSignOut} type="button">
                   {uiCopy.common.signOut}
                 </Button>

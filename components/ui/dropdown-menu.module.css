@@ -85,7 +85,7 @@
 .checkboxItem:focus,
 .radioItem:focus,
 .subTrigger:focus {
-  background: rgba(37, 99, 235, 0.1);
+  background: var(--color-accent-soft);
 }
 
 .item[data-disabled],
@@ -118,7 +118,7 @@
 
 .item[data-variant="destructive"]:focus,
 .subTrigger[data-variant="destructive"]:focus {
-  background: rgba(220, 38, 38, 0.12);
+  background: var(--color-danger-soft);
 }
 
 .checkboxItem,

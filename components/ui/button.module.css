@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  border-radius: 999px;
+  border-radius: var(--radius-sm);
   border: 1px solid transparent;
   background: var(--color-primary);
   color: var(--color-primary-contrast);
@@ -18,7 +18,7 @@
 
 .button:focus-visible {
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+  box-shadow: var(--focus-ring);
 }
 
 .button:disabled {
@@ -47,26 +47,26 @@
 }
 
 .variantDefault:hover {
-  background: rgba(17, 24, 39, 0.85);
+  background: var(--color-primary-hover);
 }
 
 .variantOutline {
-  background: rgba(255, 255, 255, 0.8);
+  background: var(--color-surface);
   color: var(--color-text);
   border-color: var(--color-border);
 }
 
 .variantOutline:hover {
-  background: rgba(226, 232, 240, 0.6);
+  background: var(--color-surface-muted);
 }
 
 .variantSecondary {
-  background: rgba(226, 232, 240, 0.7);
+  background: var(--color-surface-muted);
   color: var(--color-text);
 }
 
 .variantSecondary:hover {
-  background: rgba(226, 232, 240, 0.9);
+  background: var(--color-surface-strong);
 }
 
 .variantGhost {
@@ -75,17 +75,17 @@
 }
 
 .variantGhost:hover {
-  background: rgba(15, 23, 42, 0.06);
+  background: var(--color-accent-muted);
 }
 
 .variantDestructive {
-  background: rgba(220, 38, 38, 0.12);
+  background: var(--color-danger-soft);
   color: var(--color-danger);
-  border-color: rgba(220, 38, 38, 0.2);
+  border-color: var(--color-danger);
 }
 
 .variantDestructive:hover {
-  background: rgba(220, 38, 38, 0.2);
+  background: var(--color-danger-soft-strong);
 }
 
 .variantLink {

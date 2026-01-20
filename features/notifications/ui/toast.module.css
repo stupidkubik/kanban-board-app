@@ -21,11 +21,11 @@
 }
 
 .toastError {
-  border-color: rgba(220, 38, 38, 0.3);
+  border-color: var(--color-danger);
 }
 
 .toastSuccess {
-  border-color: rgba(22, 163, 74, 0.3);
+  border-color: var(--color-success);
 }
 
 .toastContent {

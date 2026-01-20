@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { clientAuth } from "@/lib/firebase/client"
 import { getCopy, languageLabels, type Locale } from "@/lib/i18n"
 import styles from "./sign-in.module.css"
@@ -85,7 +86,7 @@ export default function SignInPage() {
   const [pendingProvider, setPendingProvider] = React.useState<ProviderKey | null>(null)
   const [error, setError] = React.useState<string | null>(null)
   const [notice, setNotice] = React.useState<string | null>(null)
-  const [uiLocale, setUiLocale] = React.useState<Locale>("ru")
+  const [uiLocale, setUiLocale] = React.useState<Locale>("en")
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [mode, setMode] = React.useState<"sign-in" | "sign-up">("sign-in")
@@ -237,18 +238,28 @@ export default function SignInPage() {
           <div className={styles.content}>
             <div className={styles.row}>
               <div className={styles.rowLabel}>{uiCopy.common.interfaceLanguage}</div>
-              <Select
-                value={uiLocale}
-                onValueChange={(value) => handleUiLocaleChange(value as Locale)}
-              >
-                <SelectTrigger aria-label={uiCopy.common.interfaceLanguage}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ru">{languageLabels.ru}</SelectItem>
-                  <SelectItem value="en">{languageLabels.en}</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className={styles.rowControls}>
+                <Select
+                  value={uiLocale}
+                  onValueChange={(value) => handleUiLocaleChange(value as Locale)}
+                >
+                  <SelectTrigger aria-label={uiCopy.common.interfaceLanguage}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ru">{languageLabels.ru}</SelectItem>
+                    <SelectItem value="en">{languageLabels.en}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <ThemeToggle
+                  labels={{
+                    light: uiCopy.common.themeLight,
+                    dark: uiCopy.common.themeDark,
+                    switchToLight: uiCopy.common.themeSwitchToLight,
+                    switchToDark: uiCopy.common.themeSwitchToDark,
+                  }}
+                />
+              </div>
             </div>
             <form className={styles.form} onSubmit={handlePasswordReset}>
               <Input
@@ -292,18 +303,28 @@ export default function SignInPage() {
         <div className={styles.content}>
           <div className={styles.row}>
             <div className={styles.rowLabel}>{uiCopy.common.interfaceLanguage}</div>
-            <Select
-              value={uiLocale}
-              onValueChange={(value) => handleUiLocaleChange(value as Locale)}
-            >
-              <SelectTrigger aria-label={uiCopy.common.interfaceLanguage}>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ru">{languageLabels.ru}</SelectItem>
-                <SelectItem value="en">{languageLabels.en}</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className={styles.rowControls}>
+              <Select
+                value={uiLocale}
+                onValueChange={(value) => handleUiLocaleChange(value as Locale)}
+              >
+                <SelectTrigger aria-label={uiCopy.common.interfaceLanguage}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ru">{languageLabels.ru}</SelectItem>
+                  <SelectItem value="en">{languageLabels.en}</SelectItem>
+                </SelectContent>
+              </Select>
+              <ThemeToggle
+                labels={{
+                  light: uiCopy.common.themeLight,
+                  dark: uiCopy.common.themeDark,
+                  switchToLight: uiCopy.common.themeSwitchToLight,
+                  switchToDark: uiCopy.common.themeSwitchToDark,
+                }}
+              />
+            </div>
           </div>
           <form className={styles.form} onSubmit={handleEmailAuth}>
             <Input

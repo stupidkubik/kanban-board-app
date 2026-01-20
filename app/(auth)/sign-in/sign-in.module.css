@@ -48,6 +48,13 @@
   gap: 12px;
 }
 
+.rowControls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .rowLabel {
   font-size: 11px;
   letter-spacing: 0.12em;
@@ -62,8 +69,9 @@
 }
 
 .buttonGoogle {
-  background: #fff;
-  color: #111827;
+  background: var(--color-surface);
+  color: var(--color-text);
+  border-color: var(--color-border);
 }
 
 .divider {

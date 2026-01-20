@@ -45,6 +45,10 @@ type CommonCopy = {
   signedIn: string
   signOut: string
   interfaceLanguage: string
+  themeLight: string
+  themeDark: string
+  themeSwitchToLight: string
+  themeSwitchToDark: string
   cancel: string
   loading: string
   undo: string
@@ -67,6 +71,7 @@ type BoardCopy = {
   boardDeleteQueuedToast: string
   boardDeleteUndoToast: string
   openBoard: string
+  backToBoards: string
   columnsTitle: string
   addColumn: string
   columnNamePlaceholder: string
@@ -155,6 +160,10 @@ const copy: Record<Locale, Copy> = {
       signedIn: "В системе",
       signOut: "Выйти",
       interfaceLanguage: "Язык интерфейса",
+      themeLight: "Светлая",
+      themeDark: "Тёмная",
+      themeSwitchToLight: "Переключить на светлую тему",
+      themeSwitchToDark: "Переключить на тёмную тему",
       cancel: "Отмена",
       loading: "Загрузка...",
       undo: "Отменить",
@@ -212,6 +221,7 @@ const copy: Record<Locale, Copy> = {
       boardDeleteQueuedToast: "Удаление доски запланировано.",
       boardDeleteUndoToast: "Удаление доски отменено.",
       openBoard: "Открыть",
+      backToBoards: "Назад к доскам",
       columnsTitle: "Колонки",
       addColumn: "Добавить колонку",
       columnNamePlaceholder: "Название колонки",
@@ -293,6 +303,10 @@ const copy: Record<Locale, Copy> = {
       signedIn: "Signed in",
       signOut: "Sign out",
       interfaceLanguage: "Interface language",
+      themeLight: "Light",
+      themeDark: "Dark",
+      themeSwitchToLight: "Switch to light theme",
+      themeSwitchToDark: "Switch to dark theme",
       cancel: "Cancel",
       loading: "Loading...",
       undo: "Undo",
@@ -350,6 +364,7 @@ const copy: Record<Locale, Copy> = {
       boardDeleteQueuedToast: "Board deletion scheduled.",
       boardDeleteUndoToast: "Board deletion canceled.",
       openBoard: "Open",
+      backToBoards: "Back to boards",
       columnsTitle: "Columns",
       addColumn: "Add column",
       columnNamePlaceholder: "Column title",
