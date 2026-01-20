@@ -13,6 +13,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import { Spinner } from "@/components/ui/spinner"
+import styles from "@/features/board/ui/board-page.module.css"
 
 type CardDeleteDialogProps = {
   open: boolean
@@ -60,6 +62,9 @@ export function CardDeleteDialog({
             onClick={onConfirm}
             disabled={!isOwner || deletingCard}
           >
+            {deletingCard ? (
+              <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
+            ) : null}
             {uiCopy.board.deleteCard}
           </AlertDialogAction>
         </AlertDialogFooter>

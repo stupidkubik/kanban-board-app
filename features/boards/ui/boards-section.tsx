@@ -26,6 +26,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Spinner } from "@/components/ui/spinner"
 import styles from "@/features/home/ui/kanban-app.module.css"
 
 type KanbanBoardsSectionProps = {
@@ -147,6 +148,9 @@ export function KanbanBoardsSection({
                     disabled={creating}
                     data-testid="create-board-submit"
                   >
+                    {creating ? (
+                      <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
+                    ) : null}
                     {creating ? uiCopy.board.creatingBoard : uiCopy.board.createBoard}
                   </Button>
                 </AlertDialogFooter>

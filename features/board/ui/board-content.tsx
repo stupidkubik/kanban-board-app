@@ -18,6 +18,7 @@ import { useBoardColumns } from "@/features/columns/model/use-board-columns"
 import { HeaderSection } from "@/features/columns/ui/header-section"
 import { CardsSection } from "@/features/cards/ui/cards-section"
 import { ParticipantsSection } from "@/features/participants/ui/participants-section"
+import { useNotifications } from "@/features/notifications/ui/notifications-provider"
 
 type BoardContentProps = {
   boardId: string
@@ -43,6 +44,7 @@ export const BoardContent = React.memo(function BoardContent({
   uiLocale,
 }: BoardContentProps) {
   const [error, setError] = React.useState<string | null>(null)
+  const { notifyError } = useNotifications()
   const {
     columns,
     isColumnsLoading,
@@ -77,6 +79,12 @@ export const BoardContent = React.memo(function BoardContent({
       coordinateGetter: sortableKeyboardCoordinates,
     })
   )
+
+  React.useEffect(() => {
+    if (error) {
+      notifyError(error)
+    }
+  }, [error, notifyError])
 
   return (
     <>

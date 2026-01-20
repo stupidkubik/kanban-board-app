@@ -28,6 +28,7 @@ import { isNonEmpty } from "@/lib/validation"
 import type { Card as BoardCard } from "@/lib/types/boards"
 import type { BoardCopy } from "@/lib/types/board-ui"
 import type { Locale } from "@/lib/i18n"
+import { useNotifications } from "@/features/notifications/ui/notifications-provider"
 
 type DragCardData = { columnId?: string }
 
@@ -54,10 +55,12 @@ export const useBoardCards = ({
   const [deleteCardOpen, setDeleteCardOpen] = React.useState(false)
   const [deleteCardId, setDeleteCardId] = React.useState<string | null>(null)
   const [deleteCardTitle, setDeleteCardTitle] = React.useState("")
+  const [deleteCardSnapshot, setDeleteCardSnapshot] = React.useState<BoardCard | null>(null)
   const [hoveredColumnId, setHoveredColumnId] = React.useState<string | null>(null)
   const [activeCardId, setActiveCardId] = React.useState<string | null>(null)
   const [activeCardColumnId, setActiveCardColumnId] = React.useState<string | null>(null)
   const [overCardId, setOverCardId] = React.useState<string | null>(null)
+  const { notify, notifySuccess } = useNotifications()
 
   const {
     data: cards = [],
@@ -327,6 +330,7 @@ export const useBoardCards = ({
     setDeleteCardOpen(false)
     setDeleteCardId(null)
     setDeleteCardTitle("")
+    setDeleteCardSnapshot(null)
   }, [])
 
   const startDeletingCard = React.useCallback((card: BoardCard) => {
@@ -336,6 +340,7 @@ export const useBoardCards = ({
     }
     setDeleteCardId(card.id)
     setDeleteCardTitle(card.title)
+    setDeleteCardSnapshot(card)
     setDeleteCardOpen(true)
   }, [isOwner, setError, uiCopy.board.errors.onlyOwnerCanDelete])
 
@@ -347,8 +352,40 @@ export const useBoardCards = ({
     setError(null)
 
     try {
+      const snapshot = deleteCardSnapshot
       await deleteCard({ boardId, cardId: deleteCardId }).unwrap()
       resetDeleteCard()
+      if (snapshot) {
+        notify({
+          message: uiCopy.board.cardDeletedToast,
+          variant: "success",
+          actionLabel: uiCopy.common.undo,
+          onAction: async () => {
+            try {
+              await createCard({
+                boardId,
+                cardId: snapshot.id,
+                columnId: snapshot.columnId,
+                title: snapshot.title,
+                description: snapshot.description ?? null,
+                createdById: snapshot.createdById,
+                order: snapshot.order,
+                assigneeIds: snapshot.assigneeIds,
+                labels: snapshot.labels,
+                dueAt: snapshot.dueAt ? new Date(snapshot.dueAt) : null,
+                archived: snapshot.archived,
+              }).unwrap()
+              notifySuccess(uiCopy.board.cardRestoredToast)
+            } catch (err) {
+              setError(
+                err instanceof Error
+                  ? err.message
+                  : uiCopy.board.errors.createCardFailed
+              )
+            }
+          },
+        })
+      }
     } catch (err) {
       setError(
         err instanceof Error
@@ -358,11 +395,19 @@ export const useBoardCards = ({
     }
   }, [
     boardId,
+    createCard,
+    deleteCardSnapshot,
     deleteCard,
     deleteCardId,
+    notify,
+    notifySuccess,
     resetDeleteCard,
     setError,
+    uiCopy.board.cardDeletedToast,
+    uiCopy.board.cardRestoredToast,
+    uiCopy.board.errors.createCardFailed,
     uiCopy.board.errors.deleteCardFailed,
+    uiCopy.common.undo,
   ])
 
   const handleDragEnd = React.useCallback(

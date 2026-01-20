@@ -351,6 +351,10 @@
   color: var(--color-danger);
 }
 
+.buttonSpinner {
+  margin-right: 6px;
+}
+
 .skeletonBlock {
   background: linear-gradient(
     90deg,

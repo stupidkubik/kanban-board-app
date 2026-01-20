@@ -36,6 +36,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Spinner } from "@/components/ui/spinner"
+import { useNotifications } from "@/features/notifications/ui/notifications-provider"
 import styles from "@/features/home/ui/kanban-app.module.css"
 
 type KanbanBoardCardProps = {
@@ -58,6 +60,8 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
   const [languagePending, setLanguagePending] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
   const [deletePending, setDeletePending] = React.useState(false)
+  const deleteTimeoutRef = React.useRef<number | null>(null)
+  const { notify, notifySuccess } = useNotifications()
 
   const role = getMemberRole(board, user.uid)
   const isOwner = canInviteMembers(board, user.uid)
@@ -70,6 +74,18 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
   )
   const canEditBoard = canEditBoardAccess(board, user.uid)
   const canEditLanguage = canEditBoard
+  const clearDeleteTimeout = React.useCallback(() => {
+    if (deleteTimeoutRef.current !== null) {
+      window.clearTimeout(deleteTimeoutRef.current)
+      deleteTimeoutRef.current = null
+    }
+  }, [])
+
+  React.useEffect(() => {
+    return () => {
+      clearDeleteTimeout()
+    }
+  }, [clearDeleteTimeout])
 
   const handleLanguageChange = async (language: BoardLanguage) => {
     if (role === "viewer") {
@@ -172,15 +188,29 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
 
     onError(null)
     setDeletePending(true)
+    setDeleteOpen(false)
+    clearDeleteTimeout()
 
-    try {
-      await deleteBoardMutation({ boardId: board.id }).unwrap()
-      setDeleteOpen(false)
-    } catch (err) {
-      onError(err instanceof Error ? err.message : errorCopy.board.errors.deleteBoardFailed)
-    } finally {
-      setDeletePending(false)
-    }
+    deleteTimeoutRef.current = window.setTimeout(async () => {
+      try {
+        await deleteBoardMutation({ boardId: board.id }).unwrap()
+      } catch (err) {
+        onError(err instanceof Error ? err.message : errorCopy.board.errors.deleteBoardFailed)
+      } finally {
+        setDeletePending(false)
+        deleteTimeoutRef.current = null
+      }
+    }, 4000)
+
+    notify({
+      message: boardCopy.board.boardDeleteQueuedToast,
+      actionLabel: uiCopy.common.undo,
+      onAction: async () => {
+        clearDeleteTimeout()
+        setDeletePending(false)
+        notifySuccess(boardCopy.board.boardDeleteUndoToast)
+      },
+    })
   }
 
   return (
@@ -208,7 +238,12 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
       </CardHeader>
       <CardContent className={styles.boardContent}>
         <div className={styles.section}>
-          <div className={styles.label}>{boardCopy.board.boardLanguageLabel}</div>
+          <div className={styles.label}>
+            {boardCopy.board.boardLanguageLabel}
+            {languagePending ? (
+              <Spinner size="xs" className={styles.inlineSpinner} aria-hidden="true" />
+            ) : null}
+          </div>
           <Select
             value={currentLanguage}
             onValueChange={(value) => handleLanguageChange(value as BoardLanguage)}
@@ -260,6 +295,9 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                 disabled={invitePending}
                 data-testid="invite-submit"
               >
+                {invitePending ? (
+                  <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
+                ) : null}
                 {invitePending
                   ? boardCopy.board.inviteSending
                   : boardCopy.board.inviteButton}
@@ -291,6 +329,9 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
               >
                 <AlertDialogTrigger asChild>
                   <Button type="button" variant="outline" disabled={renamePending}>
+                    {renamePending ? (
+                      <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
+                    ) : null}
                     {boardCopy.board.renameBoard}
                   </Button>
                 </AlertDialogTrigger>
@@ -324,6 +365,9 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                         {uiCopy.common.cancel}
                       </AlertDialogCancel>
                       <Button type="submit" disabled={renamePending}>
+                        {renamePending ? (
+                          <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
+                        ) : null}
                         {renamePending
                           ? boardCopy.board.renamingBoard
                           : boardCopy.board.renameBoard}
@@ -346,6 +390,9 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
               >
                 <AlertDialogTrigger asChild>
                   <Button type="button" variant="destructive" disabled={deletePending}>
+                    {deletePending ? (
+                      <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
+                    ) : null}
                     {boardCopy.board.deleteBoard}
                   </Button>
                 </AlertDialogTrigger>
@@ -368,6 +415,9 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                       onClick={handleDeleteBoard}
                       disabled={deletePending}
                     >
+                      {deletePending ? (
+                        <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
+                      ) : null}
                       {deletePending
                         ? boardCopy.board.deletingBoard
                         : boardCopy.board.deleteBoard}

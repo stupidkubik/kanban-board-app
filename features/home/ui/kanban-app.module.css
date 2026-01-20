@@ -162,3 +162,11 @@
   font-size: 13px;
   color: var(--color-danger);
 }
+
+.buttonSpinner {
+  margin-right: 6px;
+}
+
+.inlineSpinner {
+  margin-left: 6px;
+}

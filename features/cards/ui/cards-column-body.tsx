@@ -9,6 +9,7 @@ import type { getCopy } from "@/lib/i18n"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Spinner } from "@/components/ui/spinner"
 import styles from "@/features/board/ui/board-page.module.css"
 
 type DragCardData = { columnId?: string }
@@ -259,6 +260,9 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
               disabled={!canEdit || creatingCard}
               data-testid={`create-card-${columnId}`}
             >
+              {creatingCard ? (
+                <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
+              ) : null}
               {creatingCard
                 ? uiCopy.board.creatingCard
                 : uiCopy.board.createCard}

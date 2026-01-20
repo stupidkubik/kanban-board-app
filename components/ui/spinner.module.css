@@ -1,0 +1,31 @@
+.spinner {
+  display: inline-block;
+  border-radius: 999px;
+  border: 2px solid rgba(148, 163, 184, 0.45);
+  border-top-color: var(--color-accent);
+  animation: spinner-rotate 0.8s linear infinite;
+}
+
+.sizeXs {
+  width: 12px;
+  height: 12px;
+  border-width: 2px;
+}
+
+.sizeSm {
+  width: 14px;
+  height: 14px;
+  border-width: 2px;
+}
+
+.sizeMd {
+  width: 16px;
+  height: 16px;
+  border-width: 2px;
+}
+
+@keyframes spinner-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}

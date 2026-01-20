@@ -9,6 +9,7 @@ import { type Participant } from "@/lib/types/board-ui"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 import {
   Select,
   SelectContent,
@@ -133,6 +134,9 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
                     </SelectContent>
                   </Select>
                   <Button type="submit" disabled={invitePending}>
+                    {invitePending ? (
+                      <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
+                    ) : null}
                     {invitePending
                       ? uiCopy.board.inviteSending
                       : uiCopy.board.inviteButton}

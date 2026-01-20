@@ -5,6 +5,7 @@ import * as React from "react"
 import { type BoardCopy } from "@/lib/types/board-ui"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 import styles from "@/features/board/ui/board-page.module.css"
 
 type HeaderSectionProps = {
@@ -56,6 +57,9 @@ export function HeaderSection({
                 disabled={!canEdit || creatingColumn}
                 data-testid="create-column-submit"
               >
+                {creatingColumn ? (
+                  <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
+                ) : null}
                 {creatingColumn
                   ? uiCopy.board.creatingColumn
                   : uiCopy.board.createColumn}

@@ -13,5 +13,9 @@ export function BoardStatus({ error }: BoardStatusProps) {
     return null
   }
 
-  return <p className={styles.error}>{error}</p>
+  return (
+    <p className={styles.error} role="alert">
+      {error}
+    </p>
+  )
 }

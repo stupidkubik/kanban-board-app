@@ -11,6 +11,7 @@ import { getCopy, languageLabels, type Locale } from "@/lib/i18n"
 import { useGetBoardsQuery, useGetInvitesQuery } from "@/lib/store/firestore-api"
 import { KanbanBoardsSection } from "@/features/boards/ui/boards-section"
 import { KanbanInvitesSection } from "@/features/invites/ui/invites-section"
+import { useNotifications } from "@/features/notifications/ui/notifications-provider"
 import { Button } from "@/components/ui/button"
 import {
   Select,
@@ -35,6 +36,7 @@ export function KanbanApp() {
   const [error, setError] = React.useState<string | null>(null)
   const [profileReady, setProfileReady] = React.useState(false)
   const [profileExists, setProfileExists] = React.useState(false)
+  const { notifyError } = useNotifications()
   const uiCopy = React.useMemo(() => getCopy(uiLocale), [uiLocale])
   const handleUiLocaleChange = React.useCallback((value: Locale) => {
     setUiLocale(value)
@@ -65,6 +67,12 @@ export function KanbanApp() {
   React.useEffect(() => {
     window.localStorage.setItem("uiLocale", uiLocale)
   }, [uiLocale])
+
+  React.useEffect(() => {
+    if (error) {
+      notifyError(error)
+    }
+  }, [error, notifyError])
 
   React.useEffect(() => {
     if (localeTouched) {
@@ -198,7 +206,11 @@ export function KanbanApp() {
               </div>
             </div>
           ) : null}
-          {error ? <p className={styles.error}>{error}</p> : null}
+          {error ? (
+            <p className={styles.error} role="alert">
+              {error}
+            </p>
+          ) : null}
         </div>
       </section>
 

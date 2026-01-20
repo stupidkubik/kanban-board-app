@@ -47,6 +47,7 @@ type CommonCopy = {
   interfaceLanguage: string
   cancel: string
   loading: string
+  undo: string
 }
 
 type BoardCopy = {
@@ -63,6 +64,8 @@ type BoardCopy = {
   deletingBoard: string
   deleteBoardTitle: string
   deleteBoardDescription: string
+  boardDeleteQueuedToast: string
+  boardDeleteUndoToast: string
   openBoard: string
   columnsTitle: string
   addColumn: string
@@ -82,11 +85,15 @@ type BoardCopy = {
   deleteCard: string
   deleteCardTitle: string
   deleteCardDescription: string
+  cardDeletedToast: string
+  cardRestoredToast: string
   noCards: string
   noColumns: string
   deleteColumn: string
   deleteColumnTitle: string
   deleteColumnDescription: string
+  columnDeletedToast: string
+  columnRestoredToast: string
   participantsTitle: string
   onlyYou: string
   youLabel: string
@@ -150,6 +157,7 @@ const copy: Record<Locale, Copy> = {
       interfaceLanguage: "Язык интерфейса",
       cancel: "Отмена",
       loading: "Загрузка...",
+      undo: "Отменить",
     },
     auth: {
       title: "Вход в Kanban",
@@ -201,6 +209,8 @@ const copy: Record<Locale, Copy> = {
       deletingBoard: "Удаление...",
       deleteBoardTitle: "Удалить доску?",
       deleteBoardDescription: "Доска будет удалена без возможности восстановления.",
+      boardDeleteQueuedToast: "Удаление доски запланировано.",
+      boardDeleteUndoToast: "Удаление доски отменено.",
       openBoard: "Открыть",
       columnsTitle: "Колонки",
       addColumn: "Добавить колонку",
@@ -220,11 +230,15 @@ const copy: Record<Locale, Copy> = {
       deleteCard: "Удалить карточку",
       deleteCardTitle: "Удалить карточку?",
       deleteCardDescription: "Карточка будет удалена без возможности восстановления.",
+      cardDeletedToast: "Карточка удалена.",
+      cardRestoredToast: "Карточка восстановлена.",
       noCards: "Пока нет карточек.",
       noColumns: "Пока нет колонок.",
       deleteColumn: "Удалить",
       deleteColumnTitle: "Удалить колонку?",
       deleteColumnDescription: "Колонка будет удалена без возможности восстановления.",
+      columnDeletedToast: "Колонка удалена.",
+      columnRestoredToast: "Колонка восстановлена.",
       participantsTitle: "Участники",
       onlyYou: "Пока на доске только вы.",
       youLabel: "Вы",
@@ -281,6 +295,7 @@ const copy: Record<Locale, Copy> = {
       interfaceLanguage: "Interface language",
       cancel: "Cancel",
       loading: "Loading...",
+      undo: "Undo",
     },
     auth: {
       title: "Sign in to Kanban",
@@ -332,6 +347,8 @@ const copy: Record<Locale, Copy> = {
       deletingBoard: "Deleting...",
       deleteBoardTitle: "Delete board?",
       deleteBoardDescription: "This board will be deleted permanently.",
+      boardDeleteQueuedToast: "Board deletion scheduled.",
+      boardDeleteUndoToast: "Board deletion canceled.",
       openBoard: "Open",
       columnsTitle: "Columns",
       addColumn: "Add column",
@@ -351,11 +368,15 @@ const copy: Record<Locale, Copy> = {
       deleteCard: "Delete card",
       deleteCardTitle: "Delete card?",
       deleteCardDescription: "This card will be deleted permanently.",
+      cardDeletedToast: "Card deleted.",
+      cardRestoredToast: "Card restored.",
       noCards: "No cards yet.",
       noColumns: "No columns yet.",
       deleteColumn: "Delete",
       deleteColumnTitle: "Delete column?",
       deleteColumnDescription: "This column will be deleted permanently.",
+      columnDeletedToast: "Column deleted.",
+      columnRestoredToast: "Column restored.",
       participantsTitle: "Participants",
       onlyYou: "You are the only participant for now.",
       youLabel: "You",

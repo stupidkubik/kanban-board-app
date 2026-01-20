@@ -15,6 +15,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
+import { Spinner } from "@/components/ui/spinner"
 import styles from "@/features/board/ui/board-page.module.css"
 
 type CardEditDialogProps = {
@@ -86,6 +87,9 @@ export function CardEditDialog({
               {uiCopy.common.cancel}
             </AlertDialogCancel>
             <Button type="submit" disabled={!canEdit || updatingCard}>
+              {updatingCard ? (
+                <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
+              ) : null}
               {updatingCard ? uiCopy.board.savingCard : uiCopy.board.saveCard}
             </Button>
           </AlertDialogFooter>
