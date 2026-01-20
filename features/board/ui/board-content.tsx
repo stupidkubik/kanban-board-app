@@ -10,9 +10,10 @@ import {
 } from "@dnd-kit/core"
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable"
 
-import type { Board } from "@/lib/types/boards"
+import type { Board, BoardLanguage } from "@/lib/types/boards"
 import type { BoardCopy } from "@/lib/types/board-ui"
-import type { Locale } from "@/lib/i18n"
+import { getCopy, type Locale } from "@/lib/i18n"
+import { useUpdateBoardLanguageMutation } from "@/lib/store/firestore-api"
 import { BoardStatus } from "@/features/board/ui/board-status"
 import { useBoardColumns } from "@/features/columns/model/use-board-columns"
 import { HeaderSection } from "@/features/columns/ui/header-section"
@@ -44,7 +45,14 @@ export const BoardContent = React.memo(function BoardContent({
   uiLocale,
 }: BoardContentProps) {
   const [error, setError] = React.useState<string | null>(null)
+  const [languagePending, setLanguagePending] = React.useState(false)
   const { notifyError } = useNotifications()
+  const [updateBoardLanguageMutation] = useUpdateBoardLanguageMutation()
+  const errorCopy = React.useMemo(
+    () => getCopy(board?.language ?? uiLocale),
+    [board?.language, uiLocale]
+  )
+  const boardLanguage = (board?.language ?? uiLocale) as BoardLanguage
   const {
     columns,
     isColumnsLoading,
@@ -86,6 +94,36 @@ export const BoardContent = React.memo(function BoardContent({
     }
   }, [error, notifyError])
 
+  const handleLanguageChange = async (language: BoardLanguage) => {
+    if (!board) {
+      return
+    }
+
+    if (!canEdit) {
+      setError(errorCopy.board.errors.viewersCantUpdate)
+      return
+    }
+
+    if (board.language === language) {
+      return
+    }
+
+    setError(null)
+    setLanguagePending(true)
+
+    try {
+      await updateBoardLanguageMutation({ boardId, language }).unwrap()
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : errorCopy.board.errors.updateLanguageFailed
+      )
+    } finally {
+      setLanguagePending(false)
+    }
+  }
+
   return (
     <>
       <HeaderSection
@@ -93,12 +131,16 @@ export const BoardContent = React.memo(function BoardContent({
         boardTitle={boardTitle}
         canEdit={canEdit}
         isViewer={isViewer}
+        boardLanguage={boardLanguage}
+        canEditLanguage={Boolean(board) && canEdit}
+        languagePending={languagePending}
         showAddColumn={showAddColumn}
         creatingColumn={creatingColumn}
         newColumnTitle={newColumnTitle}
         onNewColumnTitleChange={setNewColumnTitle}
         onToggleAddColumn={setShowAddColumn}
         onCreateColumn={handleCreateColumn}
+        onBoardLanguageChange={handleLanguageChange}
       />
       <BoardStatus error={error} />
       <ParticipantsSection

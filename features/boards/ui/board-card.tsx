@@ -1,18 +1,18 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
 import { type User } from "firebase/auth"
-import { doc, setDoc, serverTimestamp } from "firebase/firestore"
-
-import { clientDb } from "@/lib/firebase/client"
+import { PencilSimpleLine, TrashSimple } from "@phosphor-icons/react"
 import { getCopy, languageLabels, roleLabels, type Locale } from "@/lib/i18n"
 import { canEditBoard as canEditBoardAccess, canInviteMembers, getMemberRole } from "@/lib/permissions"
-import { isValidEmail } from "@/lib/validation"
-import { type Board, type BoardLanguage, type BoardRole } from "@/lib/types/boards"
+import { type Board } from "@/lib/types/boards"
 import {
   useDeleteBoardMutation,
-  useUpdateBoardLanguageMutation,
+  useGetBoardMembersQuery,
+  useGetCardsQuery,
+  useGetColumnsQuery,
   useUpdateBoardTitleMutation,
 } from "@/lib/store/firestore-api"
 import {
@@ -26,16 +26,9 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import { useNotifications } from "@/features/notifications/ui/notifications-provider"
 import styles from "@/features/home/ui/kanban-app.module.css"
@@ -47,39 +40,70 @@ type KanbanBoardCardProps = {
   user: User
 }
 
+const coverGradients = [
+  "linear-gradient(135deg, #2563eb 0%, #22d3ee 100%)",
+  "linear-gradient(135deg, #4f46e5 0%, #8b5cf6 100%)",
+  "linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%)",
+  "linear-gradient(135deg, #10b981 0%, #22c55e 100%)",
+  "linear-gradient(135deg, #f97316 0%, #fb7185 100%)",
+  "linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%)",
+]
+
+const getCoverGradient = (value: string) => {
+  let hash = 0
+  for (let index = 0; index < value.length; index += 1) {
+    hash = value.charCodeAt(index) + ((hash << 5) - hash)
+  }
+  const normalized = Math.abs(hash)
+  return coverGradients[normalized % coverGradients.length]
+}
+
 export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardCardProps) {
+  const router = useRouter()
   const [updateBoardTitleMutation] = useUpdateBoardTitleMutation()
-  const [updateBoardLanguageMutation] = useUpdateBoardLanguageMutation()
   const [deleteBoardMutation] = useDeleteBoardMutation()
   const [renameOpen, setRenameOpen] = React.useState(false)
   const [renameTitle, setRenameTitle] = React.useState("")
   const [renamePending, setRenamePending] = React.useState(false)
-  const [inviteEmail, setInviteEmail] = React.useState("")
-  const [inviteRole, setInviteRole] = React.useState<BoardRole>("editor")
-  const [invitePending, setInvitePending] = React.useState(false)
-  const [languagePending, setLanguagePending] = React.useState(false)
   const [deleteOpen, setDeleteOpen] = React.useState(false)
   const [deletePending, setDeletePending] = React.useState(false)
   const deleteTimeoutRef = React.useRef<number | null>(null)
   const { notify, notifySuccess } = useNotifications()
+  const { data: members = [] } = useGetBoardMembersQuery(board.id)
+  const { data: columns = [] } = useGetColumnsQuery(board.id)
+  const { data: cards = [] } = useGetCardsQuery({ boardId: board.id })
 
   const role = getMemberRole(board, user.uid)
   const isOwner = canInviteMembers(board, user.uid)
-  const currentLanguage = board.language ?? "ru"
+  const boardLanguage = board.language ?? uiLocale
   const uiCopy = React.useMemo(() => getCopy(uiLocale), [uiLocale])
-  const boardCopy = React.useMemo(() => getCopy(currentLanguage), [currentLanguage])
-  const errorCopy = React.useMemo(
-    () => getCopy(board.language ?? uiLocale),
-    [board.language, uiLocale]
-  )
   const canEditBoard = canEditBoardAccess(board, user.uid)
-  const canEditLanguage = canEditBoard
   const clearDeleteTimeout = React.useCallback(() => {
     if (deleteTimeoutRef.current !== null) {
       window.clearTimeout(deleteTimeoutRef.current)
       deleteTimeoutRef.current = null
     }
   }, [])
+  const roleLabel = role ? roleLabels[uiLocale][role] : roleLabels[uiLocale].member
+  const boardLanguageLabel = languageLabels[boardLanguage]
+  const visibleMembers = members.slice(0, 4)
+  const remainingMembers = Math.max(0, members.length - visibleMembers.length)
+  const coverStyle = React.useMemo(
+    () => ({ backgroundImage: getCoverGradient(board.id) }),
+    [board.id]
+  )
+  const handleOpenBoard = React.useCallback(() => {
+    router.push(`/boards/${board.id}`)
+  }, [board.id, router])
+  const handleCardKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.target !== event.currentTarget) {
+      return
+    }
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault()
+      handleOpenBoard()
+    }
+  }
 
   React.useEffect(() => {
     return () => {
@@ -87,39 +111,15 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
     }
   }, [clearDeleteTimeout])
 
-  const handleLanguageChange = async (language: BoardLanguage) => {
-    if (role === "viewer") {
-      onError(errorCopy.board.errors.viewersCantUpdate)
-      return
-    }
-
-    if (board.language === language) {
-      return
-    }
-
-    onError(null)
-    setLanguagePending(true)
-
-    try {
-      await updateBoardLanguageMutation({ boardId: board.id, language }).unwrap()
-    } catch (err) {
-      onError(
-        err instanceof Error ? err.message : errorCopy.board.errors.updateLanguageFailed
-      )
-    } finally {
-      setLanguagePending(false)
-    }
-  }
-
   const handleRenameBoard = async () => {
     if (role === "viewer") {
-      onError(errorCopy.board.errors.viewersCantUpdate)
+      onError(uiCopy.board.errors.viewersCantUpdate)
       return
     }
 
     const trimmed = renameTitle.trim()
     if (!trimmed) {
-      onError(errorCopy.board.errors.boardTitleRequired)
+      onError(uiCopy.board.errors.boardTitleRequired)
       return
     }
 
@@ -137,52 +137,15 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
       setRenameOpen(false)
       setRenameTitle("")
     } catch (err) {
-      onError(err instanceof Error ? err.message : errorCopy.board.errors.updateBoardFailed)
+      onError(err instanceof Error ? err.message : uiCopy.board.errors.updateBoardFailed)
     } finally {
       setRenamePending(false)
     }
   }
 
-  const handleInvite = async () => {
-    if (!isOwner) {
-      onError(errorCopy.board.errors.onlyOwnerCanInvite)
-      return
-    }
-
-    const normalizedEmail = inviteEmail.trim().toLowerCase()
-    if (!isValidEmail(normalizedEmail)) {
-      onError(errorCopy.board.errors.inviteInvalidEmail)
-      return
-    }
-
-    if (user.email && normalizedEmail === user.email.toLowerCase()) {
-      onError(errorCopy.board.errors.inviteSelf)
-      return
-    }
-
-    onError(null)
-    setInvitePending(true)
-
-    try {
-      await setDoc(doc(clientDb, "boardInvites", `${board.id}__${normalizedEmail}`), {
-        boardId: board.id,
-        boardTitle: board.title,
-        email: normalizedEmail,
-        role: inviteRole,
-        invitedById: user.uid,
-        createdAt: serverTimestamp(),
-      })
-      setInviteEmail("")
-    } catch (err) {
-      onError(err instanceof Error ? err.message : errorCopy.board.errors.inviteFailed)
-    } finally {
-      setInvitePending(false)
-    }
-  }
-
   const handleDeleteBoard = async () => {
     if (!isOwner) {
-      onError(errorCopy.board.errors.onlyOwnerCanDelete)
+      onError(uiCopy.board.errors.onlyOwnerCanDelete)
       return
     }
 
@@ -195,7 +158,7 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
       try {
         await deleteBoardMutation({ boardId: board.id }).unwrap()
       } catch (err) {
-        onError(err instanceof Error ? err.message : errorCopy.board.errors.deleteBoardFailed)
+        onError(err instanceof Error ? err.message : uiCopy.board.errors.deleteBoardFailed)
       } finally {
         setDeletePending(false)
         deleteTimeoutRef.current = null
@@ -203,118 +166,34 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
     }, 4000)
 
     notify({
-      message: boardCopy.board.boardDeleteQueuedToast,
+      message: uiCopy.board.boardDeleteQueuedToast,
       actionLabel: uiCopy.common.undo,
       onAction: async () => {
         clearDeleteTimeout()
         setDeletePending(false)
-        notifySuccess(boardCopy.board.boardDeleteUndoToast)
+        notifySuccess(uiCopy.board.boardDeleteUndoToast)
       },
     })
   }
 
   return (
     <Card
-      className={styles.boardItem}
+      className={`${styles.boardItem} ${styles.boardClickable}`}
+      size="sm"
+      role="link"
+      tabIndex={0}
+      aria-label={`${uiCopy.board.openBoard}: ${board.title}`}
+      onClick={handleOpenBoard}
+      onKeyDown={handleCardKeyDown}
       data-testid="board-card"
       data-board-id={board.id}
       data-board-title={board.title}
     >
-      <CardHeader>
-        <CardTitle>{board.title}</CardTitle>
-        <CardDescription>
-          <div className={styles.boardMeta}>
-            <span className={styles.muted}>
-              {boardCopy.board.ownerLabel}: {board.ownerId}
-            </span>
-            <span className={styles.muted}>
-              {boardCopy.board.roleLabel}:{" "}
-              {role
-                ? roleLabels[currentLanguage][role]
-                : roleLabels[currentLanguage].member}
-            </span>
-          </div>
-        </CardDescription>
-      </CardHeader>
-      <CardContent className={styles.boardContent}>
-        <div className={styles.section}>
-          <div className={styles.label}>
-            {boardCopy.board.boardLanguageLabel}
-            {languagePending ? (
-              <Spinner size="xs" className={styles.inlineSpinner} aria-hidden="true" />
-            ) : null}
-          </div>
-          <Select
-            value={currentLanguage}
-            onValueChange={(value) => handleLanguageChange(value as BoardLanguage)}
-            disabled={!canEditLanguage || languagePending}
-          >
-            <SelectTrigger
-              size="sm"
-              aria-label={boardCopy.board.boardLanguageLabel}
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ru">{languageLabels.ru}</SelectItem>
-              <SelectItem value="en">{languageLabels.en}</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        {isOwner ? (
-          <div className={styles.section}>
-            <div className={styles.label}>{boardCopy.board.inviteMember}</div>
-            <div className={styles.inviteRow}>
-              <Input
-                className={styles.input}
-                value={inviteEmail}
-                onChange={(event) => setInviteEmail(event.target.value)}
-                placeholder={boardCopy.board.inviteEmailPlaceholder}
-                aria-label={boardCopy.board.inviteEmailPlaceholder}
-                data-testid="invite-email"
-              />
-              <Select
-                value={inviteRole}
-                onValueChange={(value) => setInviteRole(value as BoardRole)}
-              >
-                <SelectTrigger size="sm" aria-label={boardCopy.board.roleLabel}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="editor">
-                    {roleLabels[currentLanguage].editor}
-                  </SelectItem>
-                  <SelectItem value="viewer">
-                    {roleLabels[currentLanguage].viewer}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-              <Button
-                type="button"
-                onClick={handleInvite}
-                disabled={invitePending}
-                data-testid="invite-submit"
-              >
-                {invitePending ? (
-                  <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
-                ) : null}
-                {invitePending
-                  ? boardCopy.board.inviteSending
-                  : boardCopy.board.inviteButton}
-              </Button>
-            </div>
-          </div>
-        ) : null}
-      </CardContent>
-      <CardFooter>
-        <div className={styles.boardFooter}>
-          <Button asChild variant="outline">
-            <Link href={`/boards/${board.id}`} data-testid="open-board">
-              {boardCopy.board.openBoard}
-            </Link>
-          </Button>
-          <div className={styles.boardActions}>
-            {canEditBoard ? (
+      <div className={styles.boardCover} style={coverStyle}>
+        <div className={styles.boardCoverTop}>
+          <span className={styles.boardRoleBadge}>{roleLabel}</span>
+          {canEditBoard ? (
+            <div onClick={(event) => event.stopPropagation()}>
               <AlertDialog
                 open={renameOpen}
                 onOpenChange={(open) => {
@@ -328,20 +207,24 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                 }}
               >
                 <AlertDialogTrigger asChild>
-                  <Button type="button" variant="outline" disabled={renamePending}>
-                    {renamePending ? (
-                      <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
-                    ) : null}
-                    {boardCopy.board.renameBoard}
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    className={styles.boardIconButton}
+                    disabled={renamePending}
+                    aria-label={uiCopy.board.renameBoard}
+                  >
+                    <PencilSimpleLine weight="bold" />
                   </Button>
                 </AlertDialogTrigger>
-                <AlertDialogContent>
+                <AlertDialogContent size="sm">
                   <AlertDialogHeader>
                     <AlertDialogTitle>
-                      {boardCopy.board.renameBoardTitle}
+                      {uiCopy.board.renameBoardTitle}
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      {boardCopy.board.renameBoardDescription}
+                      {uiCopy.board.renameBoardDescription}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <form
@@ -353,11 +236,11 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                   >
                     <div className={styles.modalFields}>
                       <Input
-                        className={styles.input}
+                        className={styles.modalInput}
                         value={renameTitle}
                         onChange={(event) => setRenameTitle(event.target.value)}
-                        placeholder={boardCopy.board.boardNamePlaceholder}
-                        aria-label={boardCopy.board.boardNamePlaceholder}
+                        placeholder={uiCopy.board.boardNamePlaceholder}
+                        aria-label={uiCopy.board.boardNamePlaceholder}
                       />
                     </div>
                     <AlertDialogFooter className={styles.modalFooter}>
@@ -366,17 +249,74 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                       </AlertDialogCancel>
                       <Button type="submit" disabled={renamePending}>
                         {renamePending ? (
-                          <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
+                          <Spinner
+                            size="sm"
+                            className={styles.buttonSpinner}
+                            aria-hidden="true"
+                          />
                         ) : null}
                         {renamePending
-                          ? boardCopy.board.renamingBoard
-                          : boardCopy.board.renameBoard}
+                          ? uiCopy.board.renamingBoard
+                          : uiCopy.board.renameBoard}
                       </Button>
                     </AlertDialogFooter>
                   </form>
                 </AlertDialogContent>
               </AlertDialog>
-            ) : null}
+            </div>
+          ) : null}
+        </div>
+        <h3 className={styles.boardCoverTitle}>{board.title}</h3>
+      </div>
+      <CardContent className={styles.boardBody}>
+        <div className={styles.boardMembers}>
+          {visibleMembers.map((member) => {
+            const label = member.displayName ?? member.email ?? ""
+            return (
+              <div
+                key={member.id}
+                className={styles.boardAvatar}
+                title={label}
+              >
+                {member.photoURL ? (
+                  <Image
+                    src={member.photoURL}
+                    alt={label}
+                    width={28}
+                    height={28}
+                    className={styles.boardAvatarImage}
+                    unoptimized
+                  />
+                ) : (
+                  <span>{label.slice(0, 1).toUpperCase() || "?"}</span>
+                )}
+              </div>
+            )
+          })}
+          {remainingMembers > 0 ? (
+            <div className={`${styles.boardAvatar} ${styles.boardAvatarOverflow}`}>
+              +{remainingMembers}
+            </div>
+          ) : null}
+        </div>
+        <div className={styles.boardStats}>
+          <div className={styles.boardStat}>
+            <span className={styles.boardStatValue}>{columns.length}</span>
+            <span className={styles.boardStatLabel}>{uiCopy.board.columnsTitle}</span>
+          </div>
+          <div className={styles.boardStat}>
+            <span className={styles.boardStatValue}>{cards.length}</span>
+            <span className={styles.boardStatLabel}>{uiCopy.board.cardsLabel}</span>
+          </div>
+          <div className={styles.boardStat}>
+            <span className={styles.boardStatValue}>{boardLanguageLabel}</span>
+            <span className={styles.boardStatLabel}>{uiCopy.board.boardLanguageLabel}</span>
+          </div>
+        </div>
+      </CardContent>
+      <CardFooter>
+        <div className={styles.boardFooter} onClick={(event) => event.stopPropagation()}>
+          <div className={styles.boardActions}>
             {isOwner ? (
               <AlertDialog
                 open={deleteOpen}
@@ -389,20 +329,28 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                 }}
               >
                 <AlertDialogTrigger asChild>
-                  <Button type="button" variant="destructive" disabled={deletePending}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon-xs"
+                    className={styles.boardDeleteButton}
+                    disabled={deletePending}
+                    aria-label={uiCopy.board.deleteBoard}
+                  >
                     {deletePending ? (
-                      <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
-                    ) : null}
-                    {boardCopy.board.deleteBoard}
+                      <Spinner size="xs" className={styles.iconSpinner} aria-hidden="true" />
+                    ) : (
+                      <TrashSimple weight="bold" />
+                    )}
                   </Button>
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
                     <AlertDialogTitle>
-                      {boardCopy.board.deleteBoardTitle}
+                      {uiCopy.board.deleteBoardTitle}
                     </AlertDialogTitle>
                     <AlertDialogDescription>
-                      {boardCopy.board.deleteBoardDescription}
+                      {uiCopy.board.deleteBoardDescription}
                     </AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter className={styles.modalFooter}>
@@ -419,8 +367,8 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                         <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
                       ) : null}
                       {deletePending
-                        ? boardCopy.board.deletingBoard
-                        : boardCopy.board.deleteBoard}
+                        ? uiCopy.board.deletingBoard
+                        : uiCopy.board.deleteBoard}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>

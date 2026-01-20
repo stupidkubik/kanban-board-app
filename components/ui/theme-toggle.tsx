@@ -64,7 +64,7 @@ export function ThemeToggle({ labels }: ThemeToggleProps) {
     <Button
       type="button"
       variant="ghost"
-      size="sm"
+      size="icon-sm"
       className={styles.toggle}
       data-theme={theme}
       aria-label={actionLabel}

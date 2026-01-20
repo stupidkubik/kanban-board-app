@@ -10,6 +10,7 @@ import {
   closestCenter,
   useDroppable,
 } from "@dnd-kit/core"
+import { TrashSimple } from "@phosphor-icons/react"
 
 import { getCopy } from "@/lib/i18n"
 import { getColumnDropId } from "@/lib/board-dnd"
@@ -194,10 +195,12 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
                         onClick={() => onStartEditing(column)}
                         disabled={!canEdit}
                       >
-                        <CardTitle>{column.title}</CardTitle>
+                        <CardTitle className={styles.columnTitle}>
+                          {column.title}
+                        </CardTitle>
                       </Button>
                     ) : (
-                      <CardTitle>{column.title}</CardTitle>
+                      <CardTitle className={styles.columnTitle}>{column.title}</CardTitle>
                     )}
                     <div className={styles.columnActions}>
                       {isOwner ? (
@@ -205,11 +208,13 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
                           <AlertDialogTrigger asChild>
                             <Button
                               type="button"
-                              variant="outline"
-                              size="sm"
+                              variant="ghost"
+                              size="icon-xs"
+                              className={styles.columnDeleteButton}
                               disabled={isDeleting}
+                              aria-label={uiCopy.board.deleteColumn}
                             >
-                              {uiCopy.board.deleteColumn}
+                              <TrashSimple weight="bold" />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>

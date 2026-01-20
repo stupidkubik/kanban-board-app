@@ -95,69 +95,69 @@ export function KanbanBoardsSection({
 
   return (
     <section className={styles.card}>
-      <div className={styles.cardHeader}>
-        <h3 className={styles.cardTitle}>{uiCopy.board.boardSectionTitle}</h3>
-        <p className={styles.cardSubtitle}>{uiCopy.board.boardSectionSubtitle}</p>
+      <div className={`${styles.cardHeader} ${styles.sectionHeader}`}>
+        <div>
+          <h3 className={styles.cardTitle}>{uiCopy.board.boardSectionTitle}</h3>
+          <p className={styles.cardSubtitle}>{uiCopy.board.boardSectionSubtitle}</p>
+        </div>
+        <AlertDialog open={createOpen} onOpenChange={setCreateOpen}>
+          <AlertDialogTrigger asChild>
+            <Button type="button" size="sm" data-testid="create-board-trigger">
+              {uiCopy.board.createBoard}
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>{uiCopy.board.createBoard}</AlertDialogTitle>
+              <AlertDialogDescription>
+                {uiCopy.board.boardSectionSubtitle}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <form className={styles.modalForm} onSubmit={handleCreateBoardSubmit}>
+              <div className={styles.modalFields}>
+                <Input
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  placeholder={uiCopy.board.boardNamePlaceholder}
+                  aria-label={uiCopy.board.boardNamePlaceholder}
+                  data-testid="create-board-title"
+                />
+                <Select
+                  value={newBoardLanguage}
+                  onValueChange={(value) => {
+                    setNewBoardLanguage(value as BoardLanguage)
+                    setNewBoardLanguageTouched(true)
+                  }}
+                >
+                  <SelectTrigger aria-label={uiCopy.board.boardLanguageLabel}>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ru">{languageLabels.ru}</SelectItem>
+                    <SelectItem value="en">{languageLabels.en}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <AlertDialogFooter className={styles.modalFooter}>
+                <AlertDialogCancel type="button">
+                  {uiCopy.common.cancel}
+                </AlertDialogCancel>
+                <Button
+                  type="submit"
+                  disabled={creating}
+                  data-testid="create-board-submit"
+                >
+                  {creating ? (
+                    <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
+                  ) : null}
+                  {creating ? uiCopy.board.creatingBoard : uiCopy.board.createBoard}
+                </Button>
+              </AlertDialogFooter>
+            </form>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
       <div className={styles.cardContent}>
-        <div className={styles.actionsRow}>
-          <AlertDialog open={createOpen} onOpenChange={setCreateOpen}>
-            <AlertDialogTrigger asChild>
-              <Button type="button" data-testid="create-board-trigger">
-                {uiCopy.board.createBoard}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>{uiCopy.board.createBoard}</AlertDialogTitle>
-                <AlertDialogDescription>
-                  {uiCopy.board.boardSectionSubtitle}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <form className={styles.modalForm} onSubmit={handleCreateBoardSubmit}>
-                <div className={styles.modalFields}>
-                  <Input
-                    value={title}
-                    onChange={(event) => setTitle(event.target.value)}
-                    placeholder={uiCopy.board.boardNamePlaceholder}
-                    aria-label={uiCopy.board.boardNamePlaceholder}
-                    data-testid="create-board-title"
-                  />
-                  <Select
-                    value={newBoardLanguage}
-                    onValueChange={(value) => {
-                      setNewBoardLanguage(value as BoardLanguage)
-                      setNewBoardLanguageTouched(true)
-                    }}
-                  >
-                    <SelectTrigger aria-label={uiCopy.board.boardLanguageLabel}>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="ru">{languageLabels.ru}</SelectItem>
-                      <SelectItem value="en">{languageLabels.en}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <AlertDialogFooter className={styles.modalFooter}>
-                  <AlertDialogCancel type="button">
-                    {uiCopy.common.cancel}
-                  </AlertDialogCancel>
-                  <Button
-                    type="submit"
-                    disabled={creating}
-                    data-testid="create-board-submit"
-                  >
-                    {creating ? (
-                      <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
-                    ) : null}
-                    {creating ? uiCopy.board.creatingBoard : uiCopy.board.createBoard}
-                  </Button>
-                </AlertDialogFooter>
-              </form>
-            </AlertDialogContent>
-          </AlertDialog>
-        </div>
         <div className={styles.boardGrid}>
           {boards.length ? (
             boards.map((board) => (

@@ -179,52 +179,49 @@ export function KanbanApp() {
 
   return (
     <div className={styles.page}>
-      <section className={styles.card}>
-        <div className={styles.cardHeader}>
-          <h2 className={styles.cardTitle}>{uiCopy.common.appTitle}</h2>
-          <p className={styles.cardSubtitle}>{uiCopy.common.appSubtitle}</p>
+      <section className={`${styles.card} ${styles.topBar}`}>
+        <div className={styles.topBarBrand}>
+          <h2 className={styles.topBarTitle}>{uiCopy.common.appTitle}</h2>
+          <p className={styles.topBarSubtitle}>{uiCopy.common.appSubtitle}</p>
         </div>
-        <div className={styles.cardContent}>
-          {user ? (
-            <div className={styles.row}>
-              <div className={styles.meta}>
-                <div>{uiCopy.common.signedIn}</div>
-                <div className={styles.muted}>{user.email ?? user.uid}</div>
-              </div>
-              <div className={styles.row}>
-                <div className={styles.label}>{uiCopy.common.interfaceLanguage}</div>
-                <Select
-                  value={uiLocale}
-                  onValueChange={(value) => handleUiLocaleChange(value as Locale)}
-                >
-                  <SelectTrigger aria-label={uiCopy.common.interfaceLanguage}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ru">{languageLabels.ru}</SelectItem>
-                    <SelectItem value="en">{languageLabels.en}</SelectItem>
-                  </SelectContent>
-                </Select>
-                <ThemeToggle
-                  labels={{
-                    light: uiCopy.common.themeLight,
-                    dark: uiCopy.common.themeDark,
-                    switchToLight: uiCopy.common.themeSwitchToLight,
-                    switchToDark: uiCopy.common.themeSwitchToDark,
-                  }}
-                />
-                <Button variant="outline" onClick={handleSignOut} type="button">
-                  {uiCopy.common.signOut}
-                </Button>
-              </div>
+        {user ? (
+          <div className={styles.topBarControls}>
+            <div className={styles.topBarUser}>
+              <span className={styles.topBarUserLabel}>{uiCopy.common.signedIn}</span>
+              <span className={styles.topBarUserValue}>{user.email ?? user.uid}</span>
             </div>
-          ) : null}
-          {error ? (
-            <p className={styles.error} role="alert">
-              {error}
-            </p>
-          ) : null}
-        </div>
+            <div className={styles.topBarActions}>
+              <Select
+                value={uiLocale}
+                onValueChange={(value) => handleUiLocaleChange(value as Locale)}
+              >
+                <SelectTrigger aria-label={uiCopy.common.interfaceLanguage} size="sm">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ru">{languageLabels.ru}</SelectItem>
+                  <SelectItem value="en">{languageLabels.en}</SelectItem>
+                </SelectContent>
+              </Select>
+              <ThemeToggle
+                labels={{
+                  light: uiCopy.common.themeLight,
+                  dark: uiCopy.common.themeDark,
+                  switchToLight: uiCopy.common.themeSwitchToLight,
+                  switchToDark: uiCopy.common.themeSwitchToDark,
+                }}
+              />
+              <Button variant="outline" size="sm" onClick={handleSignOut} type="button">
+                {uiCopy.common.signOut}
+              </Button>
+            </div>
+          </div>
+        ) : null}
+        {error ? (
+          <p className={styles.error} role="alert">
+            {error}
+          </p>
+        ) : null}
       </section>
 
       {user ? (

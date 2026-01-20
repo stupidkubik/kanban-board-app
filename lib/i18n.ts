@@ -92,6 +92,7 @@ type BoardCopy = {
   deleteCardDescription: string
   cardDeletedToast: string
   cardRestoredToast: string
+  cardsLabel: string
   noCards: string
   noColumns: string
   deleteColumn: string
@@ -100,6 +101,8 @@ type BoardCopy = {
   columnDeletedToast: string
   columnRestoredToast: string
   participantsTitle: string
+  participantsShow: string
+  participantsHide: string
   onlyYou: string
   youLabel: string
   noBoards: string
@@ -242,6 +245,7 @@ const copy: Record<Locale, Copy> = {
       deleteCardDescription: "Карточка будет удалена без возможности восстановления.",
       cardDeletedToast: "Карточка удалена.",
       cardRestoredToast: "Карточка восстановлена.",
+      cardsLabel: "Карточки",
       noCards: "Пока нет карточек.",
       noColumns: "Пока нет колонок.",
       deleteColumn: "Удалить",
@@ -250,6 +254,8 @@ const copy: Record<Locale, Copy> = {
       columnDeletedToast: "Колонка удалена.",
       columnRestoredToast: "Колонка восстановлена.",
       participantsTitle: "Участники",
+      participantsShow: "Показать",
+      participantsHide: "Скрыть",
       onlyYou: "Пока на доске только вы.",
       youLabel: "Вы",
       noBoards: "Пока нет досок.",
@@ -385,6 +391,7 @@ const copy: Record<Locale, Copy> = {
       deleteCardDescription: "This card will be deleted permanently.",
       cardDeletedToast: "Card deleted.",
       cardRestoredToast: "Card restored.",
+      cardsLabel: "Cards",
       noCards: "No cards yet.",
       noColumns: "No columns yet.",
       deleteColumn: "Delete",
@@ -393,6 +400,8 @@ const copy: Record<Locale, Copy> = {
       columnDeletedToast: "Column deleted.",
       columnRestoredToast: "Column restored.",
       participantsTitle: "Participants",
+      participantsShow: "Show",
+      participantsHide: "Hide",
       onlyYou: "You are the only participant for now.",
       youLabel: "You",
       noBoards: "No boards yet.",

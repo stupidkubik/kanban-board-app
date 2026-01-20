@@ -44,111 +44,181 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
   onInviteRoleChange,
   onInviteSubmit,
 }: ParticipantsSectionViewProps) {
+  const [open, setOpen] = React.useState(isOwner)
+  const visibleParticipants = participants.slice(0, 5)
+  const remainingCount = participants.length - visibleParticipants.length
+
+  React.useEffect(() => {
+    if (isOwner) {
+      setOpen(true)
+    }
+  }, [isOwner])
+
   return (
     <Card className={styles.participantsCard} size="sm">
-      <CardHeader>
+      <CardHeader className={styles.participantsHeader}>
         <CardTitle>{uiCopy.board.participantsTitle}</CardTitle>
+        <div className={styles.participantsHeaderActions}>
+          {participants.length ? (
+            <div className={styles.participantAvatarStack}>
+              {visibleParticipants.map((participant) => (
+                <div
+                  key={participant.id}
+                  className={`${styles.participantAvatar} ${styles.participantAvatarCompact}`}
+                  title={participant.name}
+                >
+                  {participant.photoURL ? (
+                    <Image
+                      className={styles.participantAvatarImage}
+                      src={participant.photoURL}
+                      alt={participant.name}
+                      width={28}
+                      height={28}
+                      unoptimized
+                    />
+                  ) : (
+                    <span className={styles.participantAvatarFallback}>
+                      {participant.name.slice(0, 1).toUpperCase()}
+                    </span>
+                  )}
+                </div>
+              ))}
+              {remainingCount > 0 ? (
+                <div
+                  className={`${styles.participantAvatar} ${styles.participantAvatarCompact} ${styles.participantAvatarOverflow}`}
+                >
+                  +{remainingCount}
+                </div>
+              ) : null}
+            </div>
+          ) : (
+            <span className={styles.participantsEmpty}>{uiCopy.board.onlyYou}</span>
+          )}
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            onClick={() => setOpen((current) => !current)}
+          >
+            {open ? uiCopy.board.participantsHide : uiCopy.board.participantsShow}
+          </Button>
+          {isOwner ? (
+            <Button
+              type="button"
+              size="xs"
+              onClick={() => setOpen(true)}
+            >
+              {uiCopy.board.inviteMember}
+            </Button>
+          ) : null}
+        </div>
       </CardHeader>
-      <CardContent>
-        {participants.length ? (
-          <>
-            <ul className={styles.participantsList}>
-              {participants.map((participant) => (
-                <li key={participant.id} className={styles.participantRow}>
-                  <div className={styles.participantIdentity}>
-                    <div className={styles.participantAvatar}>
-                      {participant.photoURL ? (
-                        <Image
-                          className={styles.participantAvatarImage}
-                          src={participant.photoURL}
-                          alt={participant.name}
-                          width={36}
-                          height={36}
-                          unoptimized
-                        />
-                      ) : (
-                        <span className={styles.participantAvatarFallback}>
-                          {participant.name.slice(0, 1).toUpperCase()}
-                        </span>
-                      )}
-                    </div>
-                    <div className={styles.participantInfo}>
-                      <div className={styles.participantNameRow}>
-                        <span className={styles.participantName}>
-                          {participant.name}
-                        </span>
-                        {participant.isYou ? (
-                          <span className={styles.participantBadge}>
-                            {uiCopy.board.youLabel}
+      {open ? (
+        <CardContent>
+          {participants.length ? (
+            <>
+              <ul className={styles.participantsList}>
+                {participants.map((participant) => (
+                  <li key={participant.id} className={styles.participantRow}>
+                    <div className={styles.participantIdentity}>
+                      <div className={styles.participantAvatar}>
+                        {participant.photoURL ? (
+                          <Image
+                            className={styles.participantAvatarImage}
+                            src={participant.photoURL}
+                            alt={participant.name}
+                            width={36}
+                            height={36}
+                            unoptimized
+                          />
+                        ) : (
+                          <span className={styles.participantAvatarFallback}>
+                            {participant.name.slice(0, 1).toUpperCase()}
+                          </span>
+                        )}
+                      </div>
+                      <div className={styles.participantInfo}>
+                        <div className={styles.participantNameRow}>
+                          <span className={styles.participantName}>
+                            {participant.name}
+                          </span>
+                          {participant.isYou ? (
+                            <span className={styles.participantBadge}>
+                              {uiCopy.board.youLabel}
+                            </span>
+                          ) : null}
+                        </div>
+                        {participant.secondaryLabel ? (
+                          <span className={styles.participantSecondary}>
+                            {participant.secondaryLabel}
                           </span>
                         ) : null}
                       </div>
-                      {participant.secondaryLabel ? (
-                        <span className={styles.participantSecondary}>
-                          {participant.secondaryLabel}
-                        </span>
-                      ) : null}
                     </div>
-                  </div>
-                  <span className={styles.participantRole}>
-                    {roleLabels[uiLocale][participant.role]}
-                  </span>
-                </li>
-              ))}
-            </ul>
-            {participants.length === 1 ? (
-              <p className={styles.participantsEmpty}>{uiCopy.board.onlyYou}</p>
-            ) : null}
-            {isOwner ? (
-              <form className={styles.inviteForm} onSubmit={onInviteSubmit}>
-                <div className={styles.inviteLabel}>{uiCopy.board.inviteMember}</div>
-                <div className={styles.inviteRow}>
-                  <Input
-                    className={styles.inviteInput}
-                    value={inviteEmail}
-                    onChange={(event) => onInviteEmailChange(event.target.value)}
-                    placeholder={uiCopy.board.inviteEmailPlaceholder}
-                    aria-label={uiCopy.board.inviteEmailPlaceholder}
-                    type="email"
-                    disabled={invitePending}
-                  />
-                  <Select
-                    value={inviteRole}
-                    onValueChange={(value) => onInviteRoleChange(value as BoardRole)}
-                    disabled={invitePending}
-                  >
-                    <SelectTrigger
-                      size="sm"
-                      className={styles.inviteSelect}
-                      aria-label={uiCopy.board.roleLabel}
+                    <span className={styles.participantRole}>
+                      {roleLabels[uiLocale][participant.role]}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {participants.length === 1 ? (
+                <p className={styles.participantsEmpty}>{uiCopy.board.onlyYou}</p>
+              ) : null}
+              {isOwner ? (
+                <form className={styles.inviteForm} onSubmit={onInviteSubmit}>
+                  <div className={styles.inviteLabel}>{uiCopy.board.inviteMember}</div>
+                  <div className={styles.inviteRow}>
+                    <Input
+                      className={styles.inviteInput}
+                      value={inviteEmail}
+                      onChange={(event) => onInviteEmailChange(event.target.value)}
+                      placeholder={uiCopy.board.inviteEmailPlaceholder}
+                      aria-label={uiCopy.board.inviteEmailPlaceholder}
+                      type="email"
+                      disabled={invitePending}
+                    />
+                    <Select
+                      value={inviteRole}
+                      onValueChange={(value) => onInviteRoleChange(value as BoardRole)}
+                      disabled={invitePending}
                     >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="editor">
-                        {roleLabels[uiLocale].editor}
-                      </SelectItem>
-                      <SelectItem value="viewer">
-                        {roleLabels[uiLocale].viewer}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <Button type="submit" disabled={invitePending}>
-                    {invitePending ? (
-                      <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
-                    ) : null}
-                    {invitePending
-                      ? uiCopy.board.inviteSending
-                      : uiCopy.board.inviteButton}
-                  </Button>
-                </div>
-              </form>
-            ) : null}
-          </>
-        ) : (
-          <p className={styles.participantsEmpty}>{uiCopy.board.onlyYou}</p>
-        )}
-      </CardContent>
+                      <SelectTrigger
+                        size="sm"
+                        className={styles.inviteSelect}
+                        aria-label={uiCopy.board.roleLabel}
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="editor">
+                          {roleLabels[uiLocale].editor}
+                        </SelectItem>
+                        <SelectItem value="viewer">
+                          {roleLabels[uiLocale].viewer}
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Button type="submit" disabled={invitePending}>
+                      {invitePending ? (
+                        <Spinner
+                          size="sm"
+                          className={styles.buttonSpinner}
+                          aria-hidden="true"
+                        />
+                      ) : null}
+                      {invitePending
+                        ? uiCopy.board.inviteSending
+                        : uiCopy.board.inviteButton}
+                    </Button>
+                  </div>
+                </form>
+              ) : null}
+            </>
+          ) : (
+            <p className={styles.participantsEmpty}>{uiCopy.board.onlyYou}</p>
+          )}
+        </CardContent>
+      ) : null}
     </Card>
   )
 })

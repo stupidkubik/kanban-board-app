@@ -1,24 +1,20 @@
 .toggle {
+  width: 32px;
   height: 32px;
-  padding: 0 12px;
+  padding: 0;
   border-radius: 999px;
-  border: 1px solid var(--color-border);
-  background: linear-gradient(
-    135deg,
-    var(--color-surface) 0%,
-    var(--color-surface-muted) 100%
-  );
+  border: none;
+  background: var(--color-surface-muted);
   color: var(--color-text);
-  box-shadow: var(--shadow-soft);
+  box-shadow: none;
 }
 
 .toggle[data-theme="dark"] {
-  border-color: var(--color-border-strong);
-  background: linear-gradient(135deg, #0f172a 0%, #1f2a44 100%);
+  background: var(--color-surface-strong);
 }
 
 .toggle:hover {
-  border-color: var(--color-accent);
+  background: var(--color-surface-strong);
 }
 
 .toggle:focus-visible {
@@ -32,18 +28,10 @@
 }
 
 .icon svg {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
 }
 
 .label {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-@media (max-width: 560px) {
-  .label {
-    display: none;
-  }
+  display: none;
 }

@@ -8,6 +8,7 @@
   --color-muted: #5d6b82;
   --color-border: #d6e0ec;
   --color-border-strong: #c4d1df;
+  --color-scroll-shadow: rgba(11, 27, 43, 0.14);
   --color-primary: #0c66e4;
   --color-primary-hover: #0b5bd1;
   --color-primary-contrast: #f8fbff;
@@ -45,6 +46,7 @@ body[data-theme="dark"] {
   --color-muted: #93a4bf;
   --color-border: #23324b;
   --color-border-strong: #2a3a56;
+  --color-scroll-shadow: rgba(2, 6, 23, 0.45);
   --color-primary: #3b82f6;
   --color-primary-hover: #2563eb;
   --color-primary-contrast: #0b1220;

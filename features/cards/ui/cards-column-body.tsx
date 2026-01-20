@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable"
+import { Plus } from "@phosphor-icons/react"
 import { CSS } from "@dnd-kit/utilities"
 
 import type { Card as BoardCard } from "@/lib/types/boards"
@@ -285,6 +286,7 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
           onClick={() => onToggleAddCard(true)}
           data-testid={`add-card-${columnId}`}
         >
+          <Plus weight="bold" />
           {uiCopy.board.addCard}
         </Button>
       ) : null}

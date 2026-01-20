@@ -18,12 +18,16 @@ describe("HeaderSection", () => {
         boardTitle="Board"
         canEdit
         isViewer={false}
+        boardLanguage="en"
+        canEditLanguage
+        languagePending={false}
         showAddColumn={false}
         creatingColumn={false}
         newColumnTitle=""
         onNewColumnTitleChange={vi.fn()}
         onToggleAddColumn={onToggleAddColumn}
         onCreateColumn={vi.fn()}
+        onBoardLanguageChange={vi.fn()}
       />
     )
 
@@ -39,12 +43,16 @@ describe("HeaderSection", () => {
         boardTitle="Board"
         canEdit
         isViewer={false}
+        boardLanguage="en"
+        canEditLanguage
+        languagePending={false}
         showAddColumn
         creatingColumn={false}
         newColumnTitle=""
         onNewColumnTitleChange={onNewColumnTitleChange}
         onToggleAddColumn={vi.fn()}
         onCreateColumn={vi.fn()}
+        onBoardLanguageChange={vi.fn()}
       />
     )
 
@@ -60,12 +68,16 @@ describe("HeaderSection", () => {
         boardTitle="Board"
         canEdit={false}
         isViewer
+        boardLanguage="en"
+        canEditLanguage={false}
+        languagePending={false}
         showAddColumn={false}
         creatingColumn={false}
         newColumnTitle=""
         onNewColumnTitleChange={vi.fn()}
         onToggleAddColumn={vi.fn()}
         onCreateColumn={vi.fn()}
+        onBoardLanguageChange={vi.fn()}
       />
     )
 
