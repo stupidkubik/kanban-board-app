@@ -8,6 +8,7 @@ import { PencilSimpleLine, TrashSimple } from "@phosphor-icons/react"
 import { getCopy, languageLabels, roleLabels, type Locale } from "@/lib/i18n"
 import { canEditBoard as canEditBoardAccess, canInviteMembers, getMemberRole } from "@/lib/permissions"
 import { type Board } from "@/lib/types/boards"
+import { getBoardCoverGradient } from "@/lib/board-cover"
 import {
   useDeleteBoardMutation,
   useGetBoardMembersQuery,
@@ -38,24 +39,6 @@ type KanbanBoardCardProps = {
   onError: (message: string | null) => void
   uiLocale: Locale
   user: User
-}
-
-const coverGradients = [
-  "linear-gradient(135deg, #2563eb 0%, #22d3ee 100%)",
-  "linear-gradient(135deg, #4f46e5 0%, #8b5cf6 100%)",
-  "linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%)",
-  "linear-gradient(135deg, #10b981 0%, #22c55e 100%)",
-  "linear-gradient(135deg, #f97316 0%, #fb7185 100%)",
-  "linear-gradient(135deg, #6366f1 0%, #0ea5e9 100%)",
-]
-
-const getCoverGradient = (value: string) => {
-  let hash = 0
-  for (let index = 0; index < value.length; index += 1) {
-    hash = value.charCodeAt(index) + ((hash << 5) - hash)
-  }
-  const normalized = Math.abs(hash)
-  return coverGradients[normalized % coverGradients.length]
 }
 
 export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardCardProps) {
@@ -89,7 +72,7 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
   const visibleMembers = members.slice(0, 4)
   const remainingMembers = Math.max(0, members.length - visibleMembers.length)
   const coverStyle = React.useMemo(
-    () => ({ backgroundImage: getCoverGradient(board.id) }),
+    () => ({ backgroundImage: getBoardCoverGradient(board.id) }),
     [board.id]
   )
   const handleOpenBoard = React.useCallback(() => {

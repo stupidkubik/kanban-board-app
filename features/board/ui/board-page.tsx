@@ -19,6 +19,10 @@ export function BoardPage() {
   const [uiLocale, setUiLocale] = React.useState<Locale>("en")
 
   const uiCopy = React.useMemo(() => getCopy(uiLocale), [uiLocale])
+  const handleUiLocaleChange = React.useCallback((value: Locale) => {
+    setUiLocale(value)
+    window.localStorage.setItem("uiLocaleTouched", "1")
+  }, [])
 
   React.useEffect(() => {
     const storedLocale = window.localStorage.getItem("uiLocale")
@@ -26,6 +30,10 @@ export function BoardPage() {
       setUiLocale(storedLocale)
     }
   }, [])
+
+  React.useEffect(() => {
+    window.localStorage.setItem("uiLocale", uiLocale)
+  }, [uiLocale])
 
   const { data: board } = useGetBoardQuery(boardId ?? null, {
     skip: !boardId,
@@ -51,6 +59,7 @@ export function BoardPage() {
         isViewer={isViewer}
         uiCopy={uiCopy}
         uiLocale={uiLocale}
+        onUiLocaleChange={handleUiLocaleChange}
       />
     </div>
   )

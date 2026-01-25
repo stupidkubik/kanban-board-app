@@ -1,4 +1,4 @@
-import { createSlice, type PayloadAction } from "@reduxjs/toolkit"
+import { createSelector, createSlice, type PayloadAction } from "@reduxjs/toolkit"
 
 import type { AddCardDraft, EditingCardDraft } from "@/lib/types/board-ui"
 
@@ -16,6 +16,11 @@ const initialEditingCard: EditingCardDraft = {
   title: "",
   description: "",
   due: "",
+}
+
+const emptyBoardUi: BoardUiState = {
+  addCardByColumn: {},
+  editingCard: initialEditingCard,
 }
 
 const initialState: State = {
@@ -131,18 +136,15 @@ export const {
 
 export const boardUiReducer = boardUiSlice.reducer
 
-export const selectBoardUi = (
-  state: { boardUi?: State },
-  boardId: string | null | undefined
-) => {
-  if (!boardId || !state.boardUi) {
-    return {
-      addCardByColumn: {},
-      editingCard: { ...initialEditingCard },
+export const selectBoardUi = createSelector(
+  [
+    (state: { boardUi?: State }) => state.boardUi?.byBoard ?? initialState.byBoard,
+    (_state: { boardUi?: State }, boardId: string | null | undefined) => boardId,
+  ],
+  (byBoard, boardId) => {
+    if (!boardId) {
+      return emptyBoardUi
     }
+    return byBoard[boardId] ?? emptyBoardUi
   }
-  return state.boardUi.byBoard[boardId] ?? {
-    addCardByColumn: {},
-    editingCard: { ...initialEditingCard },
-  }
-}
+)

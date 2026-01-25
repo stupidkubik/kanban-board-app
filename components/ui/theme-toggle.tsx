@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { MoonStars, SunDim } from "@phosphor-icons/react"
+import { MoonStars, Sun } from "@phosphor-icons/react"
 
 import { Button } from "@/components/ui/button"
 import styles from "@/components/ui/theme-toggle.module.css"
@@ -73,7 +73,7 @@ export function ThemeToggle({ labels }: ThemeToggleProps) {
       onClick={() => setTheme(nextTheme)}
     >
       <span className={styles.icon} aria-hidden="true">
-        {theme === "dark" ? <MoonStars weight="fill" /> : <SunDim weight="fill" />}
+        {theme === "dark" ? <MoonStars weight="fill" /> : <Sun weight="fill" />}
       </span>
       <span className={styles.label}>{currentLabel}</span>
     </Button>

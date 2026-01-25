@@ -2,13 +2,13 @@
 
 import * as React from "react"
 import Link from "next/link"
+import { ArrowLeft } from "@phosphor-icons/react"
 
-import { languageLabels } from "@/lib/i18n"
+import { languageLabels, type Locale } from "@/lib/i18n"
+import { getBoardCoverGradient } from "@/lib/board-cover"
 import { type BoardCopy } from "@/lib/types/board-ui"
-import { type BoardLanguage } from "@/lib/types/boards"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Spinner } from "@/components/ui/spinner"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import {
   Select,
@@ -21,49 +21,58 @@ import styles from "@/features/board/ui/board-page.module.css"
 
 type HeaderSectionProps = {
   uiCopy: BoardCopy
+  boardId: string
   boardTitle: string
   canEdit: boolean
   isViewer: boolean
-  boardLanguage: BoardLanguage
-  canEditLanguage: boolean
-  languagePending: boolean
+  uiLocale: Locale
   showAddColumn: boolean
   creatingColumn: boolean
   newColumnTitle: string
   onNewColumnTitleChange: (value: string) => void
   onToggleAddColumn: (open: boolean) => void
   onCreateColumn: (event: React.FormEvent<HTMLFormElement>) => void
-  onBoardLanguageChange: (language: BoardLanguage) => void
+  onUiLocaleChange: (language: Locale) => void
 }
 
 export function HeaderSection({
   uiCopy,
+  boardId,
   boardTitle,
   canEdit,
   isViewer,
-  boardLanguage,
-  canEditLanguage,
-  languagePending,
+  uiLocale,
   showAddColumn,
   creatingColumn,
   newColumnTitle,
   onNewColumnTitleChange,
   onToggleAddColumn,
   onCreateColumn,
-  onBoardLanguageChange,
+  onUiLocaleChange,
 }: HeaderSectionProps) {
+  const headerStyle = React.useMemo(
+    () =>
+      ({
+        "--header-gradient": getBoardCoverGradient(boardId),
+      }) as React.CSSProperties,
+    [boardId]
+  )
+
   return (
     <div className={styles.header}>
-      <div className={styles.headerTop}>
+      <div className={styles.headerTop} style={headerStyle}>
         <div className={styles.titleBlock}>
           <div className={styles.titleRow}>
             <Button
               asChild
-              variant="ghost"
+              variant="outline"
               size="sm"
               className={styles.backLink}
             >
-              <Link href="/">{uiCopy.board.backToBoards}</Link>
+              <Link href="/">
+                <ArrowLeft weight="bold" aria-hidden="true" />
+                {uiCopy.board.backToBoards}
+              </Link>
             </Button>
             <h1 className={styles.title}>{boardTitle}</h1>
             {isViewer ? (
@@ -72,38 +81,29 @@ export function HeaderSection({
               </span>
             ) : null}
           </div>
-          <p className={styles.subtitle}>{uiCopy.board.columnsTitle}</p>
         </div>
         <div className={styles.actions}>
           <div className={styles.actionsSecondary}>
             <div className={styles.languageControl}>
               <span className={styles.languageLabel}>
-                {uiCopy.board.boardLanguageLabel}
+                {uiCopy.common.interfaceLanguage}
               </span>
               <Select
-                value={boardLanguage}
-                onValueChange={(value) => onBoardLanguageChange(value as BoardLanguage)}
-                disabled={!canEditLanguage || languagePending}
+                value={uiLocale}
+                onValueChange={(value) => onUiLocaleChange(value as Locale)}
               >
                 <SelectTrigger
                   size="sm"
-                  aria-label={uiCopy.board.boardLanguageLabel}
+                  aria-label={uiCopy.common.interfaceLanguage}
                   className={styles.languageSelect}
                 >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="ru">{languageLabels.ru}</SelectItem>
-                  <SelectItem value="en">{languageLabels.en}</SelectItem>
-                </SelectContent>
+                <SelectItem value="ru">{languageLabels.ru}</SelectItem>
+                <SelectItem value="en">{languageLabels.en}</SelectItem>
+              </SelectContent>
               </Select>
-              {languagePending ? (
-                <Spinner
-                  size="xs"
-                  className={styles.languageSpinner}
-                  aria-hidden="true"
-                />
-              ) : null}
             </div>
             <ThemeToggle
               labels={{

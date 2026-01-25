@@ -57,43 +57,49 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
   return (
     <Card className={styles.participantsCard} size="sm">
       <CardHeader className={styles.participantsHeader}>
-        <CardTitle>{uiCopy.board.participantsTitle}</CardTitle>
+        <div className={styles.participantsHeaderMain}>
+          <CardTitle>{uiCopy.board.participantsTitle}</CardTitle>
+          <div className={styles.participantsSummary}>
+            {participants.length ? (
+              <div className={styles.participantAvatarStack}>
+                {visibleParticipants.map((participant) => (
+                  <div
+                    key={participant.id}
+                    className={`${styles.participantAvatar} ${styles.participantAvatarCompact}`}
+                    title={participant.name}
+                  >
+                    {participant.photoURL ? (
+                      <Image
+                        className={styles.participantAvatarImage}
+                        src={participant.photoURL}
+                        alt={participant.name}
+                        width={28}
+                        height={28}
+                        unoptimized
+                      />
+                    ) : (
+                      <span className={styles.participantAvatarFallback}>
+                        {participant.name.slice(0, 1).toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                ))}
+                {remainingCount > 0 ? (
+                  <div
+                    className={`${styles.participantAvatar} ${styles.participantAvatarCompact} ${styles.participantAvatarOverflow}`}
+                  >
+                    +{remainingCount}
+                  </div>
+                ) : null}
+              </div>
+            ) : (
+              <span className={styles.participantsSummaryEmpty}>
+                {uiCopy.board.onlyYou}
+              </span>
+            )}
+          </div>
+        </div>
         <div className={styles.participantsHeaderActions}>
-          {participants.length ? (
-            <div className={styles.participantAvatarStack}>
-              {visibleParticipants.map((participant) => (
-                <div
-                  key={participant.id}
-                  className={`${styles.participantAvatar} ${styles.participantAvatarCompact}`}
-                  title={participant.name}
-                >
-                  {participant.photoURL ? (
-                    <Image
-                      className={styles.participantAvatarImage}
-                      src={participant.photoURL}
-                      alt={participant.name}
-                      width={28}
-                      height={28}
-                      unoptimized
-                    />
-                  ) : (
-                    <span className={styles.participantAvatarFallback}>
-                      {participant.name.slice(0, 1).toUpperCase()}
-                    </span>
-                  )}
-                </div>
-              ))}
-              {remainingCount > 0 ? (
-                <div
-                  className={`${styles.participantAvatar} ${styles.participantAvatarCompact} ${styles.participantAvatarOverflow}`}
-                >
-                  +{remainingCount}
-                </div>
-              ) : null}
-            </div>
-          ) : (
-            <span className={styles.participantsEmpty}>{uiCopy.board.onlyYou}</span>
-          )}
           <Button
             type="button"
             variant="ghost"

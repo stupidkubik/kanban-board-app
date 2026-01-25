@@ -2,59 +2,91 @@
   width: 100%;
   min-height: 100vh;
   margin: 0;
-  padding: 28px 24px 48px;
+  padding: 20px 20px 40px;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
 }
 
 .header {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .headerTop {
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 16px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.headerTop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(
+    --header-gradient,
+    linear-gradient(135deg, #2563eb 0%, #22d3ee 100%)
+  );
+  opacity: 0.12;
+  pointer-events: none;
+}
+
+.headerTop > * {
+  position: relative;
+  z-index: 1;
 }
 
 .titleBlock {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
+  flex: 1 1 auto;
   min-width: 0;
 }
 
 .titleRow {
   display: flex;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 10px;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 8px;
+  min-width: 0;
 }
 
 .backLink {
   align-self: center;
-  padding: 0 6px;
+  gap: 6px;
+  padding: 0 8px;
   height: 24px;
   border-radius: 999px;
   font-size: 11px;
-  color: var(--color-muted);
+  flex: 0 0 auto;
+  white-space: nowrap;
 }
 
-.backLink:hover {
-  color: var(--color-text);
-  background: transparent;
+.backLink svg {
+  width: 14px;
+  height: 14px;
 }
 
 .title {
   margin: 0;
-  font-size: 23px;
+  font-size: 20px;
   font-weight: 650;
   min-width: 0;
+  flex: 1 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .subtitle {
@@ -65,15 +97,16 @@
 
 .actions {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
+  flex-wrap: nowrap;
+  flex: 0 0 auto;
+  gap: 10px;
   align-items: center;
   justify-content: flex-end;
 }
 
 .actionsSecondary {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
 }
@@ -100,7 +133,7 @@
 .languageControl {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 6px;
 }
 
@@ -109,6 +142,7 @@
   letter-spacing: 0;
   text-transform: none;
   color: var(--color-muted);
+  white-space: nowrap;
 }
 
 .languageSelect {
@@ -138,6 +172,25 @@
   white-space: nowrap;
 }
 
+@media (max-width: 900px) {
+  .headerTop {
+    flex-wrap: wrap;
+  }
+
+  .titleRow {
+    flex-wrap: wrap;
+  }
+
+  .actions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .actionsSecondary {
+    flex-wrap: wrap;
+  }
+}
+
 .participantsCard {
   width: 100%;
 }
@@ -148,36 +201,60 @@
 }
 
 .participantsCard [data-slot="card-header"] {
-  padding: 12px 16px 8px;
+  padding: 14px 16px;
 }
 
 .participantsCard [data-slot="card-content"] {
-  padding: 0 16px 16px;
+  padding: 12px 16px 16px;
+  border-top: 1px solid var(--color-border);
 }
 
 .participantsHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.participantsHeaderMain {
+  display: flex;
+  align-items: center;
   gap: 12px;
+  min-width: 0;
+}
+
+.participantsSummary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.participantsSummaryEmpty {
+  font-size: 12px;
+  color: var(--color-muted);
 }
 
 .participantsHeaderActions {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
   gap: 8px;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
 }
 
 .participantAvatarStack {
   display: inline-flex;
   align-items: center;
-  margin-right: 4px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .participantAvatarCompact {
-  width: 28px;
-  height: 28px;
+  width: 24px;
+  height: 24px;
   font-size: 11px;
   border-width: 2px;
   border-color: var(--color-surface);
@@ -201,28 +278,33 @@
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+  width: min(760px, 100%);
 }
 
 .participantRow {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
 }
 
 .participantIdentity {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  min-width: 0;
 }
 
 .participantAvatar {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   overflow: hidden;
   background: var(--color-surface);
@@ -261,7 +343,10 @@
 
 .participantName {
   font-size: 14px;
-  word-break: break-word;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .participantBadge {
@@ -277,17 +362,53 @@
 .participantSecondary {
   font-size: 12px;
   color: var(--color-muted);
-  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 720px) {
+  .participantsList {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .participantsHeader {
+    align-items: flex-start;
+  }
+
+  .participantsHeaderMain {
+    flex-wrap: wrap;
+  }
+
+  .participantsHeaderActions {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+
+  .participantRow {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .participantRole {
+    justify-self: start;
+  }
+
+  .participantName,
+  .participantSecondary {
+    white-space: normal;
+  }
 }
 
 .participantRole {
-  font-size: 11px;
-  letter-spacing: 0.06em;
+  font-size: 10px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--color-muted);
   border: 1px solid var(--color-border);
   border-radius: 999px;
-  padding: 4px 10px;
+  padding: 3px 8px;
 }
 
 .participantsEmpty {
@@ -300,7 +421,9 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-top: 12px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--color-border);
 }
 
 .inviteLabel {
@@ -312,17 +435,38 @@
 
 .inviteRow {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 10px;
   align-items: center;
+  justify-content: flex-start;
 }
 
-.inviteInput {
-  flex: 1 1 220px;
+.inviteRow .inviteInput {
+  flex: 0 0 260px;
+  width: 260px;
+  height: 32px;
 }
 
-.inviteSelect {
+.inviteRow .inviteSelect {
   min-width: 140px;
+  height: 32px;
+}
+
+.inviteRow button {
+  height: 32px;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 720px) {
+  .inviteRow {
+    flex-wrap: wrap;
+  }
+
+  .inviteRow .inviteInput {
+    flex: 1 1 220px;
+    width: 100%;
+    max-width: 100%;
+  }
 }
 
 .columnsGrid {
