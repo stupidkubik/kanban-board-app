@@ -1,5 +1,5 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Rubik } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Rubik } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/components/app-providers";
 
@@ -7,16 +7,6 @@ const rubik = Rubik({
   subsets: ["latin"],
   variable: "--font-sans",
   weight: ["400", "500", "600", "700"],
-});
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
 });
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
@@ -40,8 +30,18 @@ export const metadata: Metadata = {
     type: "website",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+    shortcut: "/favicon.ico",
   },
+  manifest: "/site.webmanifest",
+};
+
+export const viewport: Viewport = {
+  themeColor: "#111827",
 };
 
 export default function RootLayout({
@@ -51,7 +51,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={rubik.variable}>
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body>
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

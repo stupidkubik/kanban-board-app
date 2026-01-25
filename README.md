@@ -75,7 +75,7 @@ npm run dev
 ```
 
 ## Environment
-Create `.env.local` with client Firebase config:
+Create `.env.local` with client Firebase config (start from `.env.example`):
 ```
 NEXT_PUBLIC_FIREBASE_API_KEY=...
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
