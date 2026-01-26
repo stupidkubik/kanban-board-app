@@ -8,9 +8,7 @@ import { languageLabels, type Locale } from "@/lib/i18n"
 import { getBoardCoverGradient } from "@/lib/board-cover"
 import { type BoardCopy } from "@/lib/types/board-ui"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Spinner } from "@/components/ui/spinner"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import {
   Select,
@@ -25,15 +23,8 @@ type HeaderSectionProps = {
   uiCopy: BoardCopy
   boardId: string
   boardTitle: string
-  canEdit: boolean
   isViewer: boolean
   uiLocale: Locale
-  showAddColumn: boolean
-  creatingColumn: boolean
-  newColumnTitle: string
-  onNewColumnTitleChange: (value: string) => void
-  onToggleAddColumn: (open: boolean) => void
-  onCreateColumn: (event: React.FormEvent<HTMLFormElement>) => void
   onUiLocaleChange: (language: Locale) => void
 }
 
@@ -41,15 +32,8 @@ export function HeaderSection({
   uiCopy,
   boardId,
   boardTitle,
-  canEdit,
   isViewer,
   uiLocale,
-  showAddColumn,
-  creatingColumn,
-  newColumnTitle,
-  onNewColumnTitleChange,
-  onToggleAddColumn,
-  onCreateColumn,
   onUiLocaleChange,
 }: HeaderSectionProps) {
   const headerStyle = React.useMemo(
@@ -119,65 +103,6 @@ export function HeaderSection({
                 switchToDark: uiCopy.common.themeSwitchToDark,
               }}
             />
-          </div>
-          <div className={styles.actionsPrimary}>
-            {canEdit ? (
-              showAddColumn ? (
-                <form className={styles.inlineForm} onSubmit={onCreateColumn}>
-                  <Label className="srOnly" htmlFor={`new-column-title-${boardId}`}>
-                    {uiCopy.board.columnNamePlaceholder}
-                  </Label>
-                  <Input
-                    id={`new-column-title-${boardId}`}
-                    className={`${styles.columnTitleInput} ${styles.headerColumnInput}`}
-                    value={newColumnTitle}
-                    onChange={(event) => onNewColumnTitleChange(event.target.value)}
-                    placeholder={uiCopy.board.columnNamePlaceholder}
-                    aria-label={uiCopy.board.columnNamePlaceholder}
-                    disabled={!canEdit || creatingColumn}
-                    data-testid="new-column-title"
-                  />
-                  <Button
-                    type="submit"
-                    size="sm"
-                    disabled={!canEdit || creatingColumn}
-                    data-testid="create-column-submit"
-                  >
-                    {creatingColumn ? (
-                      <Spinner
-                        size="sm"
-                        className={styles.buttonSpinner}
-                        aria-hidden="true"
-                      />
-                    ) : null}
-                    {creatingColumn
-                      ? uiCopy.board.creatingColumn
-                      : uiCopy.board.createColumn}
-                  </Button>
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      onToggleAddColumn(false)
-                      onNewColumnTitleChange("")
-                    }}
-                  >
-                    {uiCopy.common.cancel}
-                  </Button>
-                </form>
-              ) : (
-                <Button
-                  type="button"
-                  size="sm"
-                  className={styles.addColumnButton}
-                  onClick={() => onToggleAddColumn(true)}
-                  data-testid="add-column-trigger"
-                >
-                  {uiCopy.board.addColumn}
-                </Button>
-              )
-            ) : null}
           </div>
         </div>
       </div>

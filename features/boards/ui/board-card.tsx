@@ -303,7 +303,7 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
             <span className={styles.boardStatValue}>{cards.length}</span>
             <span className={styles.boardStatLabel}>{uiCopy.board.cardsLabel}</span>
           </div>
-          <div className={styles.boardStat}>
+          <div className={`${styles.boardStat} ${styles.boardStatWide}`}>
             <span className={styles.boardStatValue}>{boardLanguageLabel}</span>
             <span className={styles.boardStatLabel}>{uiCopy.board.boardLanguageLabel}</span>
           </div>

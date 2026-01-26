@@ -109,6 +109,12 @@ type BoardCopy = {
   ownerLabel: string
   roleLabel: string
   boardLanguageLabel: string
+  sortLabel: string
+  sortByCreated: string
+  sortByTitle: string
+  sortDirectionLabel: string
+  sortAscending: string
+  sortDescending: string
   inviteMember: string
   inviteEmailPlaceholder: string
   inviteButton: string
@@ -275,6 +281,12 @@ const copy: Record<Locale, Copy> = {
       ownerLabel: "Владелец",
       roleLabel: "Роль",
       boardLanguageLabel: "Язык доски",
+      sortLabel: "Сортировка",
+      sortByCreated: "По дате создания",
+      sortByTitle: "По названию",
+      sortDirectionLabel: "Порядок",
+      sortAscending: "По возрастанию",
+      sortDescending: "По убыванию",
       inviteMember: "Пригласить участника",
       inviteEmailPlaceholder: "Email",
       inviteButton: "Пригласить",
@@ -434,6 +446,12 @@ const copy: Record<Locale, Copy> = {
       ownerLabel: "Owner",
       roleLabel: "Role",
       boardLanguageLabel: "Board language",
+      sortLabel: "Sort",
+      sortByCreated: "Created date",
+      sortByTitle: "Name",
+      sortDirectionLabel: "Order",
+      sortAscending: "Ascending",
+      sortDescending: "Descending",
       inviteMember: "Invite member",
       inviteEmailPlaceholder: "Email",
       inviteButton: "Invite",

@@ -28,10 +28,8 @@ type UseBoardColumnsParams = {
 type UseBoardColumnsResult = {
   columns: Column[]
   isColumnsLoading: boolean
-  showAddColumn: boolean
   newColumnTitle: string
   setNewColumnTitle: (value: string) => void
-  setShowAddColumn: (value: boolean) => void
   creatingColumn: boolean
   editingId: string | null
   editingTitle: string
@@ -52,7 +50,6 @@ export function useBoardColumns({
   uiCopy,
   setError,
 }: UseBoardColumnsParams): UseBoardColumnsResult {
-  const [showAddColumn, setShowAddColumn] = React.useState(false)
   const [newColumnTitle, setNewColumnTitle] = React.useState("")
   const [editingId, setEditingId] = React.useState<string | null>(null)
   const [editingTitle, setEditingTitle] = React.useState("")
@@ -91,7 +88,6 @@ export function useBoardColumns({
         title: newColumnTitle.trim(),
       }).unwrap()
       setNewColumnTitle("")
-      setShowAddColumn(false)
     } catch (err) {
       setError(
         err instanceof Error
@@ -221,10 +217,8 @@ export function useBoardColumns({
   return {
     columns,
     isColumnsLoading: isColumnsLoading || isColumnsFetching,
-    showAddColumn,
     newColumnTitle,
     setNewColumnTitle,
-    setShowAddColumn,
     creatingColumn,
     editingId,
     editingTitle,

@@ -50,10 +50,8 @@ export const BoardContent = React.memo(function BoardContent({
   const {
     columns,
     isColumnsLoading,
-    showAddColumn,
     newColumnTitle,
     setNewColumnTitle,
-    setShowAddColumn,
     creatingColumn,
     editingId,
     editingTitle,
@@ -94,15 +92,8 @@ export const BoardContent = React.memo(function BoardContent({
         uiCopy={uiCopy}
         boardId={boardId}
         boardTitle={boardTitle}
-        canEdit={canEdit}
         isViewer={isViewer}
         uiLocale={uiLocale}
-        showAddColumn={showAddColumn}
-        creatingColumn={creatingColumn}
-        newColumnTitle={newColumnTitle}
-        onNewColumnTitleChange={setNewColumnTitle}
-        onToggleAddColumn={setShowAddColumn}
-        onCreateColumn={handleCreateColumn}
         onUiLocaleChange={onUiLocaleChange}
       />
       <BoardStatus error={error} />
@@ -111,6 +102,11 @@ export const BoardContent = React.memo(function BoardContent({
         board={board}
         user={user}
         isOwner={isOwner}
+        canEdit={canEdit}
+        creatingColumn={creatingColumn}
+        newColumnTitle={newColumnTitle}
+        onNewColumnTitleChange={setNewColumnTitle}
+        onCreateColumn={handleCreateColumn}
         uiCopy={uiCopy}
         uiLocale={uiLocale}
         setError={setError}

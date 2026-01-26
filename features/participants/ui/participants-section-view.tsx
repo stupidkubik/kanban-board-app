@@ -38,6 +38,11 @@ type ParticipantsSectionViewProps = {
   uiLocale: Locale
   participants: Participant[]
   isOwner: boolean
+  canEdit: boolean
+  creatingColumn: boolean
+  newColumnTitle: string
+  onNewColumnTitleChange: (value: string) => void
+  onCreateColumn: (event: React.FormEvent<HTMLFormElement>) => void
   inviteEmail: string
   inviteRole: BoardRole
   invitePending: boolean
@@ -55,6 +60,11 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
   uiLocale,
   participants,
   isOwner,
+  canEdit,
+  creatingColumn,
+  newColumnTitle,
+  onNewColumnTitleChange,
+  onCreateColumn,
   inviteEmail,
   inviteRole,
   invitePending,
@@ -66,118 +76,150 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
   onRemoveParticipant,
   onLeaveBoard,
 }: ParticipantsSectionViewProps) {
-  const [open, setOpen] = React.useState(isOwner)
+  const [open, setOpen] = React.useState(false)
   const visibleParticipants = participants.slice(0, 5)
   const remainingCount = participants.length - visibleParticipants.length
-
-  React.useEffect(() => {
-    if (isOwner) {
-      setOpen(true)
-    }
-  }, [isOwner])
 
   return (
     <Card className={styles.participantsCard} size="sm">
       <CardHeader className={styles.participantsHeader}>
-        <div className={styles.participantsHeaderMain}>
-          <CardTitle>{uiCopy.board.participantsTitle}</CardTitle>
-          <div className={styles.participantsSummary}>
-            {participants.length ? (
-              <div className={styles.participantAvatarStack}>
-                {visibleParticipants.map((participant) => (
-                  <div
-                    key={participant.id}
-                    className={`${styles.participantAvatar} ${styles.participantAvatarCompact}`}
-                    title={participant.name}
-                  >
-                    {participant.photoURL ? (
-                      <Image
-                        className={styles.participantAvatarImage}
-                        src={participant.photoURL}
-                        alt={participant.name}
-                        width={28}
-                        height={28}
-                        unoptimized
-                      />
-                    ) : (
-                      <span className={styles.participantAvatarFallback}>
-                        {participant.name.slice(0, 1).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
-                ))}
-                {remainingCount > 0 ? (
-                  <div
-                    className={`${styles.participantAvatar} ${styles.participantAvatarCompact} ${styles.participantAvatarOverflow}`}
-                  >
-                    +{remainingCount}
-                  </div>
-                ) : null}
-              </div>
+        <div className={styles.participantsHeaderLeft}>
+          <div className={styles.participantsHeaderMain}>
+            <CardTitle>{uiCopy.board.participantsTitle}</CardTitle>
+            <div className={styles.participantsSummary}>
+              {participants.length ? (
+                <div className={styles.participantAvatarStack}>
+                  {visibleParticipants.map((participant) => (
+                    <div
+                      key={participant.id}
+                      className={`${styles.participantAvatar} ${styles.participantAvatarCompact}`}
+                      title={participant.name}
+                    >
+                      {participant.photoURL ? (
+                        <Image
+                          className={styles.participantAvatarImage}
+                          src={participant.photoURL}
+                          alt={participant.name}
+                          width={28}
+                          height={28}
+                          unoptimized
+                        />
+                      ) : (
+                        <span className={styles.participantAvatarFallback}>
+                          {participant.name.slice(0, 1).toUpperCase()}
+                        </span>
+                      )}
+                    </div>
+                  ))}
+                  {remainingCount > 0 ? (
+                    <div
+                      className={`${styles.participantAvatar} ${styles.participantAvatarCompact} ${styles.participantAvatarOverflow}`}
+                    >
+                      +{remainingCount}
+                    </div>
+                  ) : null}
+                </div>
+              ) : (
+                <span className={styles.participantsSummaryEmpty}>
+                  {uiCopy.board.onlyYou}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className={styles.participantsHeaderActions}>
+            <Button
+              type="button"
+              variant="ghost"
+              size="xs"
+              onClick={() => setOpen((current) => !current)}
+            >
+              {open ? uiCopy.board.participantsHide : uiCopy.board.participantsShow}
+            </Button>
+            {isOwner ? (
+              <Button
+                type="button"
+                size="xs"
+                onClick={() => setOpen(true)}
+              >
+                {uiCopy.board.inviteMember}
+              </Button>
             ) : (
-              <span className={styles.participantsSummaryEmpty}>
-                {uiCopy.board.onlyYou}
-              </span>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                    className={styles.leaveBoardButton}
+                    disabled={leavePending}
+                  >
+                    {leavePending ? (
+                      <Spinner size="xs" className={styles.buttonSpinner} aria-hidden="true" />
+                    ) : null}
+                    {uiCopy.board.leaveBoard}
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>{uiCopy.board.leaveBoardTitle}</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {uiCopy.board.leaveBoardDescription}
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel type="button">
+                      {uiCopy.common.cancel}
+                    </AlertDialogCancel>
+                    <AlertDialogAction
+                      type="button"
+                      variant="destructive"
+                      disabled={leavePending}
+                      onClick={onLeaveBoard}
+                    >
+                      {uiCopy.board.leaveBoardConfirm}
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             )}
           </div>
         </div>
-        <div className={styles.participantsHeaderActions}>
-          <Button
-            type="button"
-            variant="ghost"
-            size="xs"
-            onClick={() => setOpen((current) => !current)}
-          >
-            {open ? uiCopy.board.participantsHide : uiCopy.board.participantsShow}
-          </Button>
-          {isOwner ? (
-            <Button
-              type="button"
-              size="xs"
-              onClick={() => setOpen(true)}
-            >
-              {uiCopy.board.inviteMember}
-            </Button>
-          ) : (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="xs"
-                  className={styles.leaveBoardButton}
-                  disabled={leavePending}
-                >
-                  {leavePending ? (
-                    <Spinner size="xs" className={styles.buttonSpinner} aria-hidden="true" />
-                  ) : null}
-                  {uiCopy.board.leaveBoard}
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{uiCopy.board.leaveBoardTitle}</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    {uiCopy.board.leaveBoardDescription}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel type="button">
-                    {uiCopy.common.cancel}
-                  </AlertDialogCancel>
-                  <AlertDialogAction
-                    type="button"
-                    variant="destructive"
-                    disabled={leavePending}
-                    onClick={onLeaveBoard}
-                  >
-                    {uiCopy.board.leaveBoardConfirm}
-                  </AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-        </div>
+        {canEdit ? (
+          <div className={styles.participantsHeaderColumn}>
+            <form className={styles.participantsColumnForm} onSubmit={onCreateColumn}>
+              <Label className="srOnly" htmlFor="participants-new-column-title">
+                {uiCopy.board.columnNamePlaceholder}
+              </Label>
+              <Input
+                id="participants-new-column-title"
+                className={`${styles.columnTitleInput} ${styles.headerColumnInput}`}
+                value={newColumnTitle}
+                onChange={(event) => onNewColumnTitleChange(event.target.value)}
+                placeholder={uiCopy.board.columnNamePlaceholder}
+                aria-label={uiCopy.board.columnNamePlaceholder}
+                disabled={!canEdit || creatingColumn}
+                data-testid="new-column-title"
+              />
+              <Button
+                type="submit"
+                size="sm"
+                disabled={!canEdit || creatingColumn}
+                data-testid="create-column-submit"
+              >
+                {creatingColumn ? (
+                  <Spinner
+                    size="sm"
+                    className={styles.buttonSpinner}
+                    aria-hidden="true"
+                  />
+                ) : null}
+                {creatingColumn
+                  ? uiCopy.board.creatingColumn
+                  : uiCopy.board.createColumn}
+              </Button>
+            </form>
+          </div>
+        ) : null}
       </CardHeader>
       {open ? (
         <CardContent>
@@ -226,8 +268,8 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
                         {roleLabels[uiLocale][participant.role]}
                       </Badge>
                       {isOwner &&
-                      !participant.isYou &&
-                      participant.role !== "owner" ? (
+                        !participant.isYou &&
+                        participant.role !== "owner" ? (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button
