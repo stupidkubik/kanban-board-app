@@ -31,6 +31,8 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
+import { Badge } from "@/components/ui/badge"
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field"
 import { useNotifications } from "@/features/notifications/ui/notifications-provider"
 import styles from "@/features/home/ui/kanban-app.module.css"
 
@@ -174,7 +176,9 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
     >
       <div className={styles.boardCover} style={coverStyle}>
         <div className={styles.boardCoverTop}>
-          <span className={styles.boardRoleBadge}>{roleLabel}</span>
+          <Badge variant="outline" className={styles.boardRoleBadge}>
+            {roleLabel}
+          </Badge>
           {canEditBoard ? (
             <div onClick={(event) => event.stopPropagation()}>
               <AlertDialog
@@ -218,13 +222,21 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                     }}
                   >
                     <div className={styles.modalFields}>
-                      <Input
-                        className={styles.modalInput}
-                        value={renameTitle}
-                        onChange={(event) => setRenameTitle(event.target.value)}
-                        placeholder={uiCopy.board.boardNamePlaceholder}
-                        aria-label={uiCopy.board.boardNamePlaceholder}
-                      />
+                      <Field>
+                        <FieldLabel className="srOnly" htmlFor={`rename-board-${board.id}`}>
+                          {uiCopy.board.boardNamePlaceholder}
+                        </FieldLabel>
+                        <FieldContent>
+                          <Input
+                            id={`rename-board-${board.id}`}
+                            className={styles.modalInput}
+                            value={renameTitle}
+                            onChange={(event) => setRenameTitle(event.target.value)}
+                            placeholder={uiCopy.board.boardNamePlaceholder}
+                            aria-label={uiCopy.board.boardNamePlaceholder}
+                          />
+                        </FieldContent>
+                      </Field>
                     </div>
                     <AlertDialogFooter className={styles.modalFooter}>
                       <AlertDialogCancel type="button">

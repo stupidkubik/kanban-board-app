@@ -9,6 +9,7 @@ import { getBoardCoverGradient } from "@/lib/board-cover"
 import { type BoardCopy } from "@/lib/types/board-ui"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import {
@@ -86,14 +87,18 @@ export function HeaderSection({
         <div className={styles.actions}>
           <div className={styles.actionsSecondary}>
             <div className={styles.languageControl}>
-              <span className={styles.languageLabel}>
+              <Label
+                className={styles.languageLabel}
+                htmlFor={`board-language-${boardId}`}
+              >
                 {uiCopy.common.interfaceLanguage}
-              </span>
+              </Label>
               <Select
                 value={uiLocale}
                 onValueChange={(value) => onUiLocaleChange(value as Locale)}
               >
                 <SelectTrigger
+                  id={`board-language-${boardId}`}
                   size="sm"
                   aria-label={uiCopy.common.interfaceLanguage}
                   className={styles.languageSelect}
@@ -119,7 +124,11 @@ export function HeaderSection({
             {canEdit ? (
               showAddColumn ? (
                 <form className={styles.inlineForm} onSubmit={onCreateColumn}>
+                  <Label className="srOnly" htmlFor={`new-column-title-${boardId}`}>
+                    {uiCopy.board.columnNamePlaceholder}
+                  </Label>
                   <Input
+                    id={`new-column-title-${boardId}`}
                     className={`${styles.columnTitleInput} ${styles.headerColumnInput}`}
                     value={newColumnTitle}
                     onChange={(event) => onNewColumnTitleChange(event.target.value)}

@@ -7,6 +7,8 @@ import { clientDb } from "@/lib/firebase/client"
 import { getCopy, roleLabels, type Locale } from "@/lib/i18n"
 import { type Invite } from "@/lib/store/firestore-api"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Card } from "@/components/ui/card"
 import styles from "@/features/home/ui/kanban-app.module.css"
 
 type KanbanInvitesSectionProps = {
@@ -69,33 +71,38 @@ export function KanbanInvitesSection({
   }
 
   return (
-    <section className={styles.card}>
-      <div className={styles.cardHeader}>
-        <h3 className={styles.cardTitle}>{uiCopy.board.invitationsTitle}</h3>
-        <p className={styles.cardSubtitle}>{uiCopy.board.invitationsSubtitle}</p>
-      </div>
-      <div className={styles.cardContent}>
-        {invites.map((invite) => (
-          <div key={invite.id} className={styles.boardCard}>
-            <div>{invite.boardTitle}</div>
-            <div className={styles.muted}>
-              {uiCopy.board.roleLabel}: {roleLabels[uiLocale][invite.role]}
+    <Card asChild className={styles.card}>
+      <section>
+        <div className={styles.cardHeader}>
+          <h3 className={styles.cardTitle}>{uiCopy.board.invitationsTitle}</h3>
+          <p className={styles.cardSubtitle}>{uiCopy.board.invitationsSubtitle}</p>
+        </div>
+        <div className={styles.cardContent}>
+          {invites.map((invite) => (
+            <div key={invite.id} className={styles.boardCard}>
+              <div>{invite.boardTitle}</div>
+              <div className={styles.inviteMeta}>
+                <span className={styles.inviteRoleLabel}>{uiCopy.board.roleLabel}</span>
+                <Badge variant="outline" className={styles.inviteRoleBadge}>
+                  {roleLabels[uiLocale][invite.role]}
+                </Badge>
+              </div>
+              <div className={styles.row}>
+                <Button onClick={() => handleAcceptInvite(invite)} type="button">
+                  {uiCopy.board.acceptInvite}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleDeclineInvite(invite)}
+                  type="button"
+                >
+                  {uiCopy.board.declineInvite}
+                </Button>
+              </div>
             </div>
-            <div className={styles.row}>
-              <Button onClick={() => handleAcceptInvite(invite)} type="button">
-                {uiCopy.board.acceptInvite}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => handleDeclineInvite(invite)}
-                type="button"
-              >
-                {uiCopy.board.declineInvite}
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
-    </section>
+          ))}
+        </div>
+      </section>
+    </Card>
   )
 }

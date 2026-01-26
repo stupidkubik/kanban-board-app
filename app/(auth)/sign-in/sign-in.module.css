@@ -3,7 +3,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 40px 16px;
+  padding: calc(var(--page-gutter-y) + 8px) var(--page-gutter);
 }
 
 .card {
@@ -71,6 +71,7 @@
   letter-spacing: 0;
   text-transform: none;
   color: var(--color-muted);
+  font-weight: 400;
 }
 
 .form {

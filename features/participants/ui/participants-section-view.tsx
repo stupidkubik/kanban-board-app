@@ -10,6 +10,8 @@ import { type Participant } from "@/lib/types/board-ui"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import { Badge } from "@/components/ui/badge"
+import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import {
   AlertDialog,
@@ -207,9 +209,9 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
                             {participant.name}
                           </span>
                           {participant.isYou ? (
-                            <span className={styles.participantBadge}>
+                            <Badge variant="outline" className={styles.participantBadge}>
                               {uiCopy.board.youLabel}
-                            </span>
+                            </Badge>
                           ) : null}
                         </div>
                         {participant.secondaryLabel ? (
@@ -220,9 +222,9 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
                       </div>
                     </div>
                     <div className={styles.participantActions}>
-                      <span className={styles.participantRole}>
+                      <Badge variant="outline" className={styles.participantRole}>
                         {roleLabels[uiLocale][participant.role]}
-                      </span>
+                      </Badge>
                       {isOwner &&
                       !participant.isYou &&
                       participant.role !== "owner" ? (
@@ -277,9 +279,12 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
               ) : null}
               {isOwner ? (
                 <form className={styles.inviteForm} onSubmit={onInviteSubmit}>
-                  <div className={styles.inviteLabel}>{uiCopy.board.inviteMember}</div>
+                  <Label className={styles.inviteLabel} htmlFor="invite-email">
+                    {uiCopy.board.inviteMember}
+                  </Label>
                   <div className={styles.inviteRow}>
                     <Input
+                      id="invite-email"
                       className={styles.inviteInput}
                       value={inviteEmail}
                       onChange={(event) => onInviteEmailChange(event.target.value)}

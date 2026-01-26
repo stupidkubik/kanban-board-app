@@ -17,8 +17,10 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field"
 import {
   Select,
   SelectContent,
@@ -94,86 +96,106 @@ export function KanbanBoardsSection({
   }
 
   return (
-    <section className={styles.card}>
-      <div className={`${styles.cardHeader} ${styles.sectionHeader}`}>
-        <div>
-          <h3 className={styles.cardTitle}>{uiCopy.board.boardSectionTitle}</h3>
-          <p className={styles.cardSubtitle}>{uiCopy.board.boardSectionSubtitle}</p>
+    <Card asChild className={styles.card}>
+      <section>
+        <div className={`${styles.cardHeader} ${styles.sectionHeader}`}>
+          <div>
+            <h3 className={styles.cardTitle}>{uiCopy.board.boardSectionTitle}</h3>
+            <p className={styles.cardSubtitle}>{uiCopy.board.boardSectionSubtitle}</p>
+          </div>
+          <AlertDialog open={createOpen} onOpenChange={setCreateOpen}>
+            <AlertDialogTrigger asChild>
+              <Button type="button" size="sm" data-testid="create-board-trigger">
+                {uiCopy.board.createBoard}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{uiCopy.board.createBoard}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {uiCopy.board.boardSectionSubtitle}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <form className={styles.modalForm} onSubmit={handleCreateBoardSubmit}>
+                <div className={styles.modalFields}>
+                  <Field>
+                    <FieldLabel className="srOnly" htmlFor="create-board-title">
+                      {uiCopy.board.boardNamePlaceholder}
+                    </FieldLabel>
+                    <FieldContent>
+                      <Input
+                        id="create-board-title"
+                        value={title}
+                        onChange={(event) => setTitle(event.target.value)}
+                        placeholder={uiCopy.board.boardNamePlaceholder}
+                        aria-label={uiCopy.board.boardNamePlaceholder}
+                        data-testid="create-board-title"
+                      />
+                    </FieldContent>
+                  </Field>
+                  <Field>
+                    <FieldLabel className="srOnly" htmlFor="create-board-language">
+                      {uiCopy.board.boardLanguageLabel}
+                    </FieldLabel>
+                    <FieldContent>
+                      <Select
+                        value={newBoardLanguage}
+                        onValueChange={(value) => {
+                          setNewBoardLanguage(value as BoardLanguage)
+                          setNewBoardLanguageTouched(true)
+                        }}
+                      >
+                        <SelectTrigger
+                          id="create-board-language"
+                          aria-label={uiCopy.board.boardLanguageLabel}
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ru">{languageLabels.ru}</SelectItem>
+                          <SelectItem value="en">{languageLabels.en}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </FieldContent>
+                  </Field>
+                </div>
+                <AlertDialogFooter className={styles.modalFooter}>
+                  <AlertDialogCancel type="button">
+                    {uiCopy.common.cancel}
+                  </AlertDialogCancel>
+                  <Button
+                    type="submit"
+                    disabled={creating}
+                    data-testid="create-board-submit"
+                  >
+                    {creating ? (
+                      <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
+                    ) : null}
+                    {creating ? uiCopy.board.creatingBoard : uiCopy.board.createBoard}
+                  </Button>
+                </AlertDialogFooter>
+              </form>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
-        <AlertDialog open={createOpen} onOpenChange={setCreateOpen}>
-          <AlertDialogTrigger asChild>
-            <Button type="button" size="sm" data-testid="create-board-trigger">
-              {uiCopy.board.createBoard}
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>{uiCopy.board.createBoard}</AlertDialogTitle>
-              <AlertDialogDescription>
-                {uiCopy.board.boardSectionSubtitle}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <form className={styles.modalForm} onSubmit={handleCreateBoardSubmit}>
-              <div className={styles.modalFields}>
-                <Input
-                  value={title}
-                  onChange={(event) => setTitle(event.target.value)}
-                  placeholder={uiCopy.board.boardNamePlaceholder}
-                  aria-label={uiCopy.board.boardNamePlaceholder}
-                  data-testid="create-board-title"
+        <div className={styles.cardContent}>
+          <div className={styles.boardGrid}>
+            {boards.length ? (
+              boards.map((board) => (
+                <KanbanBoardCard
+                  key={board.id}
+                  board={board}
+                  onError={onError}
+                  uiLocale={uiLocale}
+                  user={user}
                 />
-                <Select
-                  value={newBoardLanguage}
-                  onValueChange={(value) => {
-                    setNewBoardLanguage(value as BoardLanguage)
-                    setNewBoardLanguageTouched(true)
-                  }}
-                >
-                  <SelectTrigger aria-label={uiCopy.board.boardLanguageLabel}>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ru">{languageLabels.ru}</SelectItem>
-                    <SelectItem value="en">{languageLabels.en}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <AlertDialogFooter className={styles.modalFooter}>
-                <AlertDialogCancel type="button">
-                  {uiCopy.common.cancel}
-                </AlertDialogCancel>
-                <Button
-                  type="submit"
-                  disabled={creating}
-                  data-testid="create-board-submit"
-                >
-                  {creating ? (
-                    <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
-                  ) : null}
-                  {creating ? uiCopy.board.creatingBoard : uiCopy.board.createBoard}
-                </Button>
-              </AlertDialogFooter>
-            </form>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
-      <div className={styles.cardContent}>
-        <div className={styles.boardGrid}>
-          {boards.length ? (
-            boards.map((board) => (
-              <KanbanBoardCard
-                key={board.id}
-                board={board}
-                onError={onError}
-                uiLocale={uiLocale}
-                user={user}
-              />
-            ))
-          ) : (
-            <p className={styles.muted}>{uiCopy.board.noBoards}</p>
-          )}
+              ))
+            ) : (
+              <p className={styles.muted}>{uiCopy.board.noBoards}</p>
+            )}
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </Card>
   )
 }

@@ -144,6 +144,7 @@
   text-transform: none;
   color: var(--color-muted);
   white-space: nowrap;
+  font-weight: 400;
 }
 
 .languageSelect {
@@ -358,6 +359,7 @@
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--color-muted);
+  background: transparent;
 }
 
 .participantSecondary {
@@ -414,6 +416,7 @@
   border: 1px solid var(--color-border);
   border-radius: 999px;
   padding: 3px 8px;
+  background: transparent;
 }
 
 .participantActions {
@@ -464,6 +467,7 @@
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--color-muted);
+  font-weight: 400;
 }
 
 .inviteRow {

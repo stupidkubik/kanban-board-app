@@ -33,6 +33,12 @@
   --focus-ring: 0 0 0 3px rgba(12, 102, 228, 0.28);
   --focus-ring-danger: 0 0 0 3px rgba(220, 38, 38, 0.22);
   --gradient-page: linear-gradient(145deg, #d9ebff 0%, #eff6ff 45%, #f6f8fc 100%);
+  --page-texture:
+    radial-gradient(900px 520px at 8% -10%, rgba(37, 99, 235, 0.16), transparent 65%),
+    radial-gradient(720px 460px at 92% 0%, rgba(34, 211, 238, 0.12), transparent 65%);
+  --page-gutter: clamp(16px, 3vw, 28px);
+  --page-gutter-y: clamp(20px, 3.2vw, 32px);
+  --page-gap: clamp(16px, 2.2vw, 24px);
 }
 
 :root[data-theme="dark"],
@@ -68,6 +74,9 @@ body[data-theme="dark"] {
   --focus-ring: 0 0 0 3px rgba(96, 165, 250, 0.4);
   --focus-ring-danger: 0 0 0 3px rgba(248, 113, 113, 0.35);
   --gradient-page: linear-gradient(155deg, #0b1220 0%, #0f172a 50%, #101826 100%);
+  --page-texture:
+    radial-gradient(900px 520px at 8% -10%, rgba(59, 130, 246, 0.12), transparent 65%),
+    radial-gradient(720px 460px at 92% 0%, rgba(56, 189, 248, 0.1), transparent 65%);
 }
 
 
@@ -86,8 +95,8 @@ body {
   margin: 0;
   font-family: var(--font-sans), "Segoe UI", sans-serif;
   background-color: var(--color-bg);
-  background-image: var(--gradient-page);
-  background-attachment: fixed;
+  background-image: var(--page-texture), var(--gradient-page);
+  background-attachment: scroll, fixed;
   color: var(--color-text);
 }
 
@@ -101,4 +110,16 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

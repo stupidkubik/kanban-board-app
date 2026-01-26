@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Spinner } from "@/components/ui/spinner"
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field"
+import { Label } from "@/components/ui/label"
 import styles from "@/features/board/ui/board-page.module.css"
 
 type DragCardData = { columnId?: string }
@@ -235,25 +237,48 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
       ) : null}
       {showAddCard ? (
         <form className={styles.cardForm} onSubmit={onCreateCard}>
-          <Input
-            value={newCardTitle}
-            onChange={(event) => onChangeCardTitle(event.target.value)}
-            placeholder={uiCopy.board.cardTitlePlaceholder}
-            aria-label={uiCopy.board.cardTitlePlaceholder}
-            disabled={!canEdit || creatingCard}
-            data-testid={`new-card-title-${columnId}`}
-          />
-          <Textarea
-            value={newCardDescription}
-            onChange={(event) => onChangeCardDescription(event.target.value)}
-            placeholder={uiCopy.board.cardDescriptionPlaceholder}
-            aria-label={uiCopy.board.cardDescriptionPlaceholder}
-            rows={3}
-            disabled={!canEdit || creatingCard}
-            data-testid={`new-card-description-${columnId}`}
-          />
+          <Field>
+            <FieldLabel className="srOnly" htmlFor={`new-card-title-${columnId}`}>
+              {uiCopy.board.cardTitlePlaceholder}
+            </FieldLabel>
+            <FieldContent>
+              <Input
+                id={`new-card-title-${columnId}`}
+                value={newCardTitle}
+                onChange={(event) => onChangeCardTitle(event.target.value)}
+                placeholder={uiCopy.board.cardTitlePlaceholder}
+                aria-label={uiCopy.board.cardTitlePlaceholder}
+                disabled={!canEdit || creatingCard}
+                data-testid={`new-card-title-${columnId}`}
+              />
+            </FieldContent>
+          </Field>
+          <Field>
+            <FieldLabel
+              className="srOnly"
+              htmlFor={`new-card-description-${columnId}`}
+            >
+              {uiCopy.board.cardDescriptionPlaceholder}
+            </FieldLabel>
+            <FieldContent>
+              <Textarea
+                id={`new-card-description-${columnId}`}
+                value={newCardDescription}
+                onChange={(event) => onChangeCardDescription(event.target.value)}
+                placeholder={uiCopy.board.cardDescriptionPlaceholder}
+                aria-label={uiCopy.board.cardDescriptionPlaceholder}
+                rows={3}
+                disabled={!canEdit || creatingCard}
+                data-testid={`new-card-description-${columnId}`}
+              />
+            </FieldContent>
+          </Field>
           <div className={styles.cardFormRow}>
+            <Label className="srOnly" htmlFor={`new-card-due-${columnId}`}>
+              {uiCopy.board.cardDueDateLabel}
+            </Label>
             <Input
+              id={`new-card-due-${columnId}`}
               className={styles.cardDateInput}
               value={newCardDue}
               onChange={(event) => onChangeCardDue(event.target.value)}

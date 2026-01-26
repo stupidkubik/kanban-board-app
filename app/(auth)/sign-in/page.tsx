@@ -15,6 +15,7 @@ import {
 import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -102,13 +103,19 @@ export default function SignInPage() {
   }, [])
   const languageControls = (
     <div className={`${styles.row} ${styles.utilityBar}`}>
-      <div className={styles.rowLabel}>{uiCopy.common.interfaceLanguage}</div>
+      <Label className={styles.rowLabel} htmlFor="sign-in-locale">
+        {uiCopy.common.interfaceLanguage}
+      </Label>
       <div className={styles.rowControls}>
         <Select
           value={uiLocale}
           onValueChange={(value) => handleUiLocaleChange(value as Locale)}
         >
-          <SelectTrigger aria-label={uiCopy.common.interfaceLanguage} size="sm">
+          <SelectTrigger
+            id="sign-in-locale"
+            aria-label={uiCopy.common.interfaceLanguage}
+            size="sm"
+          >
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -265,7 +272,11 @@ export default function SignInPage() {
           </div>
           <div className={styles.content}>
             <form className={styles.form} onSubmit={handlePasswordReset}>
+              <Label className="srOnly" htmlFor="reset-email">
+                {uiCopy.auth.emailPlaceholder}
+              </Label>
               <Input
+                id="reset-email"
                 type="email"
                 placeholder={uiCopy.auth.emailPlaceholder}
                 value={resetEmail}
@@ -306,14 +317,22 @@ export default function SignInPage() {
         </div>
         <div className={styles.content}>
           <form className={styles.form} onSubmit={handleEmailAuth}>
+            <Label className="srOnly" htmlFor="auth-email">
+              {uiCopy.auth.emailPlaceholder}
+            </Label>
             <Input
+              id="auth-email"
               type="email"
               placeholder={uiCopy.auth.emailPlaceholder}
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
             />
+            <Label className="srOnly" htmlFor="auth-password">
+              {uiCopy.auth.passwordPlaceholder}
+            </Label>
             <Input
+              id="auth-password"
               type="password"
               placeholder={uiCopy.auth.passwordPlaceholder}
               value={password}

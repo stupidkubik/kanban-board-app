@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button"
 import { firestoreApi } from "@/lib/store/firestore-api"
 import { useAppDispatch } from "@/lib/store/hooks"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { Label } from "@/components/ui/label"
 import {
   Select,
   SelectContent,
@@ -191,11 +192,18 @@ export function KanbanApp() {
               <span className={styles.topBarUserValue}>{user.email ?? user.uid}</span>
             </div>
             <div className={styles.topBarActions}>
+              <Label className="srOnly" htmlFor="home-locale">
+                {uiCopy.common.interfaceLanguage}
+              </Label>
               <Select
                 value={uiLocale}
                 onValueChange={(value) => handleUiLocaleChange(value as Locale)}
               >
-                <SelectTrigger aria-label={uiCopy.common.interfaceLanguage} size="sm">
+                <SelectTrigger
+                  id="home-locale"
+                  aria-label={uiCopy.common.interfaceLanguage}
+                  size="sm"
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

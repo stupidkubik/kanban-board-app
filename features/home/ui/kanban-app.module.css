@@ -2,13 +2,24 @@
   width: 100%;
   min-height: 100vh;
   margin: 0;
-  padding: 32px 24px 48px;
+  padding: var(--page-gutter-y) var(--page-gutter)
+    calc(var(--page-gutter-y) + 16px);
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: var(--page-gap);
 }
 
 .card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.card[data-slot="card"] {
+  padding: 0;
+  gap: 0;
+  overflow: visible;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -257,6 +268,7 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.35);
+  color: #fff;
 }
 
 
@@ -374,6 +386,27 @@
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
+}
+
+.inviteMeta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.inviteRoleLabel {
+  font-size: 12px;
+  color: var(--color-muted);
+}
+
+.inviteRoleBadge {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 10px;
+  color: var(--color-muted);
+  border-color: var(--color-border);
+  background: transparent;
 }
 
 .error {
