@@ -3,6 +3,7 @@
 import * as React from "react"
 import {
   DndContext,
+  DragOverlay,
   type DndContextProps,
   type DragEndEvent,
   type DragOverEvent,
@@ -135,6 +136,20 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
   formatDueDate,
   isCardsLoading,
 }: ColumnsGridProps) {
+  const activeCard = React.useMemo(() => {
+    if (!activeCardId) {
+      return null
+    }
+    for (const columnCards of cardsByColumn.values()) {
+      const match = columnCards.find((card) => card.id === activeCardId)
+      if (match) {
+        return match
+      }
+    }
+    return null
+  }, [activeCardId, cardsByColumn])
+  const dueLabel = uiCopy.board.cardDueDateLabel
+
   return (
     <DndContext
       sensors={dndSensors}
@@ -286,6 +301,23 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
           <p className={styles.empty}>{uiCopy.board.noColumns}</p>
         )}
       </div>
+      <DragOverlay>
+        {activeCard ? (
+          <div className={`${styles.cardItem} ${styles.cardDragOverlay}`}>
+            <div className={styles.cardHeaderRow}>
+              <div className={styles.cardTitle}>{activeCard.title}</div>
+            </div>
+            {activeCard.description ? (
+              <div className={styles.cardDescription}>{activeCard.description}</div>
+            ) : null}
+            {activeCard.dueAt ? (
+              <div className={styles.cardMeta}>
+                {dueLabel}: {formatDueDate(activeCard.dueAt)}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </DragOverlay>
     </DndContext>
   )
 })

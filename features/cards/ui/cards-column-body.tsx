@@ -42,9 +42,15 @@ const SortableCardItem = ({
       data: { columnId: card.columnId } satisfies DragCardData,
       disabled: !canEdit,
     })
+  const hasTransform =
+    !!transform &&
+    (transform.x !== 0 ||
+      transform.y !== 0 ||
+      transform.scaleX !== 1 ||
+      transform.scaleY !== 1)
   const style: React.CSSProperties = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+    transform: isDragging || !hasTransform ? undefined : CSS.Transform.toString(transform),
+    transition: isDragging || !hasTransform ? undefined : transition,
     cursor: canEdit ? "grab" : "default",
   }
 

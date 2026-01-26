@@ -9,6 +9,7 @@ import { getBoardCoverGradient } from "@/lib/board-cover"
 import { type BoardCopy } from "@/lib/types/board-ui"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { Spinner } from "@/components/ui/spinner"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import {
   Select,
