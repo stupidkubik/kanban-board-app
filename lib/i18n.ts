@@ -113,6 +113,15 @@ type BoardCopy = {
   inviteEmailPlaceholder: string
   inviteButton: string
   inviteSending: string
+  removeMember: string
+  removeMemberTitle: string
+  removeMemberDescription: string
+  removeMemberConfirm: string
+  leaveBoard: string
+  leaveBoardTitle: string
+  leaveBoardDescription: string
+  leaveBoardConfirm: string
+  leaveBoardSuccess: string
   invitationsTitle: string
   invitationsSubtitle: string
   acceptInvite: string
@@ -140,10 +149,14 @@ type BoardCopy = {
     updateLanguageFailed: string
     signInToInvite: string
     onlyOwnerCanInvite: string
+    onlyOwnerCanRemove: string
     onlyOwnerCanDelete: string
     inviteInvalidEmail: string
     inviteSelf: string
     inviteFailed: string
+    removeMemberFailed: string
+    signInToLeave: string
+    leaveBoardFailed: string
     acceptInviteFailed: string
     declineInviteFailed: string
   }
@@ -266,6 +279,15 @@ const copy: Record<Locale, Copy> = {
       inviteEmailPlaceholder: "Email",
       inviteButton: "Пригласить",
       inviteSending: "Отправка...",
+      removeMember: "Удалить",
+      removeMemberTitle: "Удалить участника?",
+      removeMemberDescription: "Участник потеряет доступ к этой доске.",
+      removeMemberConfirm: "Удалить",
+      leaveBoard: "Покинуть доску",
+      leaveBoardTitle: "Покинуть доску?",
+      leaveBoardDescription: "Вы потеряете доступ к этой доске.",
+      leaveBoardConfirm: "Покинуть",
+      leaveBoardSuccess: "Вы покинули доску.",
       invitationsTitle: "Приглашения",
       invitationsSubtitle: "Доступ появится после принятия приглашения.",
       acceptInvite: "Принять",
@@ -293,10 +315,14 @@ const copy: Record<Locale, Copy> = {
         updateLanguageFailed: "Не удалось обновить язык доски.",
         signInToInvite: "Войдите, чтобы пригласить участников.",
         onlyOwnerCanInvite: "Приглашать может только владелец доски.",
+        onlyOwnerCanRemove: "Удалять участников может только владелец доски.",
         onlyOwnerCanDelete: "Удалять может только владелец доски.",
         inviteInvalidEmail: "Введите корректный email для приглашения.",
         inviteSelf: "Нельзя пригласить самого себя.",
         inviteFailed: "Не удалось отправить приглашение.",
+        removeMemberFailed: "Не удалось удалить участника.",
+        signInToLeave: "Войдите, чтобы покинуть доску.",
+        leaveBoardFailed: "Не удалось покинуть доску.",
         acceptInviteFailed: "Не удалось принять приглашение.",
         declineInviteFailed: "Не удалось отклонить приглашение.",
       },
@@ -412,6 +438,15 @@ const copy: Record<Locale, Copy> = {
       inviteEmailPlaceholder: "Email",
       inviteButton: "Invite",
       inviteSending: "Sending...",
+      removeMember: "Remove",
+      removeMemberTitle: "Remove member?",
+      removeMemberDescription: "This member will lose access to the board.",
+      removeMemberConfirm: "Remove",
+      leaveBoard: "Leave board",
+      leaveBoardTitle: "Leave board?",
+      leaveBoardDescription: "You will lose access to this board.",
+      leaveBoardConfirm: "Leave",
+      leaveBoardSuccess: "You left the board.",
       invitationsTitle: "Invitations",
       invitationsSubtitle: "Board access is granted only after acceptance.",
       acceptInvite: "Accept",
@@ -439,10 +474,14 @@ const copy: Record<Locale, Copy> = {
         updateLanguageFailed: "Update language error.",
         signInToInvite: "Sign in to invite members.",
         onlyOwnerCanInvite: "Only the board owner can send invites.",
+        onlyOwnerCanRemove: "Only the board owner can remove members.",
         onlyOwnerCanDelete: "Only the board owner can delete boards.",
         inviteInvalidEmail: "Enter a valid email for invitation.",
         inviteSelf: "You can't invite yourself.",
         inviteFailed: "Invite error.",
+        removeMemberFailed: "Remove member error.",
+        signInToLeave: "Sign in to leave the board.",
+        leaveBoardFailed: "Leave board error.",
         acceptInviteFailed: "Accept invite error.",
         declineInviteFailed: "Decline invite error.",
       },

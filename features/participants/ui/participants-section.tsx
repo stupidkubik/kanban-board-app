@@ -33,9 +33,13 @@ export const ParticipantsSection = React.memo(function ParticipantsSection({
     inviteEmail,
     inviteRole,
     invitePending,
+    removePendingId,
+    leavePending,
     setInviteEmail,
     setInviteRole,
     handleInvite,
+    handleRemoveParticipant,
+    handleLeaveBoard,
   } = useBoardParticipants({
     boardId,
     board,
@@ -58,9 +62,13 @@ export const ParticipantsSection = React.memo(function ParticipantsSection({
       inviteEmail={inviteEmail}
       inviteRole={inviteRole}
       invitePending={invitePending}
+      removePendingId={removePendingId}
+      leavePending={leavePending}
       onInviteEmailChange={setInviteEmail}
       onInviteRoleChange={setInviteRole}
       onInviteSubmit={handleInvite}
+      onRemoveParticipant={handleRemoveParticipant}
+      onLeaveBoard={handleLeaveBoard}
     />
   )
 })

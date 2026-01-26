@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import Image from "next/image"
+import { TrashSimple } from "@phosphor-icons/react"
 
 import { getCopy, roleLabels, type Locale } from "@/lib/i18n"
 import { type BoardRole } from "@/lib/types/boards"
@@ -10,6 +11,17 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import {
   Select,
   SelectContent,
@@ -27,9 +39,13 @@ type ParticipantsSectionViewProps = {
   inviteEmail: string
   inviteRole: BoardRole
   invitePending: boolean
+  removePendingId: string | null
+  leavePending: boolean
   onInviteEmailChange: (value: string) => void
   onInviteRoleChange: (role: BoardRole) => void
   onInviteSubmit: (event: React.FormEvent<HTMLFormElement>) => void
+  onRemoveParticipant: (participantId: string) => void
+  onLeaveBoard: () => void
 }
 
 export const ParticipantsSectionView = React.memo(function ParticipantsSectionView({
@@ -40,9 +56,13 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
   inviteEmail,
   inviteRole,
   invitePending,
+  removePendingId,
+  leavePending,
   onInviteEmailChange,
   onInviteRoleChange,
   onInviteSubmit,
+  onRemoveParticipant,
+  onLeaveBoard,
 }: ParticipantsSectionViewProps) {
   const [open, setOpen] = React.useState(isOwner)
   const visibleParticipants = participants.slice(0, 5)
@@ -116,7 +136,45 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
             >
               {uiCopy.board.inviteMember}
             </Button>
-          ) : null}
+          ) : (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="xs"
+                  className={styles.leaveBoardButton}
+                  disabled={leavePending}
+                >
+                  {leavePending ? (
+                    <Spinner size="xs" className={styles.buttonSpinner} aria-hidden="true" />
+                  ) : null}
+                  {uiCopy.board.leaveBoard}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>{uiCopy.board.leaveBoardTitle}</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {uiCopy.board.leaveBoardDescription}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel type="button">
+                    {uiCopy.common.cancel}
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    type="button"
+                    variant="destructive"
+                    disabled={leavePending}
+                    onClick={onLeaveBoard}
+                  >
+                    {uiCopy.board.leaveBoardConfirm}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
         </div>
       </CardHeader>
       {open ? (
@@ -161,9 +219,56 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
                         ) : null}
                       </div>
                     </div>
-                    <span className={styles.participantRole}>
-                      {roleLabels[uiLocale][participant.role]}
-                    </span>
+                    <div className={styles.participantActions}>
+                      <span className={styles.participantRole}>
+                        {roleLabels[uiLocale][participant.role]}
+                      </span>
+                      {isOwner &&
+                      !participant.isYou &&
+                      participant.role !== "owner" ? (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="icon-xs"
+                              className={styles.participantRemoveButton}
+                              disabled={removePendingId === participant.id}
+                              aria-label={uiCopy.board.removeMember}
+                            >
+                              {removePendingId === participant.id ? (
+                                <Spinner size="xs" aria-hidden="true" />
+                              ) : (
+                                <TrashSimple weight="bold" />
+                              )}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                {uiCopy.board.removeMemberTitle}
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {uiCopy.board.removeMemberDescription}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel type="button">
+                                {uiCopy.common.cancel}
+                              </AlertDialogCancel>
+                              <AlertDialogAction
+                                type="button"
+                                variant="destructive"
+                                disabled={removePendingId === participant.id}
+                                onClick={() => onRemoveParticipant(participant.id)}
+                              >
+                                {uiCopy.board.removeMemberConfirm}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      ) : null}
+                    </div>
                   </li>
                 ))}
               </ul>

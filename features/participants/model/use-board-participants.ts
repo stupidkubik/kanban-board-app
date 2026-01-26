@@ -2,13 +2,15 @@
 
 import * as React from "react"
 import type { User } from "firebase/auth"
-import { doc, setDoc, serverTimestamp } from "firebase/firestore"
+import { useRouter } from "next/navigation"
+import { deleteField, doc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore"
 
 import { useGetBoardMembersQuery } from "@/lib/store/firestore-api"
 import { clientDb } from "@/lib/firebase/client"
 import type { Board, BoardRole, BoardRoleLabel } from "@/lib/types/boards"
 import type { BoardCopy, Participant } from "@/lib/types/board-ui"
 import { isValidEmail } from "@/lib/validation"
+import { useNotifications } from "@/features/notifications/ui/notifications-provider"
 
 type UseBoardParticipantsParams = {
   boardId: string | null
@@ -24,9 +26,13 @@ type UseBoardParticipantsResult = {
   inviteEmail: string
   inviteRole: BoardRole
   invitePending: boolean
+  removePendingId: string | null
+  leavePending: boolean
   setInviteEmail: (value: string) => void
   setInviteRole: (role: BoardRole) => void
   handleInvite: (event: React.FormEvent<HTMLFormElement>) => void
+  handleRemoveParticipant: (participantId: string) => void
+  handleLeaveBoard: () => void
 }
 
 export function useBoardParticipants({
@@ -37,9 +43,13 @@ export function useBoardParticipants({
   uiCopy,
   setError,
 }: UseBoardParticipantsParams): UseBoardParticipantsResult {
+  const router = useRouter()
+  const { notifySuccess } = useNotifications()
   const [inviteEmail, setInviteEmail] = React.useState("")
   const [inviteRole, setInviteRole] = React.useState<BoardRole>("editor")
   const [invitePending, setInvitePending] = React.useState(false)
+  const [removePendingId, setRemovePendingId] = React.useState<string | null>(null)
+  const [leavePending, setLeavePending] = React.useState(false)
 
   const { data: memberProfiles = [] } = useGetBoardMembersQuery(boardId ?? null, {
     skip: !boardId,
@@ -147,13 +157,108 @@ export function useBoardParticipants({
     user,
   ])
 
+  const handleRemoveParticipant = React.useCallback(async (participantId: string) => {
+    if (!board) {
+      return
+    }
+
+    if (!user) {
+      setError(uiCopy.board.errors.signInToInvite)
+      return
+    }
+
+    if (!isOwner) {
+      setError(uiCopy.board.errors.onlyOwnerCanRemove)
+      return
+    }
+
+    if (participantId === board.ownerId || participantId === user.uid) {
+      return
+    }
+
+    setError(null)
+    setRemovePendingId(participantId)
+
+    try {
+      await updateDoc(doc(clientDb, "boards", board.id), {
+        [`members.${participantId}`]: deleteField(),
+        [`roles.${participantId}`]: deleteField(),
+        updatedAt: serverTimestamp(),
+      })
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : uiCopy.board.errors.removeMemberFailed
+      )
+    } finally {
+      setRemovePendingId(null)
+    }
+  }, [
+    board,
+    isOwner,
+    setError,
+    uiCopy.board.errors.onlyOwnerCanRemove,
+    uiCopy.board.errors.removeMemberFailed,
+    uiCopy.board.errors.signInToInvite,
+    user,
+  ])
+
+  const handleLeaveBoard = React.useCallback(async () => {
+    if (!board) {
+      return
+    }
+
+    if (!user) {
+      setError(uiCopy.board.errors.signInToLeave)
+      return
+    }
+
+    if (board.ownerId === user.uid) {
+      return
+    }
+
+    setError(null)
+    setLeavePending(true)
+
+    try {
+      await updateDoc(doc(clientDb, "boards", board.id), {
+        [`members.${user.uid}`]: deleteField(),
+        [`roles.${user.uid}`]: deleteField(),
+        updatedAt: serverTimestamp(),
+      })
+      notifySuccess(uiCopy.board.leaveBoardSuccess)
+      await new Promise((resolve) => {
+        window.setTimeout(resolve, 250)
+      })
+      router.replace("/")
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : uiCopy.board.errors.leaveBoardFailed
+      )
+    } finally {
+      setLeavePending(false)
+    }
+  }, [
+    board,
+    notifySuccess,
+    router,
+    setError,
+    uiCopy.board.errors.leaveBoardFailed,
+    uiCopy.board.errors.signInToLeave,
+    uiCopy.board.leaveBoardSuccess,
+    user,
+  ])
+
   return {
     participants,
     inviteEmail,
     inviteRole,
     invitePending,
+    removePendingId,
+    leavePending,
     setInviteEmail,
     setInviteRole,
     handleInvite,
+    handleRemoveParticipant,
+    handleLeaveBoard,
   }
 }

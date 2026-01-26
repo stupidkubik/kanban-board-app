@@ -152,6 +152,20 @@ service cloud.firestore {
         && request.resource.data.roles[request.auth.uid] == inviteRole(boardId);
     }
 
+    function canLeaveBoard() {
+      return isSignedIn()
+        && resource.data.ownerId != request.auth.uid
+        && isMember()
+        && ownerUnchanged()
+        && onlyMembersAndRolesChanged()
+        && request.resource.data.members.diff(resource.data.members).affectedKeys()
+          .hasOnly([request.auth.uid])
+        && request.resource.data.roles.diff(resource.data.roles).affectedKeys()
+          .hasOnly([request.auth.uid])
+        && request.resource.data.members[request.auth.uid] == null
+        && request.resource.data.roles[request.auth.uid] == null;
+    }
+
     match /boards/{boardId} {
       allow read: if isMember();
       allow create: if isSignedIn()
@@ -177,7 +191,8 @@ service cloud.firestore {
           && request.resource.data.members[request.auth.uid] == true
           && request.resource.data.roles[request.auth.uid] == "owner")
         || (isEditor() && ownerUnchanged() && membersUnchanged() && rolesUnchanged())
-        || canAcceptInvite(boardId));
+        || canAcceptInvite(boardId)
+        || canLeaveBoard());
       allow delete: if isOwner();
     }
 

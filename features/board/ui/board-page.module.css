@@ -2,10 +2,11 @@
   width: 100%;
   min-height: 100vh;
   margin: 0;
-  padding: 20px 20px 40px;
+  padding: var(--page-gutter-y) var(--page-gutter)
+    calc(var(--page-gutter-y) + 12px);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--page-gap);
 }
 
 .header {
@@ -395,6 +396,10 @@
     justify-self: start;
   }
 
+  .participantActions {
+    justify-self: start;
+  }
+
   .participantName,
   .participantSecondary {
     white-space: normal;
@@ -409,6 +414,34 @@
   border: 1px solid var(--color-border);
   border-radius: 999px;
   padding: 3px 8px;
+}
+
+.participantActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.participantRemoveButton {
+  color: var(--color-muted);
+  border: 1px solid var(--color-border);
+}
+
+.participantRemoveButton:hover {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
+  border-color: rgba(220, 38, 38, 0.35);
+}
+
+.leaveBoardButton {
+  color: var(--color-danger);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+.leaveBoardButton:hover {
+  color: var(--color-danger);
+  background: var(--color-danger-soft);
 }
 
 .participantsEmpty {
@@ -477,16 +510,9 @@
   overflow-x: auto;
   overflow-y: visible;
   padding-bottom: 12px;
+  padding-right: var(--page-gutter);
   scroll-snap-type: x proximity;
   -webkit-overflow-scrolling: touch;
-  background:
-    linear-gradient(90deg, var(--color-bg) 0%, transparent 22%) left center,
-    linear-gradient(-90deg, var(--color-bg) 0%, transparent 22%) right center,
-    linear-gradient(90deg, var(--color-scroll-shadow) 0%, transparent 25%) left center,
-    linear-gradient(-90deg, var(--color-scroll-shadow) 0%, transparent 25%) right center;
-  background-repeat: no-repeat;
-  background-size: 42px 100%, 42px 100%, 14px 100%, 14px 100%;
-  background-attachment: local, local, scroll, scroll;
 }
 
 .columnCard {
@@ -495,13 +521,14 @@
   scroll-snap-align: start;
   background: var(--color-surface-muted);
   border-color: var(--color-border-strong);
-  box-shadow: var(--shadow-column);
+  box-shadow: none;
 }
 
 .columnCard[data-slot="card"] {
   padding: 0;
   gap: 10px;
   border-radius: var(--radius-md);
+  box-shadow: none;
 }
 
 .columnCard [data-slot="card-header"] {
