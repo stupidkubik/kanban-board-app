@@ -117,7 +117,6 @@ export const BoardContent = React.memo(function BoardContent({
         canEdit={canEdit}
         isOwner={isOwner}
         uiCopy={uiCopy}
-        uiLocale={uiLocale}
         setError={setError}
         columns={columns}
         isColumnsLoading={isColumnsLoading}

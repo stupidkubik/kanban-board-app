@@ -17,6 +17,15 @@ import styles from "@/features/board/ui/board-page.module.css"
 
 type DragCardData = { columnId?: string }
 
+const isOverdueDate = (value?: number) => {
+  if (!value) {
+    return false
+  }
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return value < today.getTime()
+}
+
 type SortableCardItemProps = {
   card: BoardCard
   canEdit: boolean
@@ -55,14 +64,20 @@ const SortableCardItem = ({
     transition: isDragging || !hasTransform ? undefined : transition,
     cursor: canEdit ? "grab" : "default",
   }
+  const isOverdue = isOverdueDate(card.dueAt)
+  const className = [
+    styles.cardItem,
+    isDragging ? styles.cardDragging : "",
+    isOverdue ? styles.cardItemOverdue : "",
+  ]
+    .filter(Boolean)
+    .join(" ")
 
   return (
     <li
       ref={setNodeRef}
       style={style}
-      className={
-        isDragging ? `${styles.cardItem} ${styles.cardDragging}` : styles.cardItem
-      }
+      className={className}
       data-testid={`card-${card.id}`}
       data-card-title={card.title}
       {...attributes}
@@ -244,6 +259,7 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
             <FieldContent>
               <Input
                 id={`new-card-title-${columnId}`}
+                className={styles.cardFormInput}
                 value={newCardTitle}
                 onChange={(event) => onChangeCardTitle(event.target.value)}
                 placeholder={uiCopy.board.cardTitlePlaceholder}
@@ -263,6 +279,7 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
             <FieldContent>
               <Textarea
                 id={`new-card-description-${columnId}`}
+                className={styles.cardFormTextarea}
                 value={newCardDescription}
                 onChange={(event) => onChangeCardDescription(event.target.value)}
                 placeholder={uiCopy.board.cardDescriptionPlaceholder}
@@ -279,7 +296,7 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
             </Label>
             <Input
               id={`new-card-due-${columnId}`}
-              className={styles.cardDateInput}
+              className={`${styles.cardDateInput} ${styles.cardFormInput}`}
               value={newCardDue}
               onChange={(event) => onChangeCardDue(event.target.value)}
               type="date"
@@ -289,6 +306,7 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
             />
             <Button
               type="submit"
+              size="sm"
               disabled={!canEdit || creatingCard}
               data-testid={`create-card-${columnId}`}
             >
@@ -302,6 +320,7 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
             <Button
               type="button"
               variant="ghost"
+              size="sm"
               onClick={onCancelCreateCard}
               data-testid={`cancel-card-${columnId}`}
             >

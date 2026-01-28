@@ -6,7 +6,6 @@ import type { DndContextProps } from "@dnd-kit/core"
 
 import type { Column } from "@/lib/types/boards"
 import type { BoardCopy } from "@/lib/types/board-ui"
-import type { Locale } from "@/lib/i18n"
 import { ColumnsGrid } from "@/features/columns/ui/columns-grid"
 import { CardDeleteDialog } from "@/features/cards/ui/card-delete-dialog"
 import { CardEditDialog } from "@/features/cards/ui/card-edit-dialog"
@@ -19,7 +18,6 @@ type CardsSectionProps = {
   canEdit: boolean
   isOwner: boolean
   uiCopy: BoardCopy
-  uiLocale: Locale
   setError: (message: string | null) => void
   columns: Column[]
   isColumnsLoading: boolean
@@ -41,7 +39,6 @@ export const CardsSection = React.memo(function CardsSection({
   canEdit,
   isOwner,
   uiCopy,
-  uiLocale,
   setError,
   columns,
   isColumnsLoading,
@@ -98,7 +95,6 @@ export const CardsSection = React.memo(function CardsSection({
     canEdit,
     isOwner,
     uiCopy,
-    uiLocale,
     setError,
   })
 

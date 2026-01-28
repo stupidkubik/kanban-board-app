@@ -687,6 +687,21 @@
   border-color: var(--color-border-strong);
 }
 
+.cardItemOverdue {
+  border-color: rgba(239, 68, 68, 0.45);
+  background: linear-gradient(
+      135deg,
+      rgba(239, 68, 68, 0.18),
+      rgba(248, 113, 113, 0.08)
+    ),
+    var(--color-surface);
+}
+
+.cardItemOverdue:hover,
+.cardItemOverdue:focus-within {
+  border-color: rgba(239, 68, 68, 0.55);
+}
+
 .cardItem:hover,
 .cardItem:focus-within {
   transform: translateY(-2px);
@@ -764,7 +779,7 @@
   color: var(--color-muted);
   white-space: pre-wrap;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -789,6 +804,15 @@
   gap: 8px;
 }
 
+.cardFormInput {
+  height: 32px;
+  font-size: 13px;
+}
+
+.cardFormTextarea {
+  font-size: 13px;
+}
+
 .cardFormRow {
   display: flex;
   flex-wrap: wrap;
@@ -798,6 +822,8 @@
 
 .cardDateInput {
   min-width: 140px;
+  height: 32px;
+  font-size: 13px;
 }
 
 .addCardButton {

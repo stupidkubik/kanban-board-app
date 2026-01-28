@@ -65,6 +65,7 @@ export function CardEditDialog({
             <FieldContent>
               <Input
                 id="edit-card-title"
+                className={styles.cardFormInput}
                 value={editingCard.title}
                 onChange={(event) => onFieldChange("title", event.target.value)}
                 placeholder={uiCopy.board.cardTitlePlaceholder}
@@ -81,6 +82,7 @@ export function CardEditDialog({
             <FieldContent>
               <Textarea
                 id="edit-card-description"
+                className={styles.cardFormTextarea}
                 value={editingCard.description}
                 onChange={(event) => onFieldChange("description", event.target.value)}
                 placeholder={uiCopy.board.cardDescriptionPlaceholder}
@@ -96,7 +98,7 @@ export function CardEditDialog({
             </Label>
             <Input
               id="edit-card-due"
-              className={styles.cardDateInput}
+              className={`${styles.cardDateInput} ${styles.cardFormInput}`}
               value={editingCard.due}
               onChange={(event) => onFieldChange("due", event.target.value)}
               type="date"
@@ -105,10 +107,10 @@ export function CardEditDialog({
             />
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel type="button">
+            <AlertDialogCancel type="button" size="sm">
               {uiCopy.common.cancel}
             </AlertDialogCancel>
-            <Button type="submit" disabled={!canEdit || updatingCard}>
+            <Button type="submit" size="sm" disabled={!canEdit || updatingCard}>
               {updatingCard ? (
                 <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
               ) : null}

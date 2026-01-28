@@ -33,6 +33,15 @@ import { CardsColumnBody } from "@/features/cards/ui/cards-column-body"
 import styles from "@/features/board/ui/board-page.module.css"
 import type { Card as BoardCard, Column } from "@/lib/types/boards"
 
+const isOverdueDate = (value?: number) => {
+  if (!value) {
+    return false
+  }
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return value < today.getTime()
+}
+
 type ColumnDropZoneProps = {
   id: string
   testId?: string
@@ -303,7 +312,15 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
       </div>
       <DragOverlay>
         {activeCard ? (
-          <div className={`${styles.cardItem} ${styles.cardDragOverlay}`}>
+          <div
+            className={[
+              styles.cardItem,
+              styles.cardDragOverlay,
+              isOverdueDate(activeCard.dueAt) ? styles.cardItemOverdue : "",
+            ]
+              .filter(Boolean)
+              .join(" ")}
+          >
             <div className={styles.cardHeaderRow}>
               <div className={styles.cardTitle}>{activeCard.title}</div>
             </div>

@@ -27,7 +27,6 @@ import {
 import { isNonEmpty } from "@/lib/validation"
 import type { Card as BoardCard } from "@/lib/types/boards"
 import type { BoardCopy } from "@/lib/types/board-ui"
-import type { Locale } from "@/lib/i18n"
 import { useNotifications } from "@/features/notifications/ui/notifications-provider"
 
 type DragCardData = { columnId?: string }
@@ -38,7 +37,6 @@ type UseBoardCardsArgs = {
   canEdit: boolean
   isOwner: boolean
   uiCopy: BoardCopy
-  uiLocale: Locale
   setError: (message: string | null) => void
 }
 
@@ -48,7 +46,6 @@ export const useBoardCards = ({
   canEdit,
   isOwner,
   uiCopy,
-  uiLocale,
   setError,
 }: UseBoardCardsArgs) => {
   const dispatch = useAppDispatch()
@@ -528,16 +525,16 @@ export const useBoardCards = ({
     setOverCardId(null)
   }, [])
 
-  const formatDueDate = React.useCallback(
-    (value?: number) => {
-      if (!value) {
-        return null
-      }
-      const locale = uiLocale === "ru" ? "ru-RU" : "en-US"
-      return new Date(value).toLocaleDateString(locale)
-    },
-    [uiLocale]
-  )
+  const formatDueDate = React.useCallback((value?: number) => {
+    if (!value) {
+      return null
+    }
+    const date = new Date(value)
+    const day = String(date.getDate()).padStart(2, "0")
+    const month = String(date.getMonth() + 1).padStart(2, "0")
+    const year = String(date.getFullYear()).slice(-2)
+    return `${day}.${month}.${year}`
+  }, [])
 
   return {
     cards,
