@@ -35,6 +35,14 @@ Server (Next.js API routes)
   └─ /api/boards/[boardId] (Admin SDK delete of board + subcollections)
 ```
 
+## Codebase Analysis (quick)
+- **Feature modules are cleanly separated** (`features/*`), with shared primitives in `components/ui` and shared utilities in `lib/`.
+- **Realtime flow**: RTK Query subscribes to Firestore `onSnapshot` and feeds cached data to UI, while optimistic updates keep interactions responsive.
+- **Ordering model**: cards use numeric `order` gaps to avoid mass reindexing; client groups cards by `columnId` for column rendering.
+- **UI state**: per-board UI drafts (new/edit card, etc.) live in Redux, keeping forms predictable across renders.
+- **DnD**: `dnd-kit` handles card moves; drag overlay is separate to avoid layout shifts.
+- **Localization**: UI locale is stored per user in `users/{uid}`; board language is stored per board.
+
 ## Feature Modules
 ```text
 features/
@@ -127,3 +135,6 @@ Notes:
 - Card order uses numeric gaps to avoid reindexing entire columns.
 - Cards live under each board for board-level queries; the client groups by column.
 - Firestore listeners keep multiple clients in sync in near-realtime.
+
+## Backlog
+See `BACKLOG.md` for future improvements with effort/benefit notes.
