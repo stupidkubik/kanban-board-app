@@ -79,6 +79,8 @@ app/            Next.js routes
 See `schema.md` for more details.
 
 ## Getting Started
+Requires Node.js 22 or newer (required by Firebase Admin SDK 14).
+
 Install dependencies:
 ```bash
 npm install

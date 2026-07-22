@@ -2,6 +2,9 @@
   "name": "kanban-board-app",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build && npm run check:server-trace",
@@ -25,7 +28,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "firebase": "^12.8.0",
-    "firebase-admin": "^13.6.0",
+    "firebase-admin": "^14.2.0",
     "next": "^16.2.6",
     "radix-ui": "^1.4.3",
     "react": "19.2.3",
