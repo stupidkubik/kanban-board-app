@@ -3,7 +3,6 @@ import {
   collection,
   doc,
   serverTimestamp,
-  setDoc,
   updateDoc,
 } from "firebase/firestore"
 
@@ -12,12 +11,21 @@ import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
 import type { BoardLanguage } from "@/lib/types/boards"
 
 export type CreateBoardInput = {
+  boardId?: string
   title: string
   ownerId: string
   language: BoardLanguage
   ownerDisplayName?: string | null
   ownerEmail?: string | null
   ownerPhotoURL?: string | null
+}
+
+export type AcceptBoardInviteInput = {
+  inviteId: string
+  boardId: string
+  displayName?: string | null
+  email?: string | null
+  photoURL?: string | null
 }
 
 export type UpdateBoardLanguageInput = {
@@ -71,35 +79,69 @@ const parseDeleteBoardError = async (response: Response) => {
 }
 
 export const createBoard = async ({
+  boardId,
   title,
-  ownerId,
   language,
   ownerDisplayName,
   ownerEmail,
   ownerPhotoURL,
 }: CreateBoardInput) => {
-  const boardRef = await addDoc(collection(clientDb, "boards"), {
-    title,
-    ownerId,
-    members: {
-      [ownerId]: true,
-    },
-    roles: {
-      [ownerId]: "owner",
-    },
-    language,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
+  const requestedBoardId = boardId ?? doc(collection(clientDb, "boards")).id
+  const response = await fetchWithAppCheck("/api/boards", {
+    method: "POST",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      boardId: requestedBoardId,
+      title,
+      language,
+      displayName: ownerDisplayName,
+      email: ownerEmail,
+      photoURL: ownerPhotoURL,
+    }),
   })
 
-  await setDoc(doc(clientDb, "boards", boardRef.id, "memberProfiles", ownerId), {
-    displayName: ownerDisplayName ?? null,
-    email: ownerEmail ?? null,
-    photoURL: ownerPhotoURL ?? null,
-    joinedAt: serverTimestamp(),
-  })
+  if (!response.ok) {
+    let message = "Create board failed"
+    try {
+      const payload = (await response.json()) as { error?: string }
+      message = payload.error ?? message
+    } catch {
+      // Keep the fallback error when the server does not return JSON.
+    }
+    throw new Error(message)
+  }
 
-  return boardRef.id
+  return requestedBoardId
+}
+
+export const acceptBoardInvite = async ({
+  inviteId,
+  boardId,
+  displayName,
+  email,
+  photoURL,
+}: AcceptBoardInviteInput) => {
+  const response = await fetchWithAppCheck(
+    `/api/invites/${encodeURIComponent(inviteId)}/accept`,
+    {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ boardId, displayName, email, photoURL }),
+    }
+  )
+
+  if (!response.ok) {
+    let message = "Accept invite failed"
+    try {
+      const payload = (await response.json()) as { error?: string }
+      message = payload.error ?? message
+    } catch {
+      // Keep the fallback error when the server does not return JSON.
+    }
+    throw new Error(message)
+  }
 }
 
 export const updateBoardLanguage = async ({

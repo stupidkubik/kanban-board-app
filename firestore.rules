@@ -192,8 +192,7 @@ service cloud.firestore {
           && request.resource.data.roles[request.auth.uid] == "owner"
           && membersUnchanged()
           && rolesUnchanged())
-        || (isEditor() && ownerUnchanged() && membersUnchanged() && rolesUnchanged())
-        || canAcceptInvite(boardId));
+        || (isEditor() && ownerUnchanged() && membersUnchanged() && rolesUnchanged()));
       allow delete: if isOwner();
     }
 

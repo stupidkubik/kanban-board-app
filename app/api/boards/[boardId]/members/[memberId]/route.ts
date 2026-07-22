@@ -16,9 +16,7 @@ export async function DELETE(
   {
     params,
   }: {
-    params:
-      | { boardId: string; memberId: string }
-      | Promise<{ boardId: string; memberId: string }>
+    params: Promise<{ boardId: string; memberId: string }>
   }
 ) {
   const appCheck = await verifyAppCheckToken(request)

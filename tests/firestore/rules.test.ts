@@ -180,7 +180,7 @@ describeRules("firestore rules", () => {
     )
   })
 
-  it("allows invite acceptance only with a valid invite and matching role", async () => {
+  it("reserves invite acceptance for the server", async () => {
     const boardId = `board-${Math.random().toString(36).slice(2)}`
     await seedBoard(env!, boardId)
 
@@ -192,7 +192,7 @@ describeRules("firestore rules", () => {
       .authenticatedContext("invitee", { email: inviteEmail })
       .firestore()
 
-    await assertSucceeds(
+    await assertFails(
       updateDoc(doc(inviteeDb, "boards", boardId), {
         "members.invitee": true,
         "roles.invitee": "viewer",

@@ -198,7 +198,7 @@ Realtime-query выбирает boards по динамическому полю 
 - language;
 - createdAt/updatedAt.
 
-Затем отдельной записью создаётся owner member profile. После успешной mutation board добавляется в cache, если listener ещё не успел прислать snapshot.
+Board и owner member profile создаются одной Admin SDK transaction через `POST /api/boards`. Клиент заранее генерирует board id, поэтому повтор того же запроса идемпотентен. После успешной mutation board добавляется в cache, если listener ещё не успел прислать snapshot.
 
 ### 6.5 Карточка доски
 
@@ -476,6 +476,13 @@ Legacy reads поддерживают `invitedBy -> invitedById`.
 
 ## 11. Server API и каскадное удаление
 
+`POST /api/boards`:
+
+1. Проверяет App Check и server session cookie.
+2. Валидирует title, language и заранее сгенерированный board id.
+3. Одной transaction создаёт board и профиль владельца.
+4. Повтор запроса с тем же id и теми же данными возвращает success; конфликтующие данные дают 409.
+
 `DELETE /api/boards/[boardId]`:
 
 1. Проверяет App Check в зависимости от конфигурации.
@@ -502,7 +509,9 @@ Legacy reads поддерживают `invitedBy -> invitedById`.
 3. Запрещает удаление/выход owner и проверяет актуальное membership.
 4. В одной transaction удаляет UID из `members`/`roles` и документ `memberProfiles/{uid}`.
 
-Прямое изменение membership для remove/leave запрещено Firestore Rules; client update сохраняется только для принятия валидного приглашения.
+`POST /api/invites/[inviteId]/accept` атомарно проверяет email/role приглашения, добавляет membership, создаёт профиль и удаляет invite. Повтор после успешной операции безопасен для уже добавленного участника.
+
+Прямое изменение membership для remove/leave и accept invite запрещено Firestore Rules.
 
 ## 12. Валидация и обработка ошибок
 

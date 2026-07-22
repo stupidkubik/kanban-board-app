@@ -1,9 +1,10 @@
 "use client"
 
 import { type User } from "firebase/auth"
-import { deleteDoc, doc, setDoc, serverTimestamp, writeBatch } from "firebase/firestore"
+import { deleteDoc, doc } from "firebase/firestore"
 
 import { clientDb } from "@/lib/firebase/client"
+import { acceptBoardInvite } from "@/lib/store/firestore-operations"
 import { getCopy, roleLabels, type Locale } from "@/lib/i18n"
 import { type Invite } from "@/lib/store/firestore-api"
 import { Button } from "@/components/ui/button"
@@ -34,27 +35,13 @@ export function KanbanInvitesSection({
     onError(null)
 
     try {
-      const boardRef = doc(clientDb, "boards", invite.boardId)
-      const inviteRef = doc(clientDb, "boardInvites", invite.id)
-      const batch = writeBatch(clientDb)
-
-      batch.update(boardRef, {
-        [`members.${user.uid}`]: true,
-        [`roles.${user.uid}`]: invite.role,
+      await acceptBoardInvite({
+        inviteId: invite.id,
+        boardId: invite.boardId,
+        displayName: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
       })
-      batch.delete(inviteRef)
-
-      await batch.commit()
-
-      await setDoc(
-        doc(clientDb, "boards", invite.boardId, "memberProfiles", user.uid),
-        {
-          displayName: user.displayName ?? null,
-          email: user.email ?? null,
-          photoURL: user.photoURL ?? null,
-          joinedAt: serverTimestamp(),
-        }
-      )
     } catch (err) {
       onError(err instanceof Error ? err.message : uiCopy.board.errors.acceptInviteFailed)
     }

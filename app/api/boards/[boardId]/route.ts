@@ -26,7 +26,7 @@ const deleteByQuery = async (query: Query) => {
 
 export async function DELETE(
   request: Request,
-  { params }: { params: { boardId: string } | Promise<{ boardId: string }> }
+  { params }: { params: Promise<{ boardId: string }> }
 ) {
   const appCheck = await verifyAppCheckToken(request)
   if (!appCheck.ok) {
