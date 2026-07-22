@@ -2,6 +2,7 @@ import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react"
 import { collection, doc, onSnapshot, orderBy, query, where } from "firebase/firestore"
 
 import { clientDb } from "@/lib/firebase/client"
+import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
 import {
   createBoard as createBoardDocument,
   createColumn as createColumnDocument,
@@ -55,6 +56,11 @@ export type { Invite } from "@/lib/store/firestore-normalizers"
 
 type MutationResult = { ok: true }
 type CreateBoardResult = MutationResult & { boardId: string }
+type BoardQueryState = {
+  status: "loading" | "ready" | "not-found" | "forbidden" | "error"
+  board: Board | null
+}
+type BoardQueryInput = { boardId: string | null; subscriptionKey: number }
 
 const mutationOk: MutationResult = { ok: true }
 
@@ -126,22 +132,23 @@ export const firestoreApi = createApi({
         unsubscribe()
       },
     }),
-    getBoard: builder.query<Board | null, string | null>({
-      queryFn: async () => ({ data: null }),
+    getBoard: builder.query<BoardQueryState, BoardQueryInput>({
+      queryFn: async () => ({ data: { status: "loading", board: null } }),
       keepUnusedDataFor: 60,
-      providesTags: (_result, _error, boardId) =>
-        boardId
-          ? [{ type: "Board" as const, id: boardId }]
+      providesTags: (_result, _error, args) =>
+        args.boardId
+          ? [{ type: "Board" as const, id: args.boardId }]
           : [{ type: "Board" as const, id: "DETAIL" }],
       async onCacheEntryAdded(
-        boardId,
+        args,
         { updateCachedData, cacheEntryRemoved }
       ) {
-        if (!boardId) {
+        if (!args.boardId) {
           await cacheEntryRemoved
           return
         }
 
+        const boardId = args.boardId
         const boardRef = doc(clientDb, "boards", boardId)
 
         const unsubscribe = onSnapshot(
@@ -149,16 +156,33 @@ export const firestoreApi = createApi({
           (snapshot) => {
             updateCachedData(() => {
               if (!snapshot.exists()) {
-                return null
+                return { status: "not-found", board: null }
               }
-              return normalizeBoard(
-                boardId,
-                snapshot.data() as Omit<Board, "id"> & { createdBy?: string }
-              )
+              return {
+                status: "ready",
+                board: normalizeBoard(
+                  boardId,
+                  snapshot.data() as Omit<Board, "id"> & { createdBy?: string }
+                ),
+              }
             })
           },
-          () => {
-            updateCachedData(() => null)
+          async () => {
+            let status: BoardQueryState["status"] = "error"
+            try {
+              const response = await fetchWithAppCheck(
+                `/api/boards/${encodeURIComponent(boardId)}`,
+                { credentials: "same-origin" }
+              )
+              if (response.status === 404) {
+                status = "not-found"
+              } else if (response.status === 401 || response.status === 403) {
+                status = "forbidden"
+              }
+            } catch {
+              status = "error"
+            }
+            updateCachedData(() => ({ status, board: null }))
           }
         )
 

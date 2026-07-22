@@ -72,6 +72,14 @@ type BoardCopy = {
   boardDeleteUndoToast: string
   openBoard: string
   backToBoards: string
+  boardLoading: string
+  boardNotFoundTitle: string
+  boardNotFoundDescription: string
+  boardForbiddenTitle: string
+  boardForbiddenDescription: string
+  boardLoadFailedTitle: string
+  boardLoadFailedDescription: string
+  retry: string
   columnsTitle: string
   addColumn: string
   columnNamePlaceholder: string
@@ -245,6 +253,14 @@ const copy: Record<Locale, Copy> = {
       boardDeleteUndoToast: "Удаление доски отменено.",
       openBoard: "Открыть",
       backToBoards: "Назад к доскам",
+      boardLoading: "Загрузка доски...",
+      boardNotFoundTitle: "Доска не найдена",
+      boardNotFoundDescription: "Возможно, она была удалена или ссылка устарела.",
+      boardForbiddenTitle: "Нет доступа к доске",
+      boardForbiddenDescription: "Попросите владельца отправить новое приглашение.",
+      boardLoadFailedTitle: "Не удалось загрузить доску",
+      boardLoadFailedDescription: "Проверьте соединение и попробуйте ещё раз.",
+      retry: "Повторить",
       columnsTitle: "Колонки",
       addColumn: "Добавить колонку",
       columnNamePlaceholder: "Название колонки",
@@ -411,6 +427,14 @@ const copy: Record<Locale, Copy> = {
       boardDeleteUndoToast: "Board deletion canceled.",
       openBoard: "Open",
       backToBoards: "Back to boards",
+      boardLoading: "Loading board...",
+      boardNotFoundTitle: "Board not found",
+      boardNotFoundDescription: "It may have been deleted or the link is outdated.",
+      boardForbiddenTitle: "You do not have access",
+      boardForbiddenDescription: "Ask the owner to send you a new invitation.",
+      boardLoadFailedTitle: "Could not load board",
+      boardLoadFailedDescription: "Check your connection and try again.",
+      retry: "Retry",
       columnsTitle: "Columns",
       addColumn: "Add column",
       columnNamePlaceholder: "Column title",

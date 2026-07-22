@@ -25,6 +25,41 @@ const deleteByQuery = async (query: Query) => {
   }
 }
 
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ boardId: string }> }
+) {
+  const appCheck = await verifyAppCheckToken(request)
+  if (!appCheck.ok) {
+    return NextResponse.json({ error: appCheck.error }, { status: 401 })
+  }
+
+  const session = await getSession()
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
+  const { boardId } = await params
+  if (!boardId) {
+    return NextResponse.json({ error: "Missing boardId" }, { status: 400 })
+  }
+
+  try {
+    const snapshot = await adminDb.collection("boards").doc(boardId).get()
+    if (!snapshot.exists) {
+      return NextResponse.json({ error: "Board not found" }, { status: 404 })
+    }
+    const board = snapshot.data() as { members?: Record<string, boolean> }
+    if (board.members?.[session.uid] !== true) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    }
+    return NextResponse.json({ status: "ok" })
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Board access check failed"
+    return NextResponse.json({ error: message }, { status: 500 })
+  }
+}
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ boardId: string }> }
