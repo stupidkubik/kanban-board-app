@@ -247,7 +247,7 @@ Owner может:
 - пригласить lowercase email как editor или viewer;
 - удалить любого участника, кроме себя/owner.
 
-Editor/viewer может покинуть board с подтверждением. Owner вместо выхода видит invite action.
+Editor/viewer может покинуть board с подтверждением. Owner вместо выхода видит invite action. Удаление участника и самостоятельный выход выполняются через server API: membership, role и `memberProfiles/{uid}` удаляются в одной Admin SDK transaction.
 
 В header секции участников owner/editor также видит компактную форму создания колонки.
 
@@ -494,6 +494,15 @@ Legacy reads поддерживают `invitedBy -> invitedById`.
 2. В Admin SDK transaction проверяет существование board и роль owner.
 3. Проверяет существование column и выполняет query с `limit(1)` по cards этого `columnId`.
 4. Возвращает 409 `COLUMN_NOT_EMPTY`, если найдена карточка; иначе удаляет column в той же транзакции.
+
+`DELETE /api/boards/[boardId]/members/[memberId]`:
+
+1. Проверяет App Check и server session cookie.
+2. Разрешает owner удалить другого участника либо non-owner удалить самого себя.
+3. Запрещает удаление/выход owner и проверяет актуальное membership.
+4. В одной transaction удаляет UID из `members`/`roles` и документ `memberProfiles/{uid}`.
+
+Прямое изменение membership для remove/leave запрещено Firestore Rules; client update сохраняется только для принятия валидного приглашения.
 
 ## 12. Валидация и обработка ошибок
 

@@ -3,10 +3,11 @@
 import * as React from "react"
 import type { User } from "firebase/auth"
 import { useRouter } from "next/navigation"
-import { deleteField, doc, serverTimestamp, setDoc, updateDoc } from "firebase/firestore"
+import { doc, serverTimestamp, setDoc } from "firebase/firestore"
 
 import { useGetBoardMembersQuery } from "@/lib/store/firestore-api"
 import { clientDb } from "@/lib/firebase/client"
+import { deleteBoardMember } from "@/lib/store/firestore-operations"
 import type { Board, BoardRole, BoardRoleLabel } from "@/lib/types/boards"
 import type { BoardCopy, Participant } from "@/lib/types/board-ui"
 import { isValidEmail } from "@/lib/validation"
@@ -180,11 +181,7 @@ export function useBoardParticipants({
     setRemovePendingId(participantId)
 
     try {
-      await updateDoc(doc(clientDb, "boards", board.id), {
-        [`members.${participantId}`]: deleteField(),
-        [`roles.${participantId}`]: deleteField(),
-        updatedAt: serverTimestamp(),
-      })
+      await deleteBoardMember({ boardId: board.id, memberId: participantId })
     } catch (err) {
       setError(
         err instanceof Error ? err.message : uiCopy.board.errors.removeMemberFailed
@@ -220,11 +217,7 @@ export function useBoardParticipants({
     setLeavePending(true)
 
     try {
-      await updateDoc(doc(clientDb, "boards", board.id), {
-        [`members.${user.uid}`]: deleteField(),
-        [`roles.${user.uid}`]: deleteField(),
-        updatedAt: serverTimestamp(),
-      })
+      await deleteBoardMember({ boardId: board.id, memberId: user.uid })
       notifySuccess(uiCopy.board.leaveBoardSuccess)
       await new Promise((resolve) => {
         window.setTimeout(resolve, 250)

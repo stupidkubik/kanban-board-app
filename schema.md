@@ -188,6 +188,8 @@ Recommended extensions to `firestore.rules` once columns/cards are implemented:
   the server API, which verifies ownership and card absence in one transaction.
 - Allow read on `boards/{boardId}/memberProfiles/{memberId}` if user is a board member.
 - Allow create/update on memberProfiles if user is writing their own profile doc.
+- Deny direct client deletion of memberProfiles. Removing a member or leaving a board
+  goes through the server API, which updates membership and deletes the profile in one transaction.
 
 For cards:
 - Allow read if user is a board member.

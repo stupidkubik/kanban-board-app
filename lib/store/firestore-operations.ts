@@ -50,6 +50,11 @@ export type DeleteColumnInput = {
   columnId: string
 }
 
+export type DeleteBoardMemberInput = {
+  boardId: string
+  memberId: string
+}
+
 export const COLUMN_NOT_EMPTY = "COLUMN_NOT_EMPTY"
 
 const parseDeleteBoardError = async (response: Response) => {
@@ -159,6 +164,30 @@ export const deleteColumn = async ({ boardId, columnId }: DeleteColumnInput) => 
     try {
       const payload = (await response.json()) as { code?: string; error?: string }
       message = payload.code ?? payload.error ?? message
+    } catch {
+      // Keep the fallback error when the server does not return JSON.
+    }
+    throw new Error(message)
+  }
+}
+
+export const deleteBoardMember = async ({
+  boardId,
+  memberId,
+}: DeleteBoardMemberInput) => {
+  const response = await fetchWithAppCheck(
+    `/api/boards/${encodeURIComponent(boardId)}/members/${encodeURIComponent(memberId)}`,
+    {
+      method: "DELETE",
+      credentials: "same-origin",
+    }
+  )
+
+  if (!response.ok) {
+    let message = "Delete board member failed"
+    try {
+      const payload = (await response.json()) as { error?: string }
+      message = payload.error ?? message
     } catch {
       // Keep the fallback error when the server does not return JSON.
     }

@@ -11,6 +11,7 @@ import {
 import {
   Timestamp,
   deleteDoc,
+  deleteField,
   doc,
   getDoc,
   setDoc,
@@ -202,6 +203,29 @@ describeRules("firestore rules", () => {
       updateDoc(doc(inviteeDb, "boards", boardId), {
         "members.invitee": true,
         "roles.invitee": "editor",
+      })
+    )
+  })
+
+  it("reserves member removal and leaving for the server", async () => {
+    const boardId = `board-${Math.random().toString(36).slice(2)}`
+    await seedBoard(env!, boardId)
+
+    const ownerDb = env!.authenticatedContext("owner").firestore()
+    await assertFails(
+      updateDoc(doc(ownerDb, "boards", boardId), {
+        "members.editor": deleteField(),
+        "roles.editor": deleteField(),
+        updatedAt: makeTimestamp(),
+      })
+    )
+
+    const editorDb = env!.authenticatedContext("editor").firestore()
+    await assertFails(
+      updateDoc(doc(editorDb, "boards", boardId), {
+        "members.editor": deleteField(),
+        "roles.editor": deleteField(),
+        updatedAt: makeTimestamp(),
       })
     )
   })

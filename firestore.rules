@@ -189,10 +189,11 @@ service cloud.firestore {
         && ((isOwner()
           && ownerUnchanged()
           && request.resource.data.members[request.auth.uid] == true
-          && request.resource.data.roles[request.auth.uid] == "owner")
+          && request.resource.data.roles[request.auth.uid] == "owner"
+          && membersUnchanged()
+          && rolesUnchanged())
         || (isEditor() && ownerUnchanged() && membersUnchanged() && rolesUnchanged())
-        || canAcceptInvite(boardId)
-        || canLeaveBoard());
+        || canAcceptInvite(boardId));
       allow delete: if isOwner();
     }
 
