@@ -1,31 +1,21 @@
 #!/usr/bin/env node
 
-import fs from "node:fs"
-import path from "node:path"
-import { fileURLToPath } from "node:url"
 import { applicationDefault, cert, initializeApp } from "firebase-admin/app"
 import { FieldValue, getFirestore } from "firebase-admin/firestore"
-
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = path.dirname(__filename)
-
-const defaultServiceAccount = path.join(
-  __dirname,
-  "..",
-  "kanban-mvp-1baf2-firebase-adminsdk-fbsvc-ae0f47a077.json"
-)
-
-const serviceAccountPath =
-  process.env.FIREBASE_SERVICE_ACCOUNT_PATH ?? defaultServiceAccount
 
 let projectId =
   process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? process.env.FIREBASE_PROJECT_ID ?? ""
 
-let credential = null
+const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT?.trim()
+let serviceAccount = null
 
-if (fs.existsSync(serviceAccountPath)) {
-  const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, "utf8"))
-  credential = cert(serviceAccount)
+if (serviceAccountJson) {
+  try {
+    serviceAccount = JSON.parse(serviceAccountJson)
+  } catch {
+    console.error("FIREBASE_SERVICE_ACCOUNT must contain valid JSON.")
+    process.exit(1)
+  }
   if (!projectId) {
     projectId = serviceAccount.project_id
   }
@@ -39,7 +29,7 @@ if (!projectId) {
 }
 
 initializeApp({
-  credential: credential ?? applicationDefault(),
+  credential: serviceAccount ? cert(serviceAccount) : applicationDefault(),
   projectId,
 })
 

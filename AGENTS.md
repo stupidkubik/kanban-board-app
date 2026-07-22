@@ -65,12 +65,12 @@ If you change the data model:
 - NEXT_PUBLIC_FIREBASE_APP_ID
 
 ### Admin SDK credentials (server)
-One of:
-- FIREBASE_SERVICE_ACCOUNT = JSON string, OR
-- FIREBASE_SERVICE_ACCOUNT_PATH = path to service account JSON
+Use one of:
+- Application Default Credentials supplied by the hosting platform (preferred)
+- FIREBASE_SERVICE_ACCOUNT = JSON string from a secret store
+- GOOGLE_APPLICATION_CREDENTIALS = local ADC path outside the repository
 
-If neither is set, the app attempts `applicationDefault()` and a default file
-`kanban-mvp-1baf2-firebase-adminsdk-fbsvc-ae0f47a077.json` in the project root.
+The app must not search for or package service-account JSON from the project tree.
 
 ### App Check (recommended)
 - NEXT_PUBLIC_FIREBASE_APP_CHECK_SITE_KEY

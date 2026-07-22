@@ -101,11 +101,11 @@ NEXT_PUBLIC_FIREBASE_APP_ID=...
 ```
 
 Admin SDK credentials (server):
-- `FIREBASE_SERVICE_ACCOUNT` = JSON string, or
-- `FIREBASE_SERVICE_ACCOUNT_PATH` = path to service account JSON
+- Prefer Application Default Credentials provided by the hosting platform.
+- Alternatively, set `FIREBASE_SERVICE_ACCOUNT` to a JSON string in the platform's secret store.
+- For local ADC, `GOOGLE_APPLICATION_CREDENTIALS` may point to a credential file outside the repository.
 
-If neither is set, the app attempts `applicationDefault()` and a default file
-`kanban-mvp-1baf2-firebase-adminsdk-fbsvc-ae0f47a077.json` in the project root.
+The app never searches for credential files inside the project. Do not place service-account JSON in the repository or deployment bundle.
 
 App Check (recommended):
 ```
@@ -117,7 +117,8 @@ FIREBASE_APPCHECK_ENFORCE=true
 
 ## Scripts
 - `npm run dev` - local dev server
-- `npm run build` - production build
+- `npm run build` - production build plus server-trace secret check
+- `npm run check:server-trace` - verify existing Next.js NFT manifests contain no project credential files
 - `npm run start` - run production server
 - `npm run lint` - lint
 - `npm run format` - auto-fix lint issues
