@@ -10,7 +10,7 @@ import {
 } from "@dnd-kit/core"
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable"
 
-import type { Board } from "@/lib/types/boards"
+import type { Board, BoardLanguage } from "@/lib/types/boards"
 import type { BoardCopy } from "@/lib/types/board-ui"
 import { type Locale } from "@/lib/i18n"
 import { BoardStatus } from "@/features/board/ui/board-status"
@@ -19,6 +19,7 @@ import { HeaderSection } from "@/features/columns/ui/header-section"
 import { CardsSection } from "@/features/cards/ui/cards-section"
 import { ParticipantsSection } from "@/features/participants/ui/participants-section"
 import { useNotifications } from "@/features/notifications/ui/notifications-provider"
+import { useUpdateBoardLanguageMutation } from "@/lib/store/firestore-api"
 
 type BoardContentProps = {
   boardId: string
@@ -46,6 +47,8 @@ export const BoardContent = React.memo(function BoardContent({
   onUiLocaleChange,
 }: BoardContentProps) {
   const [error, setError] = React.useState<string | null>(null)
+  const [updateBoardLanguage, { isLoading: updatingBoardLanguage }] =
+    useUpdateBoardLanguageMutation()
   const { notifyError } = useNotifications()
   const {
     columns,
@@ -86,6 +89,25 @@ export const BoardContent = React.memo(function BoardContent({
     }
   }, [error, notifyError])
 
+  const handleBoardLanguageChange = React.useCallback(
+    async (language: BoardLanguage) => {
+      if (!canEdit) {
+        return
+      }
+      setError(null)
+      try {
+        await updateBoardLanguage({ boardId, language }).unwrap()
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : uiCopy.board.errors.updateLanguageFailed
+        )
+      }
+    },
+    [boardId, canEdit, uiCopy.board.errors.updateLanguageFailed, updateBoardLanguage]
+  )
+
   return (
     <>
       <HeaderSection
@@ -93,6 +115,10 @@ export const BoardContent = React.memo(function BoardContent({
         boardId={boardId}
         boardTitle={boardTitle}
         isViewer={isViewer}
+        boardLanguage={board?.language ?? uiLocale}
+        canEdit={canEdit}
+        updatingBoardLanguage={updatingBoardLanguage}
+        onBoardLanguageChange={handleBoardLanguageChange}
         uiLocale={uiLocale}
         onUiLocaleChange={onUiLocaleChange}
       />

@@ -11,7 +11,7 @@ Realtime kanban with Firebase Auth + Firestore, optimistic UI, and drag-and-drop
 
 ## Functionality
 - Sign in with email/password or Google, plus password reset.
-- Create/rename/delete boards and choose a board language (ru/en) during creation.
+- Create/rename/delete boards and configure board language (ru/en).
 - Invite members by email with roles (owner/editor/viewer); viewers are read-only.
 - Manage columns and cards (title, description, due date) and drag cards between columns.
 - Realtime sync via Firestore listeners with optimistic UI for create/move/delete.
@@ -48,7 +48,7 @@ Server (Next.js API routes)
 - **Ordering model**: cards use numeric `order` gaps to avoid mass reindexing; client groups cards by `columnId` for column rendering.
 - **UI state**: per-board UI drafts (new/edit card, etc.) live in Redux, keeping forms predictable across renders.
 - **DnD**: `dnd-kit` handles card moves; drag overlay is separate to avoid layout shifts.
-- **Localization**: UI locale is stored per user in `users/{uid}`; board language is creation-time board metadata in the current UI.
+- **Localization**: UI locale is stored per user in `users/{uid}`; board language is separate editable board metadata.
 
 ## Feature Modules
 ```text

@@ -5,6 +5,7 @@ import Link from "next/link"
 import { ArrowLeft } from "@phosphor-icons/react"
 
 import { languageLabels, type Locale } from "@/lib/i18n"
+import type { BoardLanguage } from "@/lib/types/boards"
 import { getBoardCoverGradient } from "@/lib/board-cover"
 import { type BoardCopy } from "@/lib/types/board-ui"
 import { Button } from "@/components/ui/button"
@@ -24,6 +25,10 @@ type HeaderSectionProps = {
   boardId: string
   boardTitle: string
   isViewer: boolean
+  boardLanguage: BoardLanguage
+  canEdit: boolean
+  updatingBoardLanguage: boolean
+  onBoardLanguageChange: (language: BoardLanguage) => void
   uiLocale: Locale
   onUiLocaleChange: (language: Locale) => void
 }
@@ -33,6 +38,10 @@ export function HeaderSection({
   boardId,
   boardTitle,
   isViewer,
+  boardLanguage,
+  canEdit,
+  updatingBoardLanguage,
+  onBoardLanguageChange,
   uiLocale,
   onUiLocaleChange,
 }: HeaderSectionProps) {
@@ -70,6 +79,34 @@ export function HeaderSection({
         </div>
         <div className={styles.actions}>
           <div className={styles.actionsSecondary}>
+            <div className={styles.languageControl}>
+              <Label
+                className={styles.languageLabel}
+                htmlFor={`board-content-language-${boardId}`}
+              >
+                {uiCopy.board.boardLanguageLabel}
+              </Label>
+              <Select
+                value={boardLanguage}
+                disabled={!canEdit || updatingBoardLanguage}
+                onValueChange={(value) =>
+                  onBoardLanguageChange(value as BoardLanguage)
+                }
+              >
+                <SelectTrigger
+                  id={`board-content-language-${boardId}`}
+                  size="sm"
+                  aria-label={uiCopy.board.boardLanguageLabel}
+                  className={styles.languageSelect}
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ru">{languageLabels.ru}</SelectItem>
+                  <SelectItem value="en">{languageLabels.en}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
             <div className={styles.languageControl}>
               <Label
                 className={styles.languageLabel}
