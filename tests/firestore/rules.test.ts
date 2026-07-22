@@ -69,6 +69,22 @@ const seedInvite = async (
   })
 }
 
+const seedColumn = async (
+  env: RulesTestEnvironment,
+  boardId: string,
+  columnId = "col-1"
+) => {
+  await env.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore()
+    await setDoc(doc(db, "boards", boardId, "columns", columnId), {
+      title: "Todo",
+      order: 1,
+      createdAt: makeTimestamp(),
+      updatedAt: makeTimestamp(),
+    })
+  })
+}
+
 describeRules("firestore rules", () => {
   let env: RulesTestEnvironment | null = null
 
@@ -166,6 +182,7 @@ describeRules("firestore rules", () => {
   it("enforces card permissions by role", async () => {
     const boardId = `board-${Math.random().toString(36).slice(2)}`
     await seedBoard(env!, boardId)
+    await seedColumn(env!, boardId)
 
     const cardPayload = {
       columnId: "col-1",
@@ -184,6 +201,72 @@ describeRules("firestore rules", () => {
     const editorDb = env!.authenticatedContext("editor").firestore()
     await assertSucceeds(
       setDoc(doc(editorDb, "boards", boardId, "cards", "card-1"), cardPayload)
+    )
+
+    await assertFails(
+      updateDoc(doc(viewerDb, "boards", boardId, "cards", "card-1"), {
+        title: "Viewer edit",
+        updatedAt: makeTimestamp(),
+      })
+    )
+    await assertSucceeds(
+      updateDoc(doc(editorDb, "boards", boardId, "cards", "card-1"), {
+        title: "Editor edit",
+        updatedAt: makeTimestamp(),
+      })
+    )
+    await assertFails(
+      deleteDoc(doc(editorDb, "boards", boardId, "cards", "card-1"))
+    )
+    const ownerDb = env!.authenticatedContext("owner").firestore()
+    await assertSucceeds(
+      deleteDoc(doc(ownerDb, "boards", boardId, "cards", "card-1"))
+    )
+  })
+
+  it("rejects malformed card relationships and bounded fields", async () => {
+    const boardId = `board-${Math.random().toString(36).slice(2)}`
+    await seedBoard(env!, boardId)
+    await seedColumn(env!, boardId)
+    const db = env!.authenticatedContext("editor").firestore()
+    const baseCard = {
+      columnId: "col-1",
+      title: "Card",
+      order: 10,
+      createdById: "editor",
+      createdAt: makeTimestamp(),
+      updatedAt: makeTimestamp(),
+    }
+
+    await assertFails(
+      setDoc(doc(db, "boards", boardId, "cards", "wrong-author"), {
+        ...baseCard,
+        createdById: "owner",
+      })
+    )
+    await assertFails(
+      setDoc(doc(db, "boards", boardId, "cards", "missing-column"), {
+        ...baseCard,
+        columnId: "missing",
+      })
+    )
+    await assertFails(
+      setDoc(doc(db, "boards", boardId, "cards", "bad-assignee"), {
+        ...baseCard,
+        assigneeIds: ["outsider"],
+      })
+    )
+    await assertFails(
+      setDoc(doc(db, "boards", boardId, "cards", "bad-label"), {
+        ...baseCard,
+        labels: [42],
+      })
+    )
+    await assertFails(
+      setDoc(doc(db, "boards", boardId, "cards", "long-title"), {
+        ...baseCard,
+        title: "x".repeat(201),
+      })
     )
   })
 
@@ -235,5 +318,73 @@ describeRules("firestore rules", () => {
         updatedAt: makeTimestamp(),
       })
     )
+  })
+
+  it("enforces invite create, read, and decline permissions", async () => {
+    const boardId = `board-${Math.random().toString(36).slice(2)}`
+    await seedBoard(env!, boardId)
+    const inviteEmail = "new-member@example.com"
+    const inviteId = `${boardId}__${inviteEmail}`
+    const ownerDb = env!.authenticatedContext("owner").firestore()
+    const inviteRef = doc(ownerDb, "boardInvites", inviteId)
+
+    await assertSucceeds(
+      setDoc(inviteRef, {
+        boardId,
+        boardTitle: "Test Board",
+        email: inviteEmail,
+        role: "viewer",
+        invitedById: "owner",
+        createdAt: makeTimestamp(),
+      })
+    )
+
+    const outsiderDb = env!.authenticatedContext("outsider").firestore()
+    await assertFails(getDoc(doc(outsiderDb, "boardInvites", inviteId)))
+
+    const inviteeDb = env!
+      .authenticatedContext("invitee", { email: inviteEmail })
+      .firestore()
+    await assertSucceeds(getDoc(doc(inviteeDb, "boardInvites", inviteId)))
+    await assertSucceeds(deleteDoc(doc(inviteeDb, "boardInvites", inviteId)))
+  })
+
+  it("protects member profiles and user preferences", async () => {
+    const boardId = `board-${Math.random().toString(36).slice(2)}`
+    await seedBoard(env!, boardId)
+    const editorDb = env!.authenticatedContext("editor").firestore()
+    const editorProfile = doc(
+      editorDb,
+      "boards",
+      boardId,
+      "memberProfiles",
+      "editor"
+    )
+
+    await assertSucceeds(
+      setDoc(editorProfile, {
+        displayName: "Editor",
+        email: "editor@example.com",
+        joinedAt: makeTimestamp(),
+      })
+    )
+    const ownerDb = env!.authenticatedContext("owner").firestore()
+    await assertFails(
+      setDoc(doc(ownerDb, "boards", boardId, "memberProfiles", "editor"), {
+        displayName: "Changed by owner",
+      })
+    )
+    const outsiderDb = env!.authenticatedContext("outsider").firestore()
+    await assertFails(
+      getDoc(doc(outsiderDb, "boards", boardId, "memberProfiles", "editor"))
+    )
+
+    await assertSucceeds(
+      setDoc(doc(editorDb, "users", "editor"), {
+        preferredLocale: "en",
+        email: "editor@example.com",
+      })
+    )
+    await assertFails(getDoc(doc(ownerDb, "users", "editor")))
   })
 })

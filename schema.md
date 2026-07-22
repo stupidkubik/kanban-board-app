@@ -195,6 +195,10 @@ For cards:
 - Allow read if user is a board member.
 - Allow create/update if user is owner/editor.
 - Allow delete if user is owner.
+- Card `columnId` must reference an existing column; `createdById` must match the
+  authenticated creator on create; assignees must be board members.
+- Current limits: board/column titles 120 chars, card title 200, description 5000,
+  up to 20 assignees, up to 10 labels of 50 chars, and up to 100 board members.
 
 Suggested rule helpers:
 - `isMember(boardId)` that loads `boards/{boardId}` and checks `members[uid]`.

@@ -26,7 +26,8 @@ service cloud.firestore {
 
     function emailValid() {
       return !request.resource.data.keys().hasAny(["email"])
-        || request.resource.data.email is string
+        || (request.resource.data.email is string
+          && request.resource.data.email.size() <= 320)
         || request.resource.data.email == null;
     }
 
@@ -63,7 +64,8 @@ service cloud.firestore {
 
     function boardTitleValid() {
       return request.resource.data.title is string
-        && request.resource.data.title.size() > 0;
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 120;
     }
 
     function boardCreatedByValid() {
@@ -101,11 +103,13 @@ service cloud.firestore {
 
     function membersValid() {
       return request.resource.data.members is map
+        && request.resource.data.members.size() <= 100
         && request.resource.data.members.values().hasOnly([true]);
     }
 
     function rolesValid() {
       return request.resource.data.roles is map
+        && request.resource.data.roles.size() <= 100
         && request.resource.data.roles.values().hasOnly(["owner", "editor", "viewer"]);
     }
 
@@ -275,7 +279,8 @@ service cloud.firestore {
 
     function columnTitleValid() {
       return request.resource.data.title is string
-        && request.resource.data.title.size() > 0;
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 120;
     }
 
     function columnOrderValid() {
@@ -318,14 +323,16 @@ service cloud.firestore {
       ]);
     }
 
-    function cardColumnValid() {
+    function cardColumnValid(boardId) {
       return request.resource.data.columnId is string
-        && request.resource.data.columnId.size() > 0;
+        && request.resource.data.columnId.size() > 0
+        && exists(/databases/$(database)/documents/boards/$(boardId)/columns/$(request.resource.data.columnId));
     }
 
     function cardTitleValid() {
       return request.resource.data.title is string
-        && request.resource.data.title.size() > 0;
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 200;
     }
 
     function cardOrderValid() {
@@ -337,20 +344,38 @@ service cloud.firestore {
         && request.resource.data.createdById.size() > 0;
     }
 
+    function cardCreatedByMatchesAuthor() {
+      return request.resource.data.createdById == request.auth.uid;
+    }
+
     function cardDescriptionValid() {
       return !request.resource.data.keys().hasAny(["description"])
-        || request.resource.data.description is string
+        || (request.resource.data.description is string
+          && request.resource.data.description.size() <= 5000)
         || request.resource.data.description == null;
     }
 
-    function cardAssigneesValid() {
+    function cardAssigneesValid(boardId) {
       return !request.resource.data.keys().hasAny(["assigneeIds"])
-        || request.resource.data.assigneeIds is list;
+        || (request.resource.data.assigneeIds is list
+          && request.resource.data.assigneeIds.size() <= 20
+          && request.resource.data.assigneeIds.hasOnly(boardData(boardId).members.keys()));
     }
 
     function cardLabelsValid() {
       return !request.resource.data.keys().hasAny(["labels"])
-        || request.resource.data.labels is list;
+        || (request.resource.data.labels is list
+          && request.resource.data.labels.size() <= 10
+          && (request.resource.data.labels.size() < 1 || (request.resource.data.labels[0] is string && request.resource.data.labels[0].size() <= 50))
+          && (request.resource.data.labels.size() < 2 || (request.resource.data.labels[1] is string && request.resource.data.labels[1].size() <= 50))
+          && (request.resource.data.labels.size() < 3 || (request.resource.data.labels[2] is string && request.resource.data.labels[2].size() <= 50))
+          && (request.resource.data.labels.size() < 4 || (request.resource.data.labels[3] is string && request.resource.data.labels[3].size() <= 50))
+          && (request.resource.data.labels.size() < 5 || (request.resource.data.labels[4] is string && request.resource.data.labels[4].size() <= 50))
+          && (request.resource.data.labels.size() < 6 || (request.resource.data.labels[5] is string && request.resource.data.labels[5].size() <= 50))
+          && (request.resource.data.labels.size() < 7 || (request.resource.data.labels[6] is string && request.resource.data.labels[6].size() <= 50))
+          && (request.resource.data.labels.size() < 8 || (request.resource.data.labels[7] is string && request.resource.data.labels[7].size() <= 50))
+          && (request.resource.data.labels.size() < 9 || (request.resource.data.labels[8] is string && request.resource.data.labels[8].size() <= 50))
+          && (request.resource.data.labels.size() < 10 || (request.resource.data.labels[9] is string && request.resource.data.labels[9].size() <= 50)));
     }
 
     function cardDueAtValid() {
@@ -388,13 +413,16 @@ service cloud.firestore {
 
     function memberProfileDataValid() {
       return (!request.resource.data.keys().hasAny(["displayName"])
-        || request.resource.data.displayName is string
+        || (request.resource.data.displayName is string
+          && request.resource.data.displayName.size() <= 120)
         || request.resource.data.displayName == null)
       && (!request.resource.data.keys().hasAny(["photoURL"])
-        || request.resource.data.photoURL is string
+        || (request.resource.data.photoURL is string
+          && request.resource.data.photoURL.size() <= 2048)
         || request.resource.data.photoURL == null)
       && (!request.resource.data.keys().hasAny(["email"])
-        || request.resource.data.email is string
+        || (request.resource.data.email is string
+          && request.resource.data.email.size() <= 320)
         || request.resource.data.email == null)
       && (!request.resource.data.keys().hasAny(["joinedAt"])
         || request.resource.data.joinedAt is timestamp);
@@ -430,12 +458,14 @@ service cloud.firestore {
 
     function inviteEmailValid() {
       return request.resource.data.email is string
-        && request.resource.data.email.size() > 0;
+        && request.resource.data.email.size() > 0
+        && request.resource.data.email.size() <= 320;
     }
 
     function inviteBoardTitleValid() {
       return request.resource.data.boardTitle is string
-        && request.resource.data.boardTitle.size() > 0;
+        && request.resource.data.boardTitle.size() > 0
+        && request.resource.data.boardTitle.size() <= 120;
     }
 
     function inviteCreatedAtValid() {
@@ -492,12 +522,13 @@ service cloud.firestore {
       allow create: if isBoardEditor(boardId)
         && cardKeysValid()
         && cardHasRequired()
-        && cardColumnValid()
+        && cardColumnValid(boardId)
         && cardTitleValid()
         && cardOrderValid()
         && cardCreatedByValid()
+        && cardCreatedByMatchesAuthor()
         && cardDescriptionValid()
-        && cardAssigneesValid()
+        && cardAssigneesValid(boardId)
         && cardLabelsValid()
         && cardDueAtValid()
         && cardArchivedValid()
@@ -505,12 +536,12 @@ service cloud.firestore {
       allow update: if isBoardEditor(boardId)
         && cardKeysValid()
         && cardHasRequired()
-        && cardColumnValid()
+        && cardColumnValid(boardId)
         && cardTitleValid()
         && cardOrderValid()
         && cardCreatedByValid()
         && cardDescriptionValid()
-        && cardAssigneesValid()
+        && cardAssigneesValid(boardId)
         && cardLabelsValid()
         && cardDueAtValid()
         && cardArchivedValid()

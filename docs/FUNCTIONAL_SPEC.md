@@ -526,7 +526,7 @@ Client checks:
 - role invite только editor/viewer в Select;
 - due date парсится из локального `YYYY-MM-DD`.
 
-Firestore Rules дополнительно проверяют allowed keys, базовые types, timestamps и roles. Максимальные длины и часть cross-document invariants пока не заданы.
+Firestore Rules дополнительно проверяют allowed keys, roles, timestamps, максимальные длины и размеры maps/lists. Карточка обязана ссылаться на существующую колонку; при создании `createdById` совпадает с UID автора; assignees входят в members; labels — строки ограниченной длины и количества.
 
 Ошибки Firebase Auth переводятся на ru/en для известных кодов. Firestore/server errors часто показывают исходный `Error.message`, иначе используется локализованный fallback.
 
