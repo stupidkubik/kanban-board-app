@@ -4,6 +4,14 @@ import * as React from "react"
 import { type User } from "firebase/auth"
 
 import { getCopy, languageLabels, type Locale } from "@/lib/i18n"
+import {
+  setStoredBoardsSortDirection,
+  setStoredBoardsSortKey,
+  useStoredBoardsSortDirection,
+  useStoredBoardsSortKey,
+  type BoardsSortDirection,
+  type BoardsSortKey,
+} from "@/lib/browser-preferences"
 import { type Board, type BoardLanguage } from "@/lib/types/boards"
 import { useCreateBoardMutation } from "@/lib/store/firestore-api"
 import { KanbanBoardCard } from "@/features/boards/ui/board-card"
@@ -40,9 +48,6 @@ type KanbanBoardsSectionProps = {
   user: User
 }
 
-type SortKey = "createdAt" | "title"
-type SortDirection = "asc" | "desc"
-
 export function KanbanBoardsSection({
   boards,
   onError,
@@ -54,31 +59,11 @@ export function KanbanBoardsSection({
     useCreateBoardMutation()
   const [title, setTitle] = React.useState("")
   const [createOpen, setCreateOpen] = React.useState(false)
-  const [newBoardLanguage, setNewBoardLanguage] =
-    React.useState<BoardLanguage>("en")
-  const [newBoardLanguageTouched, setNewBoardLanguageTouched] =
-    React.useState(false)
-  const [sortKey, setSortKey] = React.useState<SortKey>("createdAt")
-  const [sortDirection, setSortDirection] = React.useState<SortDirection>("desc")
-
-  React.useEffect(() => {
-    const storedKey = window.localStorage.getItem("boardsSortKey")
-    const storedDirection = window.localStorage.getItem("boardsSortDirection")
-    if (storedKey === "createdAt" || storedKey === "title") {
-      setSortKey(storedKey)
-    }
-    if (storedDirection === "asc" || storedDirection === "desc") {
-      setSortDirection(storedDirection)
-    }
-  }, [])
-
-  React.useEffect(() => {
-    window.localStorage.setItem("boardsSortKey", sortKey)
-  }, [sortKey])
-
-  React.useEffect(() => {
-    window.localStorage.setItem("boardsSortDirection", sortDirection)
-  }, [sortDirection])
+  const [newBoardLanguageOverride, setNewBoardLanguageOverride] =
+    React.useState<BoardLanguage | null>(null)
+  const newBoardLanguage = newBoardLanguageOverride ?? uiLocale
+  const sortKey = useStoredBoardsSortKey()
+  const sortDirection = useStoredBoardsSortDirection()
 
   const sortedBoards = React.useMemo(() => {
     const nextBoards = [...boards]
@@ -101,12 +86,6 @@ export function KanbanBoardsSection({
 
     return nextBoards
   }, [boards, sortDirection, sortKey, uiLocale])
-
-  React.useEffect(() => {
-    if (!newBoardLanguageTouched) {
-      setNewBoardLanguage(uiLocale)
-    }
-  }, [newBoardLanguageTouched, uiLocale])
 
   const createBoard = async () => {
     const trimmed = title.trim()
@@ -157,7 +136,9 @@ export function KanbanBoardsSection({
               </Label>
               <Select
                 value={sortKey}
-                onValueChange={(value) => setSortKey(value as SortKey)}
+                onValueChange={(value) =>
+                  setStoredBoardsSortKey(value as BoardsSortKey)
+                }
               >
                 <SelectTrigger
                   id="boards-sort-key"
@@ -177,7 +158,9 @@ export function KanbanBoardsSection({
               </Select>
               <Select
                 value={sortDirection}
-                onValueChange={(value) => setSortDirection(value as SortDirection)}
+                onValueChange={(value) =>
+                  setStoredBoardsSortDirection(value as BoardsSortDirection)
+                }
               >
                 <SelectTrigger
                   id="boards-sort-direction"
@@ -230,8 +213,7 @@ export function KanbanBoardsSection({
                         <Select
                           value={newBoardLanguage}
                           onValueChange={(value) => {
-                            setNewBoardLanguage(value as BoardLanguage)
-                            setNewBoardLanguageTouched(true)
+                            setNewBoardLanguageOverride(value as BoardLanguage)
                           }}
                         >
                           <SelectTrigger

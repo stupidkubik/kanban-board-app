@@ -4,6 +4,11 @@ import * as React from "react"
 import { useParams } from "next/navigation"
 
 import { useAuth } from "@/components/auth-provider"
+import {
+  setStoredUiLocale,
+  setUiLocaleTouched,
+  useStoredUiLocale,
+} from "@/lib/browser-preferences"
 import { useGetBoardQuery } from "@/lib/store/firestore-api"
 import { getCopy, type Locale } from "@/lib/i18n"
 import { canEditBoard, canInviteMembers, getMemberRole } from "@/lib/permissions"
@@ -16,24 +21,13 @@ export function BoardPage() {
   const boardId = Array.isArray(params?.boardId)
     ? params.boardId[0]
     : params?.boardId
-  const [uiLocale, setUiLocale] = React.useState<Locale>("en")
+  const uiLocale = useStoredUiLocale()
 
   const uiCopy = React.useMemo(() => getCopy(uiLocale), [uiLocale])
   const handleUiLocaleChange = React.useCallback((value: Locale) => {
-    setUiLocale(value)
-    window.localStorage.setItem("uiLocaleTouched", "1")
+    setStoredUiLocale(value)
+    setUiLocaleTouched(true)
   }, [])
-
-  React.useEffect(() => {
-    const storedLocale = window.localStorage.getItem("uiLocale")
-    if (storedLocale === "ru" || storedLocale === "en") {
-      setUiLocale(storedLocale)
-    }
-  }, [])
-
-  React.useEffect(() => {
-    window.localStorage.setItem("uiLocale", uiLocale)
-  }, [uiLocale])
 
   const { data: board } = useGetBoardQuery(boardId ?? null, {
     skip: !boardId,

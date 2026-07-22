@@ -8,6 +8,12 @@ import { doc, onSnapshot, setDoc, serverTimestamp } from "firebase/firestore"
 import { useAuth } from "@/components/auth-provider"
 import { clientAuth, clientDb } from "@/lib/firebase/client"
 import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
+import {
+  setStoredUiLocale,
+  setUiLocaleTouched,
+  useStoredUiLocale,
+  useUiLocaleTouched,
+} from "@/lib/browser-preferences"
 import { getCopy, languageLabels, type Locale } from "@/lib/i18n"
 import { useGetBoardsQuery, useGetInvitesQuery } from "@/lib/store/firestore-api"
 import { KanbanBoardsSection } from "@/features/boards/ui/boards-section"
@@ -37,16 +43,21 @@ export function KanbanApp() {
   const { data: invites = [] } = useGetInvitesQuery(user?.email ?? null, {
     skip: !user?.email,
   })
-  const [uiLocale, setUiLocale] = React.useState<Locale>("en")
-  const [localeTouched, setLocaleTouched] = React.useState(false)
+  const uiLocale = useStoredUiLocale()
+  const localeTouched = useUiLocaleTouched()
   const [error, setError] = React.useState<string | null>(null)
-  const [profileReady, setProfileReady] = React.useState(false)
-  const [profileExists, setProfileExists] = React.useState(false)
+  const [profileState, setProfileState] = React.useState<{
+    uid: string | null
+    ready: boolean
+    exists: boolean
+  }>({ uid: null, ready: false, exists: false })
+  const profileReady = profileState.uid === user?.uid && profileState.ready
+  const profileExists = profileState.uid === user?.uid && profileState.exists
   const { notifyError } = useNotifications()
   const uiCopy = React.useMemo(() => getCopy(uiLocale), [uiLocale])
   const handleUiLocaleChange = React.useCallback((value: Locale) => {
-    setUiLocale(value)
-    setLocaleTouched(true)
+    setStoredUiLocale(value)
+    setUiLocaleTouched(true)
   }, [])
   const localeTouchedRef = React.useRef(false)
   const uiLocaleRef = React.useRef<Locale>("en")
@@ -60,39 +71,13 @@ export function KanbanApp() {
   }, [uiLocale])
 
   React.useEffect(() => {
-    const storedLocale = window.localStorage.getItem("uiLocale")
-    const storedTouched = window.localStorage.getItem("uiLocaleTouched")
-    if (storedLocale === "ru" || storedLocale === "en") {
-      setUiLocale(storedLocale)
-    }
-    if (storedTouched === "1") {
-      setLocaleTouched(true)
-    }
-  }, [])
-
-  React.useEffect(() => {
-    window.localStorage.setItem("uiLocale", uiLocale)
-  }, [uiLocale])
-
-  React.useEffect(() => {
     if (error) {
       notifyError(error)
     }
   }, [error, notifyError])
 
   React.useEffect(() => {
-    if (localeTouched) {
-      window.localStorage.setItem("uiLocaleTouched", "1")
-    } else {
-      window.localStorage.removeItem("uiLocaleTouched")
-    }
-  }, [localeTouched])
-
-  React.useEffect(() => {
     if (!user) {
-      setProfileReady(false)
-      setProfileExists(false)
-      setLocaleTouched(false)
       return
     }
 
@@ -100,24 +85,27 @@ export function KanbanApp() {
     const unsubscribe = onSnapshot(
       profileRef,
       (snapshot) => {
-        setProfileExists(snapshot.exists())
+        setProfileState({
+          uid: user.uid,
+          ready: true,
+          exists: snapshot.exists(),
+        })
         if (snapshot.exists()) {
           const data = snapshot.data() as { preferredLocale?: Locale }
           if (data.preferredLocale === "ru" || data.preferredLocale === "en") {
             if (localeTouchedRef.current) {
               if (data.preferredLocale === uiLocaleRef.current) {
-                setLocaleTouched(false)
+                setUiLocaleTouched(false)
               }
             } else {
-              setUiLocale(data.preferredLocale)
+              setStoredUiLocale(data.preferredLocale)
             }
           }
         }
-        setProfileReady(true)
       },
       () => {
         setError(uiCopy.board.errors.profileLoadFailed)
-        setProfileReady(true)
+        setProfileState({ uid: user.uid, ready: true, exists: false })
       }
     )
 
@@ -152,7 +140,7 @@ export function KanbanApp() {
     setDoc(profileRef, payload, { merge: true })
       .then(() => {
         if (localeTouched) {
-          setLocaleTouched(false)
+          setUiLocaleTouched(false)
         }
       })
       .catch(() => {
