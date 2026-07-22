@@ -9,6 +9,7 @@ import {
 } from "firebase/firestore"
 
 import { clientDb } from "@/lib/firebase/client"
+import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
 import type { BoardLanguage } from "@/lib/types/boards"
 
 export type CreateBoardInput = {
@@ -114,7 +115,7 @@ export const updateBoardTitle = async ({ boardId, title }: UpdateBoardTitleInput
 
 // Board deletion uses the API route so the server can cascade subcollection deletes.
 export const deleteBoard = async ({ boardId }: DeleteBoardInput) => {
-  const response = await fetch(`/api/boards/${boardId}`, {
+  const response = await fetchWithAppCheck(`/api/boards/${boardId}`, {
     method: "DELETE",
     credentials: "same-origin",
   })

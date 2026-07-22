@@ -7,6 +7,7 @@ import { doc, onSnapshot, setDoc, serverTimestamp } from "firebase/firestore"
 
 import { useAuth } from "@/components/auth-provider"
 import { clientAuth, clientDb } from "@/lib/firebase/client"
+import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
 import { getCopy, languageLabels, type Locale } from "@/lib/i18n"
 import { useGetBoardsQuery, useGetInvitesQuery } from "@/lib/store/firestore-api"
 import { KanbanBoardsSection } from "@/features/boards/ui/boards-section"
@@ -170,7 +171,7 @@ export function KanbanApp() {
     setError(null)
     try {
       dispatch(firestoreApi.util.resetApiState())
-      await fetch("/api/auth/session", { method: "DELETE" })
+      await fetchWithAppCheck("/api/auth/session", { method: "DELETE" })
       await signOut(clientAuth)
       router.replace("/sign-in")
     } catch (err) {

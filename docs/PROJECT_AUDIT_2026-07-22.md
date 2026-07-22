@@ -4,7 +4,7 @@
 Объект аудита: состояние ветки `main` на коммите `d153001` до изменения документации
 Формат: статический анализ кода и документации, установка по lock-файлу, lint, тесты, production-сборка и аудит зависимостей.
 
-Статус remediation: P0 с автоматической упаковкой service-account JSON устранён после аудита. Fallback на файл в project tree удалён из приложения и smoke-скрипта; `npm run build` теперь обязательно проверяет Next.js server traces на credential-файлы.
+Статус remediation: P0 с автоматической упаковкой service-account JSON и P1 с отсутствующим App Check header устранены после аудита. Fallback на файл в project tree удалён из приложения и smoke-скрипта; `npm run build` теперь обязательно проверяет Next.js server traces на credential-файлы. Все custom API requests получают App Check token через общий fetch helper, когда App Check настроен.
 
 ## Краткий вывод
 
@@ -44,7 +44,7 @@
 3. Пересобрать проект и убедиться, что NFT-манифесты не содержат ключ, исходники, тесты и всю рабочую директорию.
 4. Если сборки с этим ключом публиковались, отозвать/ротировать ключ в Google Cloud после переключения приложения.
 
-### P1 — App Check ломает собственные API при включении
+### P1 — App Check ломает собственные API при включении — устранено
 
 Серверные маршруты `/api/auth/session` и `/api/boards/[boardId]` проверяют заголовок `X-Firebase-AppCheck`, когда включён `FIREBASE_APPCHECK_ENFORCE` или production-сборка имеет site key. Клиент инициализирует App Check, но ни один `fetch` не получает токен через `getToken()` и не отправляет этот заголовок.
 

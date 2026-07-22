@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/select"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { clientAuth } from "@/lib/firebase/client"
+import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
 import { getCopy, languageLabels, type Locale } from "@/lib/i18n"
 import styles from "./sign-in.module.css"
 
@@ -155,7 +156,7 @@ export default function SignInPage() {
       setSessionPending(true)
       try {
         const idToken = await user.getIdToken(true)
-        const response = await fetch("/api/auth/session", {
+        const response = await fetchWithAppCheck("/api/auth/session", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
