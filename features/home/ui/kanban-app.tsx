@@ -3,17 +3,11 @@
 import * as React from "react"
 import { useRouter } from "next/navigation"
 import { signOut } from "firebase/auth"
-import { doc, onSnapshot, setDoc, serverTimestamp } from "firebase/firestore"
 
 import { useAuth } from "@/components/auth-provider"
-import { clientAuth, clientDb } from "@/lib/firebase/client"
+import { clientAuth } from "@/lib/firebase/client"
 import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
-import {
-  setStoredUiLocale,
-  setUiLocaleTouched,
-  useStoredUiLocale,
-  useUiLocaleTouched,
-} from "@/lib/browser-preferences"
+import { usePreferredLocale } from "@/lib/use-preferred-locale"
 import { getCopy, languageLabels, type Locale } from "@/lib/i18n"
 import { useGetBoardsQuery, useGetInvitesQuery } from "@/lib/store/firestore-api"
 import { KanbanBoardsSection } from "@/features/boards/ui/boards-section"
@@ -43,117 +37,16 @@ export function KanbanApp() {
   const { data: invites = [] } = useGetInvitesQuery(user?.email ?? null, {
     skip: !user?.email,
   })
-  const uiLocale = useStoredUiLocale()
-  const localeTouched = useUiLocaleTouched()
   const [error, setError] = React.useState<string | null>(null)
-  const [profileState, setProfileState] = React.useState<{
-    uid: string | null
-    ready: boolean
-    exists: boolean
-  }>({ uid: null, ready: false, exists: false })
-  const profileReady = profileState.uid === user?.uid && profileState.ready
-  const profileExists = profileState.uid === user?.uid && profileState.exists
+  const { locale: uiLocale, setLocale: handleUiLocaleChange } =
+    usePreferredLocale(user, setError)
   const { notifyError } = useNotifications()
   const uiCopy = React.useMemo(() => getCopy(uiLocale), [uiLocale])
-  const handleUiLocaleChange = React.useCallback((value: Locale) => {
-    setStoredUiLocale(value)
-    setUiLocaleTouched(true)
-  }, [])
-  const localeTouchedRef = React.useRef(false)
-  const uiLocaleRef = React.useRef<Locale>("en")
-
-  React.useEffect(() => {
-    localeTouchedRef.current = localeTouched
-  }, [localeTouched])
-
-  React.useEffect(() => {
-    uiLocaleRef.current = uiLocale
-  }, [uiLocale])
-
   React.useEffect(() => {
     if (error) {
       notifyError(error)
     }
   }, [error, notifyError])
-
-  React.useEffect(() => {
-    if (!user) {
-      return
-    }
-
-    const profileRef = doc(clientDb, "users", user.uid)
-    const unsubscribe = onSnapshot(
-      profileRef,
-      (snapshot) => {
-        setProfileState({
-          uid: user.uid,
-          ready: true,
-          exists: snapshot.exists(),
-        })
-        if (snapshot.exists()) {
-          const data = snapshot.data() as { preferredLocale?: Locale }
-          if (data.preferredLocale === "ru" || data.preferredLocale === "en") {
-            if (localeTouchedRef.current) {
-              if (data.preferredLocale === uiLocaleRef.current) {
-                setUiLocaleTouched(false)
-              }
-            } else {
-              setStoredUiLocale(data.preferredLocale)
-            }
-          }
-        }
-      },
-      () => {
-        setError(uiCopy.board.errors.profileLoadFailed)
-        setProfileState({ uid: user.uid, ready: true, exists: false })
-      }
-    )
-
-    return () => unsubscribe()
-  }, [uiCopy.board.errors.profileLoadFailed, user])
-
-  React.useEffect(() => {
-    if (!user || !profileReady) {
-      return
-    }
-
-    if (!localeTouched && profileExists) {
-      return
-    }
-
-    const profileRef = doc(clientDb, "users", user.uid)
-    const payload: {
-      preferredLocale: Locale
-      email: string | null
-      createdAt?: ReturnType<typeof serverTimestamp>
-      updatedAt: ReturnType<typeof serverTimestamp>
-    } = {
-      preferredLocale: uiLocale,
-      email: user.email ?? null,
-      updatedAt: serverTimestamp(),
-    }
-
-    if (!profileExists) {
-      payload.createdAt = serverTimestamp()
-    }
-
-    setDoc(profileRef, payload, { merge: true })
-      .then(() => {
-        if (localeTouched) {
-          setUiLocaleTouched(false)
-        }
-      })
-      .catch(() => {
-        setError(uiCopy.board.errors.profileUpdateFailed)
-      })
-  }, [
-    localeTouched,
-    profileExists,
-    profileReady,
-    uiCopy.board.errors.profileUpdateFailed,
-    uiLocale,
-    user,
-  ])
 
   const handleSignOut = async () => {
     setError(null)

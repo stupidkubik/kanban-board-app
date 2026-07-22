@@ -26,11 +26,7 @@ import {
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { clientAuth } from "@/lib/firebase/client"
 import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
-import {
-  setStoredUiLocale,
-  setUiLocaleTouched,
-  useStoredUiLocale,
-} from "@/lib/browser-preferences"
+import { usePreferredLocale } from "@/lib/use-preferred-locale"
 import { getCopy, languageLabels, type Locale } from "@/lib/i18n"
 import styles from "./sign-in.module.css"
 
@@ -93,7 +89,8 @@ export default function SignInPage() {
   const [pendingProvider, setPendingProvider] = React.useState<ProviderKey | null>(null)
   const [error, setError] = React.useState<string | null>(null)
   const [notice, setNotice] = React.useState<string | null>(null)
-  const uiLocale = useStoredUiLocale()
+  const { locale: uiLocale, setLocale: handleUiLocaleChange } =
+    usePreferredLocale(user, setError)
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [mode, setMode] = React.useState<"sign-in" | "sign-up">("sign-in")
@@ -103,10 +100,6 @@ export default function SignInPage() {
   const [resetMode, setResetMode] = React.useState(false)
   const [resetEmail, setResetEmail] = React.useState("")
   const uiCopy = React.useMemo(() => getCopy(uiLocale), [uiLocale])
-  const handleUiLocaleChange = React.useCallback((value: Locale) => {
-    setStoredUiLocale(value)
-    setUiLocaleTouched(true)
-  }, [])
   const languageControls = (
     <div className={`${styles.row} ${styles.utilityBar}`}>
       <Label className={styles.rowLabel} htmlFor="sign-in-locale">

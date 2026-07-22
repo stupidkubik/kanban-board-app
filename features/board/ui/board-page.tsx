@@ -4,30 +4,25 @@ import * as React from "react"
 import { useParams } from "next/navigation"
 
 import { useAuth } from "@/components/auth-provider"
-import {
-  setStoredUiLocale,
-  setUiLocaleTouched,
-  useStoredUiLocale,
-} from "@/lib/browser-preferences"
+import { usePreferredLocale } from "@/lib/use-preferred-locale"
 import { useGetBoardQuery } from "@/lib/store/firestore-api"
-import { getCopy, type Locale } from "@/lib/i18n"
+import { getCopy } from "@/lib/i18n"
 import { canEditBoard, canInviteMembers, getMemberRole } from "@/lib/permissions"
 import { BoardContent } from "@/features/board/ui/board-content"
 import styles from "@/features/board/ui/board-page.module.css"
+import { useNotifications } from "@/features/notifications/ui/notifications-provider"
 
 export function BoardPage() {
   const params = useParams<{ boardId?: string | string[] }>()
   const { user } = useAuth()
+  const { notifyError } = useNotifications()
   const boardId = Array.isArray(params?.boardId)
     ? params.boardId[0]
     : params?.boardId
-  const uiLocale = useStoredUiLocale()
+  const { locale: uiLocale, setLocale: handleUiLocaleChange } =
+    usePreferredLocale(user, notifyError)
 
   const uiCopy = React.useMemo(() => getCopy(uiLocale), [uiLocale])
-  const handleUiLocaleChange = React.useCallback((value: Locale) => {
-    setStoredUiLocale(value)
-    setUiLocaleTouched(true)
-  }, [])
 
   const { data: board } = useGetBoardQuery(boardId ?? null, {
     skip: !boardId,
