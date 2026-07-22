@@ -11,6 +11,7 @@ import {
   useGetColumnsQuery,
   useUpdateColumnMutation,
 } from "@/lib/store/firestore-api"
+import { COLUMN_NOT_EMPTY } from "@/lib/store/firestore-operations"
 import { clientDb } from "@/lib/firebase/client"
 import type { Column } from "@/lib/types/boards"
 import type { BoardCopy } from "@/lib/types/board-ui"
@@ -193,7 +194,9 @@ export function useBoardColumns({
       }
     } catch (err) {
       setError(
-        err instanceof Error
+        err instanceof Error && err.message === COLUMN_NOT_EMPTY
+          ? uiCopy.board.errors.columnNotEmpty
+          : err instanceof Error
           ? err.message
           : uiCopy.board.errors.deleteColumnFailed
       )
@@ -210,6 +213,7 @@ export function useBoardColumns({
     uiCopy.board.columnDeletedToast,
     uiCopy.board.columnRestoredToast,
     uiCopy.board.errors.createColumnFailed,
+    uiCopy.board.errors.columnNotEmpty,
     uiCopy.board.errors.deleteColumnFailed,
     uiCopy.common.undo,
   ])

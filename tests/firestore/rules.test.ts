@@ -10,6 +10,7 @@ import {
 } from "@firebase/rules-unit-testing"
 import {
   Timestamp,
+  deleteDoc,
   doc,
   getDoc,
   setDoc,
@@ -127,7 +128,7 @@ describeRules("firestore rules", () => {
     )
   })
 
-  it("enforces column permissions by role", async () => {
+  it("enforces column permissions and reserves deletion for the server", async () => {
     const boardId = `board-${Math.random().toString(36).slice(2)}`
     await seedBoard(env!, boardId)
 
@@ -146,6 +147,11 @@ describeRules("firestore rules", () => {
     const editorDb = env!.authenticatedContext("editor").firestore()
     await assertSucceeds(
       setDoc(doc(editorDb, "boards", boardId, "columns", "col-1"), columnPayload)
+    )
+
+    const ownerDb = env!.authenticatedContext("owner").firestore()
+    await assertFails(
+      deleteDoc(doc(ownerDb, "boards", boardId, "columns", "col-1"))
     )
   })
 

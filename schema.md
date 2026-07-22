@@ -184,7 +184,8 @@ Recommended extensions to `firestore.rules` once columns/cards are implemented:
 
 - Allow read on `boards/{boardId}/columns/{columnId}` if user is a board member.
 - Allow create/update on columns if user is owner/editor.
-- Allow delete on columns if user is owner.
+- Deny direct client deletion of columns. The owner deletes an empty column through
+  the server API, which verifies ownership and card absence in one transaction.
 - Allow read on `boards/{boardId}/memberProfiles/{memberId}` if user is a board member.
 - Allow create/update on memberProfiles if user is writing their own profile doc.
 

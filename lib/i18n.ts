@@ -143,6 +143,7 @@ type BoardCopy = {
     columnTitleRequired: string
     createColumnFailed: string
     updateColumnFailed: string
+    columnNotEmpty: string
     deleteColumnFailed: string
     cardTitleRequired: string
     createCardFailed: string
@@ -269,7 +270,7 @@ const copy: Record<Locale, Copy> = {
       noColumns: "Пока нет колонок.",
       deleteColumn: "Удалить",
       deleteColumnTitle: "Удалить колонку?",
-      deleteColumnDescription: "Колонка будет удалена без возможности восстановления.",
+      deleteColumnDescription: "Можно удалить только пустую колонку. Действие нельзя отменить.",
       columnDeletedToast: "Колонка удалена.",
       columnRestoredToast: "Колонка восстановлена.",
       participantsTitle: "Участники",
@@ -315,6 +316,7 @@ const copy: Record<Locale, Copy> = {
         columnTitleRequired: "Название колонки обязательно.",
         createColumnFailed: "Не удалось создать колонку.",
         updateColumnFailed: "Не удалось обновить колонку.",
+        columnNotEmpty: "Сначала удалите или перенесите все карточки из колонки.",
         deleteColumnFailed: "Не удалось удалить колонку.",
         cardTitleRequired: "Название карточки обязательно.",
         createCardFailed: "Не удалось создать карточку.",
@@ -434,7 +436,7 @@ const copy: Record<Locale, Copy> = {
       noColumns: "No columns yet.",
       deleteColumn: "Delete",
       deleteColumnTitle: "Delete column?",
-      deleteColumnDescription: "This column will be deleted permanently.",
+      deleteColumnDescription: "Only an empty column can be deleted. This cannot be undone.",
       columnDeletedToast: "Column deleted.",
       columnRestoredToast: "Column restored.",
       participantsTitle: "Participants",
@@ -480,6 +482,7 @@ const copy: Record<Locale, Copy> = {
         columnTitleRequired: "Column title is required.",
         createColumnFailed: "Create column error.",
         updateColumnFailed: "Update column error.",
+        columnNotEmpty: "Move or delete every card in this column first.",
         deleteColumnFailed: "Delete column error.",
         cardTitleRequired: "Card title is required.",
         createCardFailed: "Create card error.",

@@ -261,11 +261,11 @@ Owner/editor может:
 - переименовать колонку inline;
 - добавлять в неё карточки.
 
-Owner дополнительно может удалить колонку с подтверждением. После удаления toast Undo пересоздаёт документ колонки с тем же id и order, но с новыми createdAt/updatedAt.
+Owner дополнительно может удалить пустую колонку с подтверждением. Удаление идёт через server API: транзакция повторно проверяет владельца и отклоняет запрос, если в колонке есть хотя бы одна карточка. После успешного удаления toast Undo пересоздаёт документ колонки с тем же id и order, но с новыми createdAt/updatedAt.
 
 Колонки не перемещаются. При создании `order = Date.now()`.
 
-Известный инвариант текущей реализации: delete column не удаляет cards с соответствующим `columnId`.
+Прямое удаление column client SDK запрещено Firestore Rules, поэтому обойти серверную проверку и создать карточки-сироты штатным клиентом нельзя.
 
 ### 7.4 Карточки
 
@@ -488,6 +488,13 @@ Legacy reads поддерживают `invitedBy -> invitedById`.
 
 Ответы: 401 unauthenticated/App Check, 400 missing id, 404 board missing, 403 not owner, 500 internal delete error, 200 success.
 
+`DELETE /api/boards/[boardId]/columns/[columnId]`:
+
+1. Проверяет App Check и server session cookie.
+2. В Admin SDK transaction проверяет существование board и роль owner.
+3. Проверяет существование column и выполняет query с `limit(1)` по cards этого `columnId`.
+4. Возвращает 409 `COLUMN_NOT_EMPTY`, если найдена карточка; иначе удаляет column в той же транзакции.
+
 ## 12. Валидация и обработка ошибок
 
 Client checks:
@@ -575,13 +582,12 @@ Toast system:
 
 ## 16. Решения, которые нужно принять до расширения продукта
 
-1. Что означает удаление непустой колонки: запрет, перенос или cascade delete?
-2. Нужен ли board language как отдельное понятие от user UI locale?
-3. Нужны ли assignments/labels/archive в ближайшем релизе или поля следует временно удалить?
-4. Какая модель удаления профиля участника удовлетворяет privacy и Undo?
-5. Как поддерживать board stats: denormalized counters, aggregation queries или server projection?
-6. Какой размер board считать целевым для pagination/virtualization?
-7. Нужна ли передача ownership и изменение ролей?
-8. Какой Firebase project/emulator станет изолированной E2E средой?
+1. Нужен ли board language как отдельное понятие от user UI locale?
+2. Нужны ли assignments/labels/archive в ближайшем релизе или поля следует временно удалить?
+3. Какая модель удаления профиля участника удовлетворяет privacy и Undo?
+4. Как поддерживать board stats: denormalized counters, aggregation queries или server projection?
+5. Какой размер board считать целевым для pagination/virtualization?
+6. Нужна ли передача ownership и изменение ролей?
+7. Какой Firebase project/emulator станет изолированной E2E средой?
 9. Какая deployment-платформа и managed credential strategy являются целевыми?
 10. Какие SLO/метрики нужны: startup latency, listener count, Firestore reads, mutation error rate?

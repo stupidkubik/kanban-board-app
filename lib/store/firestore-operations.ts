@@ -1,7 +1,6 @@
 import {
   addDoc,
   collection,
-  deleteDoc,
   doc,
   serverTimestamp,
   setDoc,
@@ -50,6 +49,8 @@ export type DeleteColumnInput = {
   boardId: string
   columnId: string
 }
+
+export const COLUMN_NOT_EMPTY = "COLUMN_NOT_EMPTY"
 
 const parseDeleteBoardError = async (response: Response) => {
   let message = "Delete board failed"
@@ -145,5 +146,22 @@ export const updateColumn = async ({
 }
 
 export const deleteColumn = async ({ boardId, columnId }: DeleteColumnInput) => {
-  await deleteDoc(doc(clientDb, "boards", boardId, "columns", columnId))
+  const response = await fetchWithAppCheck(
+    `/api/boards/${encodeURIComponent(boardId)}/columns/${encodeURIComponent(columnId)}`,
+    {
+      method: "DELETE",
+      credentials: "same-origin",
+    }
+  )
+
+  if (!response.ok) {
+    let message = "Delete column failed"
+    try {
+      const payload = (await response.json()) as { code?: string; error?: string }
+      message = payload.code ?? payload.error ?? message
+    } catch {
+      // Keep the fallback error when the server does not return JSON.
+    }
+    throw new Error(message)
+  }
 }

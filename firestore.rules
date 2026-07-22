@@ -474,7 +474,8 @@ service cloud.firestore {
         && columnOrderValid()
         && columnTimestampsValid()
         && columnCreatedAtUnchanged();
-      allow delete: if isBoardOwner(boardId);
+      // Column deletion is server-only so the transaction can reject non-empty columns.
+      allow delete: if false;
     }
 
     match /boards/{boardId}/cards/{cardId} {
