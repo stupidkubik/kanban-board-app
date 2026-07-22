@@ -87,6 +87,10 @@ service cloud.firestore {
       return request.resource.data.ownerId == resource.data.ownerId;
     }
 
+    function boardTitleUnchanged() {
+      return request.resource.data.title == resource.data.title;
+    }
+
     function membersUnchanged() {
       return request.resource.data.members == resource.data.members;
     }
@@ -190,9 +194,14 @@ service cloud.firestore {
           && ownerUnchanged()
           && request.resource.data.members[request.auth.uid] == true
           && request.resource.data.roles[request.auth.uid] == "owner"
+          && boardTitleUnchanged()
           && membersUnchanged()
           && rolesUnchanged())
-        || (isEditor() && ownerUnchanged() && membersUnchanged() && rolesUnchanged()));
+        || (isEditor()
+          && ownerUnchanged()
+          && boardTitleUnchanged()
+          && membersUnchanged()
+          && rolesUnchanged()));
       allow delete: if isOwner();
     }
 

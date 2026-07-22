@@ -155,10 +155,23 @@ export const updateBoardLanguage = async ({
 }
 
 export const updateBoardTitle = async ({ boardId, title }: UpdateBoardTitleInput) => {
-  await updateDoc(doc(clientDb, "boards", boardId), {
-    title,
-    updatedAt: serverTimestamp(),
+  const response = await fetchWithAppCheck(`/api/boards/${encodeURIComponent(boardId)}`, {
+    method: "PATCH",
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ title }),
   })
+
+  if (!response.ok) {
+    let message = "Update board failed"
+    try {
+      const payload = (await response.json()) as { error?: string }
+      message = payload.error ?? message
+    } catch {
+      // Keep the fallback error when the server does not return JSON.
+    }
+    throw new Error(message)
+  }
 }
 
 // Board deletion uses the API route so the server can cascade subcollection deletes.

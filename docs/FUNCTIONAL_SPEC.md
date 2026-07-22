@@ -214,7 +214,7 @@ Board и owner member profile создаются одной Admin SDK transactio
 
 Клик, Enter или Space открывает `/boards/[boardId]`.
 
-Editor/owner может переименовать board. Owner может удалить board. После подтверждения удаление откладывается на 4 секунды; toast Undo отменяет ещё не отправленную server mutation. После отправки восстановление не предусмотрено.
+Editor/owner может переименовать board. Rename выполняется серверной транзакцией и одновременно обновляет `boardTitle` во всех ожидающих приглашениях. Owner может удалить board. После подтверждения удаление откладывается на 4 секунды; toast Undo отменяет ещё не отправленную server mutation. После отправки восстановление не предусмотрено.
 
 Для статистик каждая карточка держит отдельные realtime listeners на memberProfiles, columns и cards соответствующей доски.
 
@@ -494,6 +494,8 @@ Legacy reads поддерживают `invitedBy -> invitedById`.
 7. Удаляет board document.
 
 Ответы: 401 unauthenticated/App Check, 400 missing id, 404 board missing, 403 not owner, 500 internal delete error, 200 success.
+
+`PATCH /api/boards/[boardId]` проверяет owner/editor и одной transaction переименовывает board вместе со всеми ожидающими `boardInvites`. Прямое изменение title через client SDK запрещено правилами.
 
 `DELETE /api/boards/[boardId]/columns/[columnId]`:
 

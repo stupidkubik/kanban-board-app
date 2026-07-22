@@ -116,14 +116,21 @@ describeRules("firestore rules", () => {
     )
   })
 
-  it("allows editors to update board title", async () => {
+  it("reserves board rename for the server but allows editor metadata updates", async () => {
     const boardId = `board-${Math.random().toString(36).slice(2)}`
     await seedBoard(env!, boardId)
 
     const db = env!.authenticatedContext("editor").firestore()
-    await assertSucceeds(
+    await assertFails(
       updateDoc(doc(db, "boards", boardId), {
         title: "Updated",
+        updatedAt: makeTimestamp(),
+      })
+    )
+
+    await assertSucceeds(
+      updateDoc(doc(db, "boards", boardId), {
+        language: "ru",
         updatedAt: makeTimestamp(),
       })
     )
