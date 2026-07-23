@@ -331,6 +331,7 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                     className={styles.boardDeleteButton}
                     disabled={deletePending}
                     aria-label={uiCopy.board.deleteBoard}
+                    data-testid="delete-board-trigger"
                   >
                     {deletePending ? (
                       <Spinner size="xs" className={styles.iconSpinner} aria-hidden="true" />
@@ -357,6 +358,7 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                       variant="destructive"
                       onClick={handleDeleteBoard}
                       disabled={deletePending}
+                      data-testid="delete-board-confirm"
                     >
                       {deletePending ? (
                         <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />

@@ -135,7 +135,12 @@ Environment for Cypress:
 ```
 CYPRESS_E2E_EMAIL=...
 CYPRESS_E2E_PASSWORD=...
+CYPRESS_E2E_ALLOW_WRITES=true
 ```
+
+Use credentials and `NEXT_PUBLIC_FIREBASE_*` values from a dedicated Firebase test
+project. The suite refuses to write without the explicit flag and removes every
+board it creates in `afterEach`.
 
 Notes:
 - `npm run test:rules` запускает Firestore emulator через `firebase emulators:exec`.

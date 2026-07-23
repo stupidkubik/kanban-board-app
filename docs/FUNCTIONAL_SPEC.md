@@ -570,7 +570,7 @@ Toast system:
 
 ### 13.3 Cypress
 
-Задуманы сценарии create board -> two columns -> card -> DnD и отправка invite. Текущие селекторы устарели относительно UI, credentials отсутствуют, cleanup тестовых данных не реализован; suite нельзя считать рабочим regression gate до обновления.
+Сценарии покрывают create board -> two columns -> card -> DnD и отправку invite с актуальными test ids. Запуск требует отдельный Firebase test project, E2E credentials и явный write opt-in; `afterEach` удаляет созданные доски. Без внешних credentials suite статически проверяется, но не запускается.
 
 ## 14. Нефункциональные характеристики текущей версии
 

@@ -140,6 +140,7 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
                 type="button"
                 size="xs"
                 onClick={() => setOpen(true)}
+                data-testid="invite-member-trigger"
               >
                 {uiCopy.board.inviteMember}
               </Button>
@@ -334,6 +335,7 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
                       aria-label={uiCopy.board.inviteEmailPlaceholder}
                       type="email"
                       disabled={invitePending}
+                      data-testid="invite-email"
                     />
                     <Select
                       value={inviteRole}
@@ -356,7 +358,11 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
                         </SelectItem>
                       </SelectContent>
                     </Select>
-                    <Button type="submit" disabled={invitePending}>
+                    <Button
+                      type="submit"
+                      disabled={invitePending}
+                      data-testid="invite-submit"
+                    >
                       {invitePending ? (
                         <Spinner
                           size="sm"
