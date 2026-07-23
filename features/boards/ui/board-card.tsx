@@ -276,7 +276,6 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                     width={28}
                     height={28}
                     className={styles.boardAvatarImage}
-                    unoptimized
                   />
                 ) : (
                   <span>{label.slice(0, 1).toUpperCase() || "?"}</span>

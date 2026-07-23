@@ -102,7 +102,6 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
                           alt={participant.name}
                           width={28}
                           height={28}
-                          unoptimized
                         />
                       ) : (
                         <span className={styles.participantAvatarFallback}>
@@ -238,7 +237,6 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
                             alt={participant.name}
                             width={36}
                             height={36}
-                            unoptimized
                           />
                         ) : (
                           <span className={styles.participantAvatarFallback}>
