@@ -92,6 +92,8 @@ export const normalizeCard = (boardId: string, id: string, data: CardRecord): Ca
   return card
 }
 
+export const isVisibleCard = (card: Card) => card.archived !== true
+
 export const ensureCardId = (boardId: string, cardId?: string) => {
   return (
     cardId ??

@@ -23,7 +23,6 @@ Fields:
 - `language` ("ru" | "en")
 - `createdAt` (Timestamp)
 - `updatedAt` (Timestamp, optional)
-- `archived` (bool, optional)
 
 Example:
 ```json
@@ -52,7 +51,6 @@ Fields:
 - `order` (number) - position in the board
 - `createdAt` (Timestamp)
 - `updatedAt` (Timestamp, optional)
-- `archived` (bool, optional)
 
 Example:
 ```json
@@ -100,6 +98,9 @@ Fields:
 - `createdAt` (Timestamp)
 - `updatedAt` (Timestamp, optional)
 - `archived` (bool, optional)
+
+`assigneeIds`, `labels`, and `archived` are reserved data-layer fields, not
+finished UI features. Archived cards are excluded from the active kanban view.
 
 Ordering notes:
 - `order` is a numeric sort key. It is not required to be sequential.

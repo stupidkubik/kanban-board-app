@@ -431,7 +431,7 @@ Redux `boardUiSlice` хранит по board:
 | `dueAt` | Timestamp/null | используется |
 | `assigneeIds` | string[] | data-layer only |
 | `labels` | string[] | data-layer only |
-| `archived` | boolean | data-layer only, query не фильтрует |
+| `archived` | boolean | reserved data-layer field; `true` скрывается из active kanban |
 | `createdAt` | Timestamp | используется для данных |
 | `updatedAt` | Timestamp | используется для данных |
 
@@ -609,7 +609,7 @@ Toast system:
 
 ## 16. Решения, которые нужно принять до расширения продукта
 
-1. Нужны ли assignments/labels/archive в ближайшем релизе или поля следует временно удалить?
+1. Когда развивать reserved assignments/labels/archive в полноценный UI и нужна ли отдельная archive view?
 2. Какая модель удаления профиля участника удовлетворяет privacy и Undo?
 3. Как поддерживать board stats: denormalized counters, aggregation queries или server projection?
 4. Какой размер board считать целевым для pagination/virtualization?

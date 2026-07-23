@@ -48,6 +48,7 @@ import {
 import {
   ensureCardId,
   ensureCardOrder,
+  isVisibleCard,
   normalizeCard,
   type CardRecord,
 } from "@/features/cards/model/card-normalizers"
@@ -488,9 +489,11 @@ export const firestoreApi = createApi({
         const unsubscribe = onSnapshot(
           cardsQuery,
           (snapshot) => {
-            const nextCards = snapshot.docs.map((docSnap) =>
-              normalizeCard(args.boardId, docSnap.id, docSnap.data() as CardRecord)
-            )
+            const nextCards = snapshot.docs
+              .map((docSnap) =>
+                normalizeCard(args.boardId, docSnap.id, docSnap.data() as CardRecord)
+              )
+              .filter(isVisibleCard)
             updateCachedData((draft) => {
               draft.length = 0
               draft.push(...nextCards)

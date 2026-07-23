@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest"
 
 vi.mock("@/lib/firebase/client", () => ({ clientDb: {} }))
 
-const { ensureCardOrder, normalizeCard } = await import(
+const { ensureCardOrder, isVisibleCard, normalizeCard } = await import(
   "@/features/cards/model/card-normalizers"
 )
 
@@ -68,5 +68,19 @@ describe("ensureCardOrder", () => {
 
   it("returns the provided order", () => {
     expect(ensureCardOrder(42)).toBe(42)
+  })
+})
+
+describe("isVisibleCard", () => {
+  it("hides archived records from the active kanban", () => {
+    const card = normalizeCard("board-1", "card-1", {
+      columnId: "col-1",
+      title: "Archived",
+      order: 1,
+      createdById: "user-1",
+      archived: true,
+    })
+    expect(isVisibleCard(card)).toBe(false)
+    expect(isVisibleCard({ ...card, archived: false })).toBe(true)
   })
 })
