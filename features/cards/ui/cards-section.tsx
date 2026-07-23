@@ -89,6 +89,7 @@ export const CardsSection = React.memo(function CardsSection({
     handleDragCancel,
     formatDueDate,
     isCardsLoading,
+    isCardsLimitReached,
   } = useBoardCards({
     boardId,
     user,
@@ -99,12 +100,13 @@ export const CardsSection = React.memo(function CardsSection({
   })
 
   const showColumnsSkeleton = isColumnsLoading && columns.length === 0
+  const contentEditingEnabled = canEdit && !isCardsLimitReached
 
   return (
     <>
       <CardEditDialog
         open={editCardOpen}
-        canEdit={canEdit}
+        canEdit={contentEditingEnabled}
         updatingCard={updatingCard}
         uiCopy={uiCopy}
         editingCard={editingCard}
@@ -115,19 +117,22 @@ export const CardsSection = React.memo(function CardsSection({
       <CardDeleteDialog
         open={deleteCardOpen}
         deleteCardTitle={deleteCardTitle}
-        isOwner={isOwner}
+        isOwner={isOwner && !isCardsLimitReached}
         deletingCard={deletingCard}
         uiCopy={uiCopy}
         onConfirm={handleDeleteCard}
         onClose={resetDeleteCard}
       />
+      {isCardsLimitReached ? (
+        <p role="alert">{uiCopy.board.cardLimitReached}</p>
+      ) : null}
       {showColumnsSkeleton ? (
         <ColumnsSkeleton ariaLabel={uiCopy.common.loading} />
       ) : (
         <ColumnsGrid
           columns={columns}
           cardsByColumn={cardsByColumn}
-          canEdit={canEdit}
+          canEdit={contentEditingEnabled}
           isOwner={isOwner}
           uiCopy={uiCopy}
           dndSensors={dndSensors}

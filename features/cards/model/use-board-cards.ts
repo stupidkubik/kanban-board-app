@@ -19,6 +19,7 @@ import {
   useCreateCardMutation,
   useDeleteCardMutation,
   useGetCardsQuery,
+  BOARD_CARD_LIMIT,
   useUpdateCardMutation,
 } from "@/lib/store/firestore-api"
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
@@ -569,6 +570,7 @@ export const useBoardCards = ({
     cardsByColumn,
     cardColumnById,
     isCardsLoading: isCardsLoading || isCardsFetching,
+    isCardsLimitReached: cards.length >= BOARD_CARD_LIMIT,
     creatingCard,
     updatingCard,
     deletingCard,

@@ -1,5 +1,5 @@
 import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react"
-import { collection, doc, onSnapshot, orderBy, query, where } from "firebase/firestore"
+import { collection, doc, limit, onSnapshot, orderBy, query, where } from "firebase/firestore"
 
 import { clientDb } from "@/lib/firebase/client"
 import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
@@ -63,6 +63,9 @@ type BoardQueryState = {
 type BoardQueryInput = { boardId: string | null; subscriptionKey: number }
 
 const mutationOk: MutationResult = { ok: true }
+export const BOARD_COLUMN_LIMIT = 100
+export const BOARD_MEMBER_LIMIT = 100
+export const BOARD_CARD_LIMIT = 500
 
 // Read RTK Query cache to seed optimistic updates.
 const getCachedColumns = (state: RootState, boardId: string) => {
@@ -352,7 +355,8 @@ export const firestoreApi = createApi({
 
         const columnsQuery = query(
           collection(clientDb, "boards", boardId, "columns"),
-          orderBy("order", "asc")
+          orderBy("order", "asc"),
+          limit(BOARD_COLUMN_LIMIT)
         )
 
         const unsubscribe = onSnapshot(
@@ -404,7 +408,8 @@ export const firestoreApi = createApi({
 
         const membersQuery = query(
           collection(clientDb, "boards", boardId, "memberProfiles"),
-          orderBy("joinedAt", "asc")
+          orderBy("joinedAt", "asc"),
+          limit(BOARD_MEMBER_LIMIT)
         )
 
         const unsubscribe = onSnapshot(
@@ -471,9 +476,14 @@ export const firestoreApi = createApi({
           ? query(
               cardsCollection,
               where("columnId", "==", args.columnId),
-              orderBy("order", "asc")
+              orderBy("order", "asc"),
+              limit(BOARD_CARD_LIMIT)
             )
-          : query(cardsCollection, orderBy("order", "asc"))
+          : query(
+              cardsCollection,
+              orderBy("order", "asc"),
+              limit(BOARD_CARD_LIMIT)
+            )
 
         const unsubscribe = onSnapshot(
           cardsQuery,

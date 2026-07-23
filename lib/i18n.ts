@@ -103,6 +103,7 @@ type BoardCopy = {
   cardsLabel: string
   noCards: string
   noColumns: string
+  cardLimitReached: string
   deleteColumn: string
   deleteColumnTitle: string
   deleteColumnDescription: string
@@ -284,6 +285,7 @@ const copy: Record<Locale, Copy> = {
       cardsLabel: "Карточки",
       noCards: "Пока нет карточек.",
       noColumns: "Пока нет колонок.",
+      cardLimitReached: "Показаны первые 500 карточек. Редактирование содержимого отключено — разделите доску перед продолжением.",
       deleteColumn: "Удалить",
       deleteColumnTitle: "Удалить колонку?",
       deleteColumnDescription: "Можно удалить только пустую колонку. Действие нельзя отменить.",
@@ -458,6 +460,7 @@ const copy: Record<Locale, Copy> = {
       cardsLabel: "Cards",
       noCards: "No cards yet.",
       noColumns: "No columns yet.",
+      cardLimitReached: "Showing the first 500 cards. Content editing is disabled; split this board before continuing.",
       deleteColumn: "Delete",
       deleteColumnTitle: "Delete column?",
       deleteColumnDescription: "Only an empty column can be deleted. This cannot be undone.",
