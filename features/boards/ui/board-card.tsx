@@ -11,11 +11,9 @@ import { type Board } from "@/lib/types/boards"
 import { getBoardCoverGradient } from "@/lib/board-cover"
 import {
   useDeleteBoardMutation,
-  useGetBoardMembersQuery,
-  useGetCardsQuery,
-  useGetColumnsQuery,
   useUpdateBoardTitleMutation,
 } from "@/lib/store/firestore-api"
+import { useBoardSummary } from "@/features/boards/model/use-board-summary"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -54,9 +52,8 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
   const [deletePending, setDeletePending] = React.useState(false)
   const deleteTimeoutRef = React.useRef<number | null>(null)
   const { notify, notifySuccess } = useNotifications()
-  const { data: members = [] } = useGetBoardMembersQuery(board.id)
-  const { data: columns = [] } = useGetColumnsQuery(board.id)
-  const { data: cards = [] } = useGetCardsQuery({ boardId: board.id })
+  const { columnCount, cardCount, memberCount, visibleMembers } =
+    useBoardSummary(board, user)
 
   const role = getMemberRole(board, user.uid)
   const isOwner = canInviteMembers(board, user.uid)
@@ -71,8 +68,7 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
   }, [])
   const roleLabel = role ? roleLabels[uiLocale][role] : roleLabels[uiLocale].member
   const boardLanguageLabel = languageLabels[boardLanguage]
-  const visibleMembers = members.slice(0, 4)
-  const remainingMembers = Math.max(0, members.length - visibleMembers.length)
+  const remainingMembers = Math.max(0, memberCount - visibleMembers.length)
   const coverStyle = React.useMemo(
     () => ({ backgroundImage: getBoardCoverGradient(board.id) }),
     [board.id]
@@ -296,11 +292,11 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
         </div>
         <div className={styles.boardStats}>
           <div className={styles.boardStat}>
-            <span className={styles.boardStatValue}>{columns.length}</span>
+            <span className={styles.boardStatValue}>{columnCount ?? "—"}</span>
             <span className={styles.boardStatLabel}>{uiCopy.board.columnsTitle}</span>
           </div>
           <div className={styles.boardStat}>
-            <span className={styles.boardStatValue}>{cards.length}</span>
+            <span className={styles.boardStatValue}>{cardCount ?? "—"}</span>
             <span className={styles.boardStatLabel}>{uiCopy.board.cardsLabel}</span>
           </div>
           <div className={`${styles.boardStat} ${styles.boardStatWide}`}>

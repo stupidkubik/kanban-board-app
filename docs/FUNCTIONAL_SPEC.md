@@ -216,7 +216,7 @@ Board и owner member profile создаются одной Admin SDK transactio
 
 Editor/owner может переименовать board. Rename выполняется серверной транзакцией и одновременно обновляет `boardTitle` во всех ожидающих приглашениях. Owner может удалить board. После подтверждения удаление откладывается на 4 секунды; toast Undo отменяет ещё не отправленную server mutation. После отправки восстановление не предусмотрено.
 
-Для статистик каждая карточка держит отдельные realtime listeners на memberProfiles, columns и cards соответствующей доски.
+Карточка не создаёт content realtime listeners. Количество columns/cards загружается одноразовыми aggregation queries, а preview участников ограничен восемью profile documents и актуальным membership.
 
 ## 7. Страница доски
 
@@ -578,7 +578,7 @@ Toast system:
 - Realtime consistency near-real-time, без транзакционной гарантии между отдельными client writes.
 - Viewer read-only обеспечен UI и Rules.
 - Все board cards/content загружаются без pagination/limit.
-- Main page fan-out: три content listeners на каждую board.
+- Main page fan-out устранён; остаются две one-shot count aggregation и один capped profile preview на board при монтировании списка.
 - Card order не rebalance-ится.
 - Нет service worker/offline mutation queue.
 - Нет централизованной telemetry/error boundary.
