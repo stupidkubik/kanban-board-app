@@ -582,7 +582,7 @@ Rules suite содержит 11 emulator-сценариев.
 
 ### 13.3 Cypress
 
-Сценарии покрывают create board -> two columns -> card -> DnD и отправку invite с актуальными test ids. Запуск требует отдельный Firebase test project, E2E credentials и явный write opt-in; `afterEach` удаляет созданные доски. Без внешних credentials suite статически проверяется, но не запускается.
+Сценарии покрывают create board -> two columns -> card -> DnD и отправку invite с актуальными test ids. Для пет-проекта принят прямой запуск против текущего Firebase project без отдельного test project: нужны выделенные E2E credentials и явный write opt-in, а `afterEach` удаляет созданные доски. Без внешних credentials suite статически проверяется, но не запускается.
 
 ## 14. Нефункциональные характеристики текущей версии
 
@@ -593,8 +593,10 @@ Rules suite содержит 11 emulator-сценариев.
 - Main page fan-out устранён; остаются две one-shot count aggregation и один capped profile preview на board при монтировании списка.
 - Rebalance ограничен 500 карточками одной колонки; большие колонки требуют отдельной pagination/server strategy.
 - Нет service worker/offline mutation queue.
-- Route/root error boundaries показывают recovery UI и correlation id; render errors пишутся структурированно. Внешний telemetry sink пока не подключён.
+- Route/root error boundaries показывают recovery UI и correlation id; render errors пишутся структурированно. Фактическая настройка и достаточность Vercel Observability и Firebase Console для production-мониторинга ещё не проверены; решение по внешнему telemetry sink остаётся открытым.
 - Responsive styles находятся в CSS Modules; основной board CSS крупный и общий для нескольких секций.
+- Целевая production-платформа — Vercel. Секрет Admin SDK хранится в защищённой переменной `FIREBASE_SERVICE_ACCOUNT`; credential-файлы в source/build запрещены.
+- Vercel production build явно использует Webpack. `firebase-admin` удерживается на совместимой ветке 13.x: ветка 14.x через `jwks-rsa@4 -> jose@6` вызывает `ERR_REQUIRE_ESM` в Vercel Functions runtime.
 
 ## 15. Инварианты для будущего рефакторинга
 
@@ -615,13 +617,15 @@ Rules suite содержит 11 emulator-сценариев.
 13. Изменения schema отражаются в `schema.md`, indexes и migration notes.
 14. UI strings добавляются сразу для ru и en.
 
-## 16. Решения, которые нужно принять до расширения продукта
+## 16. Реестр продуктовых решений до расширения
 
-1. Когда развивать reserved assignments/labels/archive в полноценный UI и нужна ли отдельная archive view?
-2. Какая модель удаления профиля участника удовлетворяет privacy и Undo?
-3. Как поддерживать board stats: denormalized counters, aggregation queries или server projection?
-4. Какой размер board считать целевым для pagination/virtualization?
-5. Нужна ли передача ownership и изменение ролей?
-6. Какой Firebase project/emulator станет изолированной E2E средой?
-7. Какая deployment-платформа и managed credential strategy являются целевыми?
-8. Какой внешний telemetry sink и какие SLO/метрики нужны: startup latency, listener count, Firestore reads, mutation error rate?
+Принятое решение описывает целевой продуктовый контракт. Если UI или data model ещё не реализованы, это отмечено отдельно.
+
+1. **Assignments, labels, archive — решено.** Карточка поддерживает нескольких исполнителей через существующий `assigneeIds`. Для labels нужен общий каталог названий и цветов на уровне доски и новая сущность в schema. Archive не развивается и не получает отдельный UI.
+2. **Удаление профиля участника — решено.** Используется немедленное окончательное удаление без soft delete, retention window и Undo.
+3. **Board stats — решено.** Остаются Firestore aggregation queries; denormalized counters и server projection не вводятся без измеримой необходимости.
+4. **Размер доски — решено.** Pagination/virtualization не входят в поддерживаемую модель. Жёсткое правило продукта: максимум 500 cards, 100 columns и 100 member profiles; при card cap content editing блокируется, большую доску следует разделить.
+5. **Ownership и роли — решено.** Передачи ownership нет. Из управления ролями планируется только переключение уже принятого участника между editor и viewer.
+6. **E2E Firebase environment — решено.** Отдельный test project не создаётся; прямые E2E используют текущий Firebase project, выделенные credentials, явный `CYPRESS_E2E_ALLOW_WRITES=true` и обязательный cleanup созданных досок.
+7. **Deployment и credentials — решено.** Целевая платформа — Vercel: https://kanban-board-app-ten-psi.vercel.app/. Admin SDK получает service-account JSON только из защищённой environment variable `FIREBASE_SERVICE_ACCOUNT`; локальные credential-файлы не входят в git или deployment trace. Production build явно использует Webpack. `firebase-admin` остаётся на совместимой ветке 13.x до подтверждённого исправления Vercel runtime для цепочки `jwks-rsa@4 -> jose@6`; переход на 14.x требует preview deployment, smoke-проверки `/` и server API, а также проверки runtime logs.
+8. **Telemetry — открыто, требуется проверка инфраструктуры.** Предпочтительный минимальный вариант — ограничиться Vercel Observability и Firebase Console без нового SDK или внешнего sink, но сначала нужно подтвердить: какие runtime errors и latency действительно доступны в Vercel; отображаются ли Firestore usage/quota в Firebase; настроены ли billing/quota alerts; достаточны ли retention и уведомления для разбора production-инцидента. Только после этой проверки решается, нужны ли Sentry, OpenTelemetry, Log Drains, performance SDK, формальные SLO или собственный metrics backend.

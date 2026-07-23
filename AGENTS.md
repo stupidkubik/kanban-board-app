@@ -66,11 +66,18 @@ If you change the data model:
 
 ### Admin SDK credentials (server)
 Use one of:
-- Application Default Credentials supplied by the hosting platform (preferred)
-- FIREBASE_SERVICE_ACCOUNT = JSON string from a secret store
+- FIREBASE_SERVICE_ACCOUNT = JSON string from the protected Vercel environment-variable store (production target)
+- Application Default Credentials supplied by a hosting platform with managed identity
 - GOOGLE_APPLICATION_CREDENTIALS = local ADC path outside the repository
 
 The app must not search for or package service-account JSON from the project tree.
+
+### Production deployment
+- Target: Vercel (`https://kanban-board-app-ten-psi.vercel.app/`)
+- Keep `next build --webpack` for production until the Vercel runtime incompatibility is resolved.
+- Keep `firebase-admin` on the compatible 13.x line. Version 14.x currently fails in Vercel Functions with `ERR_REQUIRE_ESM` through `jwks-rsa@4 -> jose@6`.
+- Treat an upgrade to Firebase Admin 14.x as a preview-deployment migration and verify `/`, protected API routes, and runtime logs before promotion.
+- Do not assume Vercel Observability or Firebase Console monitoring is fully configured. Verify available runtime errors, latency, retention, usage/quota data, and alerts before deciding whether an external telemetry SDK is needed.
 
 ### App Check (recommended)
 - NEXT_PUBLIC_FIREBASE_APP_CHECK_SITE_KEY

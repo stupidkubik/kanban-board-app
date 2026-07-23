@@ -107,11 +107,18 @@ NEXT_PUBLIC_FIREBASE_APP_ID=...
 ```
 
 Admin SDK credentials (server):
-- Prefer Application Default Credentials provided by the hosting platform.
-- Alternatively, set `FIREBASE_SERVICE_ACCOUNT` to a JSON string in the platform's secret store.
+- On the target Vercel deployment, set `FIREBASE_SERVICE_ACCOUNT` to a JSON string in the protected environment-variable store.
+- On a platform with managed identity, Application Default Credentials may be used instead.
 - For local ADC, `GOOGLE_APPLICATION_CREDENTIALS` may point to a credential file outside the repository.
 
 The app never searches for credential files inside the project. Do not place service-account JSON in the repository or deployment bundle.
+
+Production deployment:
+- Target platform: Vercel — https://kanban-board-app-ten-psi.vercel.app/
+- Store `FIREBASE_SERVICE_ACCOUNT` only as a protected Vercel environment variable; never commit or bundle a credential file.
+- Production builds explicitly use Webpack. `firebase-admin` stays on the compatible 13.x line because 14.x currently produces a Vercel runtime `ERR_REQUIRE_ESM` through `jwks-rsa@4 -> jose@6`.
+- Treat upgrading Firebase Admin to 14.x as a separate compatibility migration: deploy a preview, verify `/` and protected API routes, and inspect runtime logs before promoting it.
+- Observability decision is pending verification: confirm available runtime errors, latency, retention, and alerts in Vercel, plus Firestore usage/quota and billing alerts in Firebase Console, before adding or rejecting an external telemetry SDK.
 
 App Check (recommended):
 ```
@@ -142,9 +149,10 @@ CYPRESS_E2E_PASSWORD=...
 CYPRESS_E2E_ALLOW_WRITES=true
 ```
 
-Use credentials and `NEXT_PUBLIC_FIREBASE_*` values from a dedicated Firebase test
-project. The suite refuses to write without the explicit flag and removes every
-board it creates in `afterEach`.
+Direct E2E uses the currently configured Firebase project; a separate test project
+is not required for this pet project. The suite refuses to write without the
+explicit flag, uses dedicated E2E credentials, and removes every board it creates
+in `afterEach`.
 
 Notes:
 - `npm run test:rules` запускает Firestore emulator через `firebase emulators:exec`.
