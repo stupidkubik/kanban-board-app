@@ -39,7 +39,11 @@ Browser (Next.js App Router)
 
 Server (Next.js API routes)
   ├─ /api/auth/session (session cookies)
-  └─ /api/boards/[boardId] (Admin SDK delete of board + subcollections)
+  ├─ /api/boards (atomic board + owner profile creation)
+  ├─ /api/boards/[boardId] (access check, rename, cascade delete)
+  ├─ /api/boards/[boardId]/columns/[columnId] (safe empty-column delete)
+  ├─ /api/boards/[boardId]/members/[memberId] (atomic remove/leave)
+  └─ /api/invites/[inviteId]/accept (atomic invite acceptance)
 ```
 
 ## Codebase Analysis (quick)

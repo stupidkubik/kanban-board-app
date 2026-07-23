@@ -75,7 +75,7 @@ Example:
 ```json
 {
   "displayName": "Alex",
-  "photoURL": "https://example.com/avatar.png",
+  "photoURL": "https://lh3.googleusercontent.com/example",
   "email": "user@example.com",
   "joinedAt": "<timestamp>"
 }
@@ -106,7 +106,9 @@ Ordering notes:
 - `order` is a numeric sort key. It is not required to be sequential.
 - New positions are computed using gaps between neighbors (avg / +/- gap).
 - Moving a card updates both `columnId` and `order`.
-- If neighbors are missing, `order` can fall back to a timestamp-like number.
+- If neighbors are missing, `order` uses the configured numeric gap.
+- When the relative gap between neighbors falls to `1e-6` or lower, the client
+  rebalances the target column in a batch (up to the supported 500-card cap).
 
 Example:
 ```json
@@ -164,10 +166,9 @@ Example:
 }
 ```
 
-## Suggested indexes
-- `boards` where `members.{uid} == true`
-- `boardInvites` where `email == <email>`
-- `boards/{boardId}/cards` where `columnId` + `order`
+## Query indexes
+- Dynamic board membership and invite email queries use Firestore single-field indexes.
+- `firestore.indexes.json` defines the cards `columnId ASC` + `order ASC` composite index.
 
 ## Migrations / backward compatibility
 The app previously used some different field names. The client includes fallbacks
@@ -181,7 +182,7 @@ If you want to clean legacy docs, run a one-time migration to rename the fields
 and remove the legacy keys.
 
 ## Rules notes (columns/cards)
-Recommended extensions to `firestore.rules` once columns/cards are implemented:
+The current `firestore.rules` enforce these contracts:
 
 - Allow read on `boards/{boardId}/columns/{columnId}` if user is a board member.
 - Allow create/update on columns if user is owner/editor.
@@ -201,6 +202,6 @@ For cards:
 - Current limits: board/column titles 120 chars, card title 200, description 5000,
   up to 20 assignees, up to 10 labels of 50 chars, and up to 100 board members.
 
-Suggested rule helpers:
-- `isMember(boardId)` that loads `boards/{boardId}` and checks `members[uid]`.
-- `isEditor(boardId)` that checks `roles[uid] in ["owner", "editor"]`.
+Implemented rule helpers include:
+- `isBoardMember(boardId)` that loads `boards/{boardId}` and checks `members[uid]`.
+- `isBoardEditor(boardId)` that checks `roles[uid] in ["owner", "editor"]`.
