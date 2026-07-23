@@ -26,8 +26,10 @@ import {
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { clientAuth } from "@/lib/firebase/client"
 import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
+import { getErrorMessage } from "@/lib/errors"
 import { usePreferredLocale } from "@/lib/use-preferred-locale"
 import { getCopy, languageLabels, type Locale } from "@/lib/i18n"
+import { isValidEmail } from "@/lib/validation"
 import styles from "./sign-in.module.css"
 
 const providers = {
@@ -44,8 +46,6 @@ const redirectFallbackErrors = new Set([
   "auth/cancelled-popup-request",
   "auth/operation-not-supported-in-this-environment",
 ])
-
-const isValidEmail = (value: string) => /\S+@\S+\.\S+/.test(value)
 
 const getFriendlyError = (
   err: unknown,
@@ -80,7 +80,7 @@ const getFriendlyError = (
     }
   }
 
-  return err instanceof Error ? err.message : errors.generic
+  return getErrorMessage(err, errors.generic)
 }
 
 export default function SignInPage() {

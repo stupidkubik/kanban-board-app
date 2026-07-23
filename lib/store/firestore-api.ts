@@ -1,6 +1,7 @@
 import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react"
 
 import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
+import { getErrorMessage } from "@/lib/errors"
 import {
   createBoard as createBoardDocument,
   createColumn as createColumnDocument,
@@ -217,7 +218,7 @@ export const firestoreApi = createApi({
           return { data: { ...mutationOk, boardId } }
         } catch (error) {
           return {
-            error: error instanceof Error ? error : new Error("Create board failed"),
+            error: new Error(getErrorMessage(error, "Create board failed")),
           }
         }
       },
@@ -258,8 +259,7 @@ export const firestoreApi = createApi({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error:
-              error instanceof Error ? error : new Error("Update board language failed"),
+            error: new Error(getErrorMessage(error, "Update board language failed")),
           }
         }
       },
@@ -274,8 +274,7 @@ export const firestoreApi = createApi({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error:
-              error instanceof Error ? error : new Error("Update board title failed"),
+            error: new Error(getErrorMessage(error, "Update board title failed")),
           }
         }
       },
@@ -290,7 +289,7 @@ export const firestoreApi = createApi({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: error instanceof Error ? error : new Error("Delete board failed"),
+            error: new Error(getErrorMessage(error, "Delete board failed")),
           }
         }
       },
@@ -442,7 +441,7 @@ export const firestoreApi = createApi({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: error instanceof Error ? error : new Error("Create column failed"),
+            error: new Error(getErrorMessage(error, "Create column failed")),
           }
         }
       },
@@ -457,7 +456,7 @@ export const firestoreApi = createApi({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: error instanceof Error ? error : new Error("Update column failed"),
+            error: new Error(getErrorMessage(error, "Update column failed")),
           }
         }
       },
@@ -472,7 +471,7 @@ export const firestoreApi = createApi({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: error instanceof Error ? error : new Error("Delete column failed"),
+            error: new Error(getErrorMessage(error, "Delete column failed")),
           }
         }
       },
@@ -490,7 +489,7 @@ export const firestoreApi = createApi({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: error instanceof Error ? error : new Error("Create card failed"),
+            error: new Error(getErrorMessage(error, "Create card failed")),
           }
         }
       },
@@ -548,7 +547,7 @@ export const firestoreApi = createApi({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: error instanceof Error ? error : new Error("Update card failed"),
+            error: new Error(getErrorMessage(error, "Update card failed")),
           }
         }
       },
@@ -631,7 +630,7 @@ export const firestoreApi = createApi({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: error instanceof Error ? error : new Error("Delete card failed"),
+            error: new Error(getErrorMessage(error, "Delete card failed")),
           }
         }
       },

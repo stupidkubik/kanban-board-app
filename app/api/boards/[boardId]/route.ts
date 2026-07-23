@@ -4,6 +4,7 @@ import { FieldValue, type Query } from "firebase-admin/firestore"
 import { adminDb } from "@/lib/firebase/admin"
 import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { getSession } from "@/lib/firebase/session"
+import { getErrorMessage } from "@/lib/errors"
 
 const DELETE_BATCH_SIZE = 500
 const MAX_INVITES_PER_RENAME = 499
@@ -55,7 +56,7 @@ export async function GET(
     }
     return NextResponse.json({ status: "ok" })
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Board access check failed"
+    const message = getErrorMessage(error, "Board access check failed")
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
@@ -141,7 +142,7 @@ export async function PATCH(
         )
       }
     }
-    const message = error instanceof Error ? error.message : "Update board failed"
+    const message = getErrorMessage(error, "Update board failed")
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }
@@ -189,7 +190,7 @@ export async function DELETE(
 
     return NextResponse.json({ status: "ok" })
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Delete board failed"
+    const message = getErrorMessage(error, "Delete board failed")
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

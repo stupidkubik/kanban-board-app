@@ -20,6 +20,7 @@ import { CardsSection } from "@/features/cards/ui/cards-section"
 import { ParticipantsSection } from "@/features/participants/ui/participants-section"
 import { useNotifications } from "@/features/notifications/ui/notifications-provider"
 import { useUpdateBoardLanguageMutation } from "@/lib/store/firestore-api"
+import { getErrorMessage } from "@/lib/errors"
 
 type BoardContentProps = {
   boardId: string
@@ -98,11 +99,7 @@ export const BoardContent = React.memo(function BoardContent({
       try {
         await updateBoardLanguage({ boardId, language }).unwrap()
       } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : uiCopy.board.errors.updateLanguageFailed
-        )
+        setError(getErrorMessage(err, uiCopy.board.errors.updateLanguageFailed))
       }
     },
     [boardId, canEdit, uiCopy.board.errors.updateLanguageFailed, updateBoardLanguage]

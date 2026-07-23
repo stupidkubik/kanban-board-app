@@ -5,6 +5,7 @@ import type { DragEndEvent, DragOverEvent, DragStartEvent } from "@dnd-kit/core"
 
 import { rebalanceCardOrders } from "@/features/cards/data/card-operations"
 import { getColumnIdFromDropId } from "@/lib/board-dnd"
+import { getErrorMessage } from "@/lib/errors"
 import {
   getNextOrderValue,
   getRebalancedOrder,
@@ -119,7 +120,7 @@ export function useCardDnd({
           })
         }
       } catch (error) {
-        setError(error instanceof Error ? error.message : updateFailedMessage)
+        setError(getErrorMessage(error, updateFailedMessage))
       }
     },
     [

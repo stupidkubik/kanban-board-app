@@ -1,9 +1,9 @@
 "use client"
 
 import { type User } from "firebase/auth"
-import { deleteDoc, doc } from "firebase/firestore"
 
-import { clientDb } from "@/lib/firebase/client"
+import { declineBoardInvite } from "@/features/invites/data/invite-operations"
+import { getErrorMessage } from "@/lib/errors"
 import { acceptBoardInvite } from "@/lib/store/firestore-operations"
 import { getCopy, roleLabels, type Locale } from "@/lib/i18n"
 import { type Invite } from "@/lib/store/firestore-api"
@@ -43,7 +43,7 @@ export function KanbanInvitesSection({
         photoURL: user.photoURL,
       })
     } catch (err) {
-      onError(err instanceof Error ? err.message : uiCopy.board.errors.acceptInviteFailed)
+      onError(getErrorMessage(err, uiCopy.board.errors.acceptInviteFailed))
     }
   }
 
@@ -51,9 +51,9 @@ export function KanbanInvitesSection({
     onError(null)
 
     try {
-      await deleteDoc(doc(clientDb, "boardInvites", invite.id))
+      await declineBoardInvite(invite.id)
     } catch (err) {
-      onError(err instanceof Error ? err.message : uiCopy.board.errors.declineInviteFailed)
+      onError(getErrorMessage(err, uiCopy.board.errors.declineInviteFailed))
     }
   }
 

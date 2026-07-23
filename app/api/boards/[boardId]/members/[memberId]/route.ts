@@ -4,6 +4,7 @@ import { NextResponse } from "next/server"
 import { adminDb } from "@/lib/firebase/admin"
 import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { getSession } from "@/lib/firebase/session"
+import { getErrorMessage } from "@/lib/errors"
 
 class DeleteMemberError extends Error {
   constructor(readonly status: number, message: string) {
@@ -86,7 +87,7 @@ export async function DELETE(
       )
     }
 
-    const message = error instanceof Error ? error.message : "Delete member failed"
+    const message = getErrorMessage(error, "Delete member failed")
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

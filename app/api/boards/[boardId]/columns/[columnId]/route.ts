@@ -3,6 +3,7 @@ import { NextResponse } from "next/server"
 import { adminDb } from "@/lib/firebase/admin"
 import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { getSession } from "@/lib/firebase/session"
+import { getErrorMessage } from "@/lib/errors"
 
 const COLUMN_NOT_EMPTY = "COLUMN_NOT_EMPTY"
 
@@ -89,7 +90,7 @@ export async function DELETE(
       )
     }
 
-    const message = error instanceof Error ? error.message : "Delete column failed"
+    const message = getErrorMessage(error, "Delete column failed")
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

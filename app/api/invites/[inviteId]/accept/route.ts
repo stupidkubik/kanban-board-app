@@ -4,6 +4,7 @@ import { NextResponse } from "next/server"
 import { adminDb } from "@/lib/firebase/admin"
 import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { getSession } from "@/lib/firebase/session"
+import { getErrorMessage } from "@/lib/errors"
 
 class AcceptInviteError extends Error {
   constructor(readonly status: number, message: string) {
@@ -113,7 +114,7 @@ export async function POST(
     if (error instanceof AcceptInviteError) {
       return NextResponse.json({ error: error.message }, { status: error.status })
     }
-    const message = error instanceof Error ? error.message : "Accept invite failed"
+    const message = getErrorMessage(error, "Accept invite failed")
     return NextResponse.json({ error: message }, { status: 500 })
   }
 }

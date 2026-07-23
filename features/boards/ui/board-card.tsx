@@ -9,6 +9,7 @@ import { getCopy, languageLabels, roleLabels, type Locale } from "@/lib/i18n"
 import { canEditBoard as canEditBoardAccess, canInviteMembers, getMemberRole } from "@/lib/permissions"
 import { type Board } from "@/lib/types/boards"
 import { getBoardCoverGradient } from "@/lib/board-cover"
+import { getErrorMessage } from "@/lib/errors"
 import {
   useDeleteBoardMutation,
   useUpdateBoardTitleMutation,
@@ -118,7 +119,7 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
       setRenameOpen(false)
       setRenameTitle("")
     } catch (err) {
-      onError(err instanceof Error ? err.message : uiCopy.board.errors.updateBoardFailed)
+      onError(getErrorMessage(err, uiCopy.board.errors.updateBoardFailed))
     } finally {
       setRenamePending(false)
     }
@@ -139,7 +140,7 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
       try {
         await deleteBoardMutation({ boardId: board.id }).unwrap()
       } catch (err) {
-        onError(err instanceof Error ? err.message : uiCopy.board.errors.deleteBoardFailed)
+        onError(getErrorMessage(err, uiCopy.board.errors.deleteBoardFailed))
       } finally {
         setDeletePending(false)
         deleteTimeoutRef.current = null

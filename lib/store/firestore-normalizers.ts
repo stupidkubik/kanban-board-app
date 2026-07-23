@@ -1,5 +1,6 @@
 import { FieldPath } from "firebase/firestore"
 
+import { toMillis } from "@/lib/firestore-values"
 import type { Board, BoardMemberProfile, BoardRole, Column } from "@/lib/types/boards"
 
 export type Invite = {
@@ -34,19 +35,6 @@ export type MemberProfileRecord = {
   photoURL?: string | null
   email?: string | null
   joinedAt?: unknown
-}
-
-const toMillis = (value: unknown): number | undefined => {
-  if (!value || typeof value !== "object") {
-    return undefined
-  }
-
-  const maybeTimestamp = value as { toMillis?: () => number }
-  if (typeof maybeTimestamp.toMillis === "function") {
-    return maybeTimestamp.toMillis()
-  }
-
-  return undefined
 }
 
 export const normalizeBoard = (id: string, data: Omit<Board, "id"> & { createdBy?: string }) => {

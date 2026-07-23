@@ -3,6 +3,7 @@ import {
   collection,
   doc,
   serverTimestamp,
+  setDoc,
   updateDoc,
 } from "firebase/firestore"
 
@@ -56,6 +57,13 @@ export type UpdateColumnInput = {
 export type DeleteColumnInput = {
   boardId: string
   columnId: string
+}
+
+export type RestoreColumnInput = {
+  boardId: string
+  columnId: string
+  title: string
+  order: number
 }
 
 export type DeleteBoardMemberInput = {
@@ -201,6 +209,20 @@ export const updateColumn = async ({
 }: UpdateColumnInput) => {
   await updateDoc(doc(clientDb, "boards", boardId, "columns", columnId), {
     title,
+    updatedAt: serverTimestamp(),
+  })
+}
+
+export const restoreColumn = async ({
+  boardId,
+  columnId,
+  title,
+  order,
+}: RestoreColumnInput) => {
+  await setDoc(doc(clientDb, "boards", boardId, "columns", columnId), {
+    title,
+    order,
+    createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   })
 }

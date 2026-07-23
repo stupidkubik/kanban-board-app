@@ -7,6 +7,7 @@ import { signOut } from "firebase/auth"
 import { useAuth } from "@/components/auth-provider"
 import { clientAuth } from "@/lib/firebase/client"
 import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
+import { getErrorMessage } from "@/lib/errors"
 import { usePreferredLocale } from "@/lib/use-preferred-locale"
 import { getCopy, languageLabels, type Locale } from "@/lib/i18n"
 import { useGetBoardsQuery, useGetInvitesQuery } from "@/lib/store/firestore-api"
@@ -56,7 +57,7 @@ export function KanbanApp() {
       await signOut(clientAuth)
       router.replace("/sign-in")
     } catch (err) {
-      setError(err instanceof Error ? err.message : uiCopy.board.errors.signOutFailed)
+      setError(getErrorMessage(err, uiCopy.board.errors.signOutFailed))
     }
   }
 

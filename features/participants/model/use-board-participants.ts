@@ -3,11 +3,11 @@
 import * as React from "react"
 import type { User } from "firebase/auth"
 import { useRouter } from "next/navigation"
-import { doc, serverTimestamp, setDoc } from "firebase/firestore"
 
 import { useGetBoardMembersQuery } from "@/lib/store/firestore-api"
-import { clientDb } from "@/lib/firebase/client"
 import { deleteBoardMember } from "@/lib/store/firestore-operations"
+import { createBoardInvite } from "@/features/invites/data/invite-operations"
+import { getErrorMessage } from "@/lib/errors"
 import type { Board, BoardRole, BoardRoleLabel } from "@/lib/types/boards"
 import type { BoardCopy, Participant } from "@/lib/types/board-ui"
 import { isValidEmail } from "@/lib/validation"
@@ -129,18 +129,16 @@ export function useBoardParticipants({
     setInvitePending(true)
 
     try {
-      const inviteId = `${board.id}__${normalizedEmail}`
-      await setDoc(doc(clientDb, "boardInvites", inviteId), {
+      await createBoardInvite({
         boardId: board.id,
         boardTitle: board.title,
         email: normalizedEmail,
         role: inviteRole,
         invitedById: user.uid,
-        createdAt: serverTimestamp(),
       })
       setInviteEmail("")
     } catch (err) {
-      setError(err instanceof Error ? err.message : uiCopy.board.errors.inviteFailed)
+      setError(getErrorMessage(err, uiCopy.board.errors.inviteFailed))
     } finally {
       setInvitePending(false)
     }
@@ -183,9 +181,7 @@ export function useBoardParticipants({
     try {
       await deleteBoardMember({ boardId: board.id, memberId: participantId })
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : uiCopy.board.errors.removeMemberFailed
-      )
+      setError(getErrorMessage(err, uiCopy.board.errors.removeMemberFailed))
     } finally {
       setRemovePendingId(null)
     }
@@ -224,9 +220,7 @@ export function useBoardParticipants({
       })
       router.replace("/")
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : uiCopy.board.errors.leaveBoardFailed
-      )
+      setError(getErrorMessage(err, uiCopy.board.errors.leaveBoardFailed))
     } finally {
       setLeavePending(false)
     }

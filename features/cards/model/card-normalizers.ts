@@ -1,7 +1,8 @@
 import { collection, doc } from "firebase/firestore"
 
-import type { Card } from "@/lib/types/boards"
 import { clientDb } from "@/lib/firebase/client"
+import { toMillis } from "@/lib/firestore-values"
+import type { Card } from "@/lib/types/boards"
 
 export type CardRecord = {
   columnId?: string
@@ -16,19 +17,6 @@ export type CardRecord = {
   createdAt?: unknown
   updatedAt?: unknown
   archived?: boolean
-}
-
-const toMillis = (value: unknown): number | undefined => {
-  if (!value || typeof value !== "object") {
-    return undefined
-  }
-
-  const maybeTimestamp = value as { toMillis?: () => number }
-  if (typeof maybeTimestamp.toMillis === "function") {
-    return maybeTimestamp.toMillis()
-  }
-
-  return undefined
 }
 
 export const normalizeCard = (boardId: string, id: string, data: CardRecord): Card => {

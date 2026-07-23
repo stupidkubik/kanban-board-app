@@ -5,6 +5,7 @@ import type { User } from "firebase/auth"
 import { collection, doc } from "firebase/firestore"
 
 import { clientDb } from "@/lib/firebase/client"
+import { getErrorMessage } from "@/lib/errors"
 import {
   formatDateInput,
   parseDateInput,
@@ -220,11 +221,7 @@ export const useBoardCards = ({
 
         dispatch(resetAddCardForm({ boardId, columnId }))
       } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : uiCopy.board.errors.createCardFailed
-        )
+        setError(getErrorMessage(err, uiCopy.board.errors.createCardFailed))
       }
     },
     [
@@ -301,11 +298,7 @@ export const useBoardCards = ({
       }).unwrap()
       resetEditCard()
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : uiCopy.board.errors.updateCardFailed
-      )
+      setError(getErrorMessage(err, uiCopy.board.errors.updateCardFailed))
     }
   }, [
     boardId,
@@ -371,21 +364,13 @@ export const useBoardCards = ({
               }).unwrap()
               notifySuccess(uiCopy.board.cardRestoredToast)
             } catch (err) {
-              setError(
-                err instanceof Error
-                  ? err.message
-                  : uiCopy.board.errors.createCardFailed
-              )
+              setError(getErrorMessage(err, uiCopy.board.errors.createCardFailed))
             }
           },
         })
       }
     } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : uiCopy.board.errors.deleteCardFailed
-      )
+      setError(getErrorMessage(err, uiCopy.board.errors.deleteCardFailed))
     }
   }, [
     boardId,

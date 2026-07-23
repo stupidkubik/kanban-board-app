@@ -14,6 +14,7 @@ import {
 } from "@/lib/browser-preferences"
 import { type Board, type BoardLanguage } from "@/lib/types/boards"
 import { useCreateBoardMutation } from "@/lib/store/firestore-api"
+import { getErrorMessage } from "@/lib/errors"
 import { KanbanBoardCard } from "@/features/boards/ui/board-card"
 import {
   AlertDialog,
@@ -108,7 +109,7 @@ export function KanbanBoardsSection({
       setTitle("")
       return true
     } catch (err) {
-      onError(err instanceof Error ? err.message : uiCopy.board.errors.createBoardFailed)
+      onError(getErrorMessage(err, uiCopy.board.errors.createBoardFailed))
       return false
     }
   }
