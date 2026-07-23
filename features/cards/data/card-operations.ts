@@ -5,6 +5,7 @@ import {
   serverTimestamp,
   setDoc,
   updateDoc,
+  writeBatch,
 } from "firebase/firestore"
 
 import { clientDb } from "@/lib/firebase/client"
@@ -39,6 +40,11 @@ export type UpdateCardInput = {
 export type DeleteCardInput = {
   boardId: string
   cardId: string
+}
+
+export type RebalanceCardOrdersInput = {
+  boardId: string
+  cards: Array<{ cardId: string; columnId: string; order: number }>
 }
 
 const buildCardUpdates = (input: UpdateCardInput) => {
@@ -127,4 +133,22 @@ export const updateCard = async (input: UpdateCardInput) => {
 
 export const deleteCard = async ({ boardId, cardId }: DeleteCardInput) => {
   await deleteDoc(doc(clientDb, "boards", boardId, "cards", cardId))
+}
+
+export const rebalanceCardOrders = async ({
+  boardId,
+  cards,
+}: RebalanceCardOrdersInput) => {
+  if (cards.length > 500) {
+    throw new Error("Cannot rebalance more than 500 cards in one column")
+  }
+  const batch = writeBatch(clientDb)
+  cards.forEach((card) => {
+    batch.update(doc(clientDb, "boards", boardId, "cards", card.cardId), {
+      columnId: card.columnId,
+      order: card.order,
+      updatedAt: serverTimestamp(),
+    })
+  })
+  await batch.commit()
 }

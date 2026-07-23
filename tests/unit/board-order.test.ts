@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from "vitest"
 import {
   formatDateInput,
   getNextOrderValue,
+  getRebalancedOrder,
   parseDateInput,
+  shouldRebalanceOrder,
 } from "@/lib/board-order"
 
 describe("board-order", () => {
@@ -24,6 +26,13 @@ describe("board-order", () => {
     vi.setSystemTime(new Date("2024-04-05T12:00:00Z"))
     expect(getNextOrderValue()).toBe(Date.now())
     vi.useRealTimers()
+  })
+
+  it("detects collapsed numeric gaps and creates stable replacement orders", () => {
+    expect(shouldRebalanceOrder(1000, 1000 + Number.EPSILON)).toBe(true)
+    expect(shouldRebalanceOrder(1000, 2000)).toBe(false)
+    expect(getRebalancedOrder(0)).toBe(1000)
+    expect(getRebalancedOrder(2)).toBe(3000)
   })
 
   it("formats and parses date inputs", () => {

@@ -7,7 +7,14 @@ import type { DragEndEvent, DragOverEvent, DragStartEvent } from "@dnd-kit/core"
 
 import { clientDb } from "@/lib/firebase/client"
 import { getColumnIdFromDropId } from "@/lib/board-dnd"
-import { formatDateInput, getNextOrderValue, parseDateInput } from "@/lib/board-order"
+import {
+  formatDateInput,
+  getNextOrderValue,
+  getRebalancedOrder,
+  parseDateInput,
+  shouldRebalanceOrder,
+} from "@/lib/board-order"
+import { rebalanceCardOrders } from "@/features/cards/data/card-operations"
 import {
   useCreateCardMutation,
   useDeleteCardMutation,
@@ -448,12 +455,17 @@ export const useBoardCards = ({
       const beforeCard = filteredCards[targetIndex - 1]
       const afterCard = filteredCards[targetIndex]
       const nextOrder = getNextOrderValue(beforeCard?.order, afterCard?.order)
+      const shouldRebalance = shouldRebalanceOrder(
+        beforeCard?.order,
+        afterCard?.order
+      )
 
       const currentCard = cards.find((card) => card.id === activeId)
       if (
         currentCard &&
         currentCard.columnId === overColumnId &&
-        currentCard.order === nextOrder
+        currentCard.order === nextOrder &&
+        !shouldRebalance
       ) {
         return
       }
@@ -465,6 +477,22 @@ export const useBoardCards = ({
           columnId: overColumnId,
           order: nextOrder,
         }).unwrap()
+        if (shouldRebalance && currentCard) {
+          const reorderedCards = [...filteredCards]
+          reorderedCards.splice(targetIndex, 0, {
+            ...currentCard,
+            columnId: overColumnId,
+            order: nextOrder,
+          })
+          await rebalanceCardOrders({
+            boardId,
+            cards: reorderedCards.map((card, index) => ({
+              cardId: card.id,
+              columnId: overColumnId,
+              order: getRebalancedOrder(index),
+            })),
+          })
+        }
       } catch (err) {
         setError(
           err instanceof Error

@@ -310,6 +310,8 @@ Card можно:
 
 Mutation меняет `columnId` и `order`; RTK Query сразу патчит доступные board/per-column caches и откатывает их при ошибке.
 
+Если относительный зазор между соседями схлопывается ниже `1e-6`, целевая колонка автоматически получает batch rebalance с шагом `ORDER_GAP`. Обычные перемещения по-прежнему не переиндексируют колонку.
+
 #### Удаление и Undo
 
 Только owner видит delete action. После подтверждения документ удаляется немедленно и оптимистично исчезает из cache. Toast Undo пересоздаёт card с тем же id, columnId, order и business fields; createdAt/updatedAt становятся новыми server timestamps.
@@ -579,7 +581,7 @@ Toast system:
 - Viewer read-only обеспечен UI и Rules.
 - Все board cards/content загружаются без pagination/limit.
 - Main page fan-out устранён; остаются две one-shot count aggregation и один capped profile preview на board при монтировании списка.
-- Card order не rebalance-ится.
+- Rebalance ограничен 500 карточками одной колонки; большие колонки требуют отдельной pagination/server strategy.
 - Нет service worker/offline mutation queue.
 - Нет централизованной telemetry/error boundary.
 - Responsive styles находятся в CSS Modules; основной board CSS крупный и общий для нескольких секций.

@@ -1,5 +1,6 @@
 // Keep gaps so we can insert cards without reindexing whole columns.
 export const ORDER_GAP = 1000
+const MIN_ORDER_GAP = 0.000001
 
 export const getNextOrderValue = (before?: number, after?: number) => {
   if (typeof before === "number" && typeof after === "number") {
@@ -19,6 +20,17 @@ export const getNextOrderValue = (before?: number, after?: number) => {
 
   return Date.now()
 }
+
+export const shouldRebalanceOrder = (before?: number, after?: number) => {
+  if (typeof before !== "number" || typeof after !== "number") {
+    return false
+  }
+  const gap = after - before
+  const scale = Math.max(1, Math.abs(before), Math.abs(after))
+  return !Number.isFinite(gap) || gap <= MIN_ORDER_GAP * scale
+}
+
+export const getRebalancedOrder = (index: number) => (index + 1) * ORDER_GAP
 
 export const formatDateInput = (value?: number) => {
   if (!value) {
