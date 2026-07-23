@@ -1,7 +1,5 @@
 import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react"
-import { collection, doc, limit, onSnapshot, orderBy, query, where } from "firebase/firestore"
 
-import { clientDb } from "@/lib/firebase/client"
 import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
 import {
   createBoard as createBoardDocument,
@@ -35,25 +33,26 @@ import {
 import type { RootState } from "@/lib/store"
 import type { Board, BoardMemberProfile, Card, Column } from "@/lib/types/boards"
 import {
-  memberFieldPath,
-  normalizeBoard,
-  normalizeColumn,
-  normalizeInvite,
-  normalizeMemberProfile,
   type Invite,
-  type ColumnRecord,
-  type InviteRecord,
-  type MemberProfileRecord,
 } from "@/lib/store/firestore-normalizers"
 import {
   ensureCardId,
   ensureCardOrder,
-  isVisibleCard,
-  normalizeCard,
-  type CardRecord,
 } from "@/features/cards/model/card-normalizers"
+import {
+  BOARD_CARD_LIMIT,
+  BOARD_COLUMN_LIMIT,
+  BOARD_MEMBER_LIMIT,
+  subscribeToBoard,
+  subscribeToBoardMembers,
+  subscribeToBoards,
+  subscribeToCards,
+  subscribeToColumns,
+  subscribeToInvites,
+} from "@/lib/store/firestore-listeners"
 
 export type { Invite } from "@/lib/store/firestore-normalizers"
+export { BOARD_CARD_LIMIT, BOARD_COLUMN_LIMIT, BOARD_MEMBER_LIMIT }
 
 type MutationResult = { ok: true }
 type CreateBoardResult = MutationResult & { boardId: string }
@@ -64,10 +63,6 @@ type BoardQueryState = {
 type BoardQueryInput = { boardId: string | null; subscriptionKey: number }
 
 const mutationOk: MutationResult = { ok: true }
-export const BOARD_COLUMN_LIMIT = 100
-export const BOARD_MEMBER_LIMIT = 100
-export const BOARD_CARD_LIMIT = 500
-
 // Read RTK Query cache to seed optimistic updates.
 const getCachedColumns = (state: RootState, boardId: string) => {
   const result = firestoreApi.endpoints.getColumns.select(boardId)(state)
@@ -107,18 +102,9 @@ export const firestoreApi = createApi({
           return
         }
 
-        const memberField = memberFieldPath(uid)
-        const boardsQuery = query(
-          collection(clientDb, "boards"),
-          where(memberField, "==", true)
-        )
-
-        const unsubscribe = onSnapshot(
-          boardsQuery,
-          (snapshot) => {
-            const nextBoards = snapshot.docs.map((docSnap) =>
-              normalizeBoard(docSnap.id, docSnap.data() as Omit<Board, "id">)
-            )
+        const unsubscribe = subscribeToBoards(
+          uid,
+          (nextBoards) => {
             updateCachedData((draft) => {
               draft.length = 0
               draft.push(...nextBoards)
@@ -153,22 +139,14 @@ export const firestoreApi = createApi({
         }
 
         const boardId = args.boardId
-        const boardRef = doc(clientDb, "boards", boardId)
-
-        const unsubscribe = onSnapshot(
-          boardRef,
-          (snapshot) => {
+        const unsubscribe = subscribeToBoard(
+          boardId,
+          (board) => {
             updateCachedData(() => {
-              if (!snapshot.exists()) {
+              if (!board) {
                 return { status: "not-found", board: null }
               }
-              return {
-                status: "ready",
-                board: normalizeBoard(
-                  boardId,
-                  snapshot.data() as Omit<Board, "id"> & { createdBy?: string }
-                ),
-              }
+              return { status: "ready", board }
             })
           },
           async () => {
@@ -213,18 +191,9 @@ export const firestoreApi = createApi({
           return
         }
 
-        const normalizedEmail = email.toLowerCase()
-        const invitesQuery = query(
-          collection(clientDb, "boardInvites"),
-          where("email", "==", normalizedEmail)
-        )
-
-        const unsubscribe = onSnapshot(
-          invitesQuery,
-          (snapshot) => {
-            const nextInvites = snapshot.docs.map((docSnap) =>
-              normalizeInvite(docSnap.id, docSnap.data() as InviteRecord)
-            )
+        const unsubscribe = subscribeToInvites(
+          email,
+          (nextInvites) => {
             updateCachedData((draft) => {
               draft.length = 0
               draft.push(...nextInvites)
@@ -354,18 +323,9 @@ export const firestoreApi = createApi({
           return
         }
 
-        const columnsQuery = query(
-          collection(clientDb, "boards", boardId, "columns"),
-          orderBy("order", "asc"),
-          limit(BOARD_COLUMN_LIMIT)
-        )
-
-        const unsubscribe = onSnapshot(
-          columnsQuery,
-          (snapshot) => {
-            const nextColumns = snapshot.docs.map((docSnap) =>
-              normalizeColumn(boardId, docSnap.id, docSnap.data() as ColumnRecord)
-            )
+        const unsubscribe = subscribeToColumns(
+          boardId,
+          (nextColumns) => {
             updateCachedData((draft) => {
               draft.length = 0
               draft.push(...nextColumns)
@@ -407,21 +367,9 @@ export const firestoreApi = createApi({
           return
         }
 
-        const membersQuery = query(
-          collection(clientDb, "boards", boardId, "memberProfiles"),
-          orderBy("joinedAt", "asc"),
-          limit(BOARD_MEMBER_LIMIT)
-        )
-
-        const unsubscribe = onSnapshot(
-          membersQuery,
-          (snapshot) => {
-            const nextMembers = snapshot.docs.map((docSnap) =>
-              normalizeMemberProfile(
-                docSnap.id,
-                docSnap.data() as MemberProfileRecord
-              )
-            )
+        const unsubscribe = subscribeToBoardMembers(
+          boardId,
+          (nextMembers) => {
             updateCachedData((draft) => {
               draft.length = 0
               draft.push(...nextMembers)
@@ -467,33 +415,9 @@ export const firestoreApi = createApi({
           return
         }
 
-        const cardsCollection = collection(
-          clientDb,
-          "boards",
-          args.boardId,
-          "cards"
-        )
-        const cardsQuery = args.columnId
-          ? query(
-              cardsCollection,
-              where("columnId", "==", args.columnId),
-              orderBy("order", "asc"),
-              limit(BOARD_CARD_LIMIT)
-            )
-          : query(
-              cardsCollection,
-              orderBy("order", "asc"),
-              limit(BOARD_CARD_LIMIT)
-            )
-
-        const unsubscribe = onSnapshot(
-          cardsQuery,
-          (snapshot) => {
-            const nextCards = snapshot.docs
-              .map((docSnap) =>
-                normalizeCard(args.boardId, docSnap.id, docSnap.data() as CardRecord)
-              )
-              .filter(isVisibleCard)
+        const unsubscribe = subscribeToCards(
+          args,
+          (nextCards) => {
             updateCachedData((draft) => {
               draft.length = 0
               draft.push(...nextCards)
