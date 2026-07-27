@@ -684,6 +684,14 @@ Structural refactor может менять расположение файло�
 - Приоритет: P1 среди новых функций
 - Оценка: 1,5–2,5 рабочих дня
 - Зависимости: фазы 2–4
+- Статус: закрыта 27 июля. Owner-only PATCH меняет только принятого non-owner
+  участника между `editor` и `viewer` в Admin SDK transaction; invalid role,
+  owner target, отсутствующий member и non-owner actor отклоняются, повтор роли
+  является idempotent no-op. Participants API/UI используют server mutation и
+  owner-only Select, а board listener немедленно обновляет write/read-only UI.
+  Финальный gate: lint, 78 unit/component tests, 11 Rules scenarios, production
+  build/14 traces и Cypress 3/3, включая двухпользовательский editor -> viewer
+  flow и подтверждённый emulator cleanup
 
 ### Целевой контракт
 

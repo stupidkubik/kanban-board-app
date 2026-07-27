@@ -12,6 +12,8 @@ const AUTH_EMULATOR_URL = "http://127.0.0.1:9099"
 const FIRESTORE_EMULATOR_URL = "http://127.0.0.1:8080"
 const E2E_EMAIL = "owner@kanban-e2e.test"
 const E2E_PASSWORD = "local-e2e-password"
+const E2E_MEMBER_EMAIL = "member@kanban-e2e.test"
+const E2E_MEMBER_PASSWORD = "local-member-password"
 const openMode = process.argv.includes("--open")
 
 const appEnvironment = {
@@ -72,19 +74,24 @@ const resetEmulators = async () => {
   )
 }
 
-const seedAuthUser = async () => {
-  await requestJson(
-    `${AUTH_EMULATOR_URL}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=demo-api-key`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: E2E_EMAIL,
-        password: E2E_PASSWORD,
-        returnSecureToken: true,
-      }),
-    }
-  )
+const seedAuthUsers = async () => {
+  for (const [email, password] of [
+    [E2E_EMAIL, E2E_PASSWORD],
+    [E2E_MEMBER_EMAIL, E2E_MEMBER_PASSWORD],
+  ]) {
+    await requestJson(
+      `${AUTH_EMULATOR_URL}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=demo-api-key`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email,
+          password,
+          returnSecureToken: true,
+        }),
+      }
+    )
+  }
 }
 
 const verifyCleanup = async () => {
@@ -150,7 +157,7 @@ let exitCode = 1
 
 try {
   await resetEmulators()
-  await seedAuthUser()
+  await seedAuthUsers()
   await waitForUrl(`${APP_URL}/sign-in`)
 
   exitCode = await runProcess(
@@ -161,6 +168,8 @@ try {
         ...appEnvironment,
         CYPRESS_E2E_EMAIL: E2E_EMAIL,
         CYPRESS_E2E_PASSWORD: E2E_PASSWORD,
+        CYPRESS_E2E_MEMBER_EMAIL: E2E_MEMBER_EMAIL,
+        CYPRESS_E2E_MEMBER_PASSWORD: E2E_MEMBER_PASSWORD,
         CYPRESS_E2E_ALLOW_WRITES: "true",
       },
     }

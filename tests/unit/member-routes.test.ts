@@ -45,7 +45,10 @@ vi.mock("@/lib/firebase/session", () => ({
   getSession: mocks.getSession,
 }))
 
-import { DELETE as deleteMember } from "@/app/api/boards/[boardId]/members/[memberId]/route"
+import {
+  DELETE as deleteMember,
+  PATCH as updateMemberRole,
+} from "@/app/api/boards/[boardId]/members/[memberId]/route"
 import { POST as acceptInvite } from "@/app/api/invites/[inviteId]/accept/route"
 
 const boardId = "board-1"
@@ -143,6 +146,136 @@ describe("member server routes", () => {
       })
     )
     expect(mocks.transaction.delete).toHaveBeenCalledWith(mocks.profileRef)
+  })
+
+  it.each([
+    ["editor", "viewer"],
+    ["viewer", "editor"],
+  ] as const)("lets the owner change %s to %s", async (targetId, role) => {
+    mocks.getSession.mockResolvedValue({
+      uid: "owner",
+      email: "owner@example.com",
+    })
+    mocks.transaction.get.mockResolvedValue(boardSnapshot)
+
+    const response = await updateMemberRole(
+      jsonRequest(
+        `https://example.test/api/boards/${boardId}/members/${targetId}`,
+        { role },
+        "PATCH"
+      ),
+      { params: Promise.resolve({ boardId, memberId: targetId }) }
+    )
+
+    expect(response.status).toBe(200)
+    expect(mocks.transaction.update).toHaveBeenCalledWith(
+      mocks.boardRef,
+      expect.objectContaining({
+        roles: expect.objectContaining({ [targetId]: role }),
+      })
+    )
+  })
+
+  it.each(["editor", "viewer"])(
+    "rejects a role change by a %s",
+    async (actorId) => {
+      mocks.getSession.mockResolvedValue({
+        uid: actorId,
+        email: `${actorId}@example.com`,
+      })
+      mocks.transaction.get.mockResolvedValue(boardSnapshot)
+
+      const response = await updateMemberRole(
+        jsonRequest(
+          `https://example.test/api/boards/${boardId}/members/viewer`,
+          { role: "editor" },
+          "PATCH"
+        ),
+        { params: Promise.resolve({ boardId, memberId: "viewer" }) }
+      )
+
+      expect(response.status).toBe(403)
+      expect(mocks.transaction.update).not.toHaveBeenCalled()
+    }
+  )
+
+  it("rejects changes to the owner role", async () => {
+    mocks.getSession.mockResolvedValue({
+      uid: "owner",
+      email: "owner@example.com",
+    })
+    mocks.transaction.get.mockResolvedValue(boardSnapshot)
+
+    const response = await updateMemberRole(
+      jsonRequest(
+        `https://example.test/api/boards/${boardId}/members/owner`,
+        { role: "viewer" },
+        "PATCH"
+      ),
+      { params: Promise.resolve({ boardId, memberId: "owner" }) }
+    )
+
+    expect(response.status).toBe(409)
+    expect(mocks.transaction.update).not.toHaveBeenCalled()
+  })
+
+  it("returns 404 for a missing board member", async () => {
+    mocks.getSession.mockResolvedValue({
+      uid: "owner",
+      email: "owner@example.com",
+    })
+    mocks.transaction.get.mockResolvedValue(boardSnapshot)
+
+    const response = await updateMemberRole(
+      jsonRequest(
+        `https://example.test/api/boards/${boardId}/members/missing`,
+        { role: "viewer" },
+        "PATCH"
+      ),
+      { params: Promise.resolve({ boardId, memberId: "missing" }) }
+    )
+
+    expect(response.status).toBe(404)
+    expect(mocks.transaction.update).not.toHaveBeenCalled()
+  })
+
+  it("rejects an invalid role before reading Firestore", async () => {
+    mocks.getSession.mockResolvedValue({
+      uid: "owner",
+      email: "owner@example.com",
+    })
+
+    const response = await updateMemberRole(
+      jsonRequest(
+        `https://example.test/api/boards/${boardId}/members/editor`,
+        { role: "owner" },
+        "PATCH"
+      ),
+      { params: Promise.resolve({ boardId, memberId }) }
+    )
+
+    expect(response.status).toBe(400)
+    expect(mocks.runTransaction).not.toHaveBeenCalled()
+  })
+
+  it("treats a repeated role as an idempotent success", async () => {
+    mocks.getSession.mockResolvedValue({
+      uid: "owner",
+      email: "owner@example.com",
+    })
+    mocks.transaction.get.mockResolvedValue(boardSnapshot)
+
+    const response = await updateMemberRole(
+      jsonRequest(
+        `https://example.test/api/boards/${boardId}/members/editor`,
+        { role: "editor" },
+        "PATCH"
+      ),
+      { params: Promise.resolve({ boardId, memberId }) }
+    )
+
+    expect(response.status).toBe(200)
+    expect(mocks.transaction.update).not.toHaveBeenCalled()
   })
 
   it("accepts a matching invite and synchronizes members and roles", async () => {

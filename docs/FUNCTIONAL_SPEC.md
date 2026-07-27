@@ -69,6 +69,7 @@
 | Перемещать карточки DnD | да | да | нет |
 | Удалить карточку | да | нет | нет |
 | Пригласить editor/viewer | да | нет | нет |
+| Изменить роль editor/viewer | да | нет | нет |
 | Удалить другого участника | да | нет | нет |
 | Покинуть доску | нет | да | да |
 | Удалить доску | да | нет | нет |
@@ -113,6 +114,7 @@ UI-проверки не являются границей безопаснос�
 | `PATCH /api/boards/[boardId]` | server route | rename board и pending invites |
 | `DELETE /api/boards/[boardId]` | server route | owner-only каскадное удаление board data |
 | `DELETE /api/boards/[boardId]/columns/[columnId]` | server route | owner-only удаление пустой колонки |
+| `PATCH /api/boards/[boardId]/members/[memberId]` | server route | owner-only editor/viewer role update |
 | `DELETE /api/boards/[boardId]/members/[memberId]` | server route | remove member или leave board |
 | `POST /api/invites/[inviteId]/accept` | server route | атомарное принятие приглашения |
 
@@ -254,6 +256,7 @@ Owner может:
 
 - открыть форму приглашения;
 - пригласить lowercase email как editor или viewer;
+- переключить уже принятого участника между editor и viewer;
 - удалить любого участника, кроме себя/owner.
 
 Editor/viewer может покинуть board с подтверждением. Owner вместо выхода видит invite action. Удаление участника и самостоятельный выход выполняются через server API: membership, role и `memberProfiles/{uid}` удаляются в одной Admin SDK transaction.
@@ -527,9 +530,16 @@ Legacy reads поддерживают `invitedBy -> invitedById`.
 3. Запрещает удаление/выход owner и проверяет актуальное membership.
 4. В одной transaction удаляет UID из `members`/`roles` и документ `memberProfiles/{uid}`.
 
+`PATCH /api/boards/[boardId]/members/[memberId]`:
+
+1. Проверяет App Check, server session и актуального owner в transaction.
+2. Принимает только `editor` или `viewer` для уже принятого non-owner member.
+3. Не меняет `members`, `memberProfiles` или `ownerId`; повтор текущей роли является idempotent no-op.
+4. Обновляет `roles[memberId]` и `updatedAt`; board listener немедленно обновляет read/write UI участника.
+
 `POST /api/invites/[inviteId]/accept` атомарно проверяет email/role приглашения, добавляет membership, создаёт профиль и удаляет invite. Повтор после успешной операции безопасен для уже добавленного участника.
 
-Прямое изменение membership для remove/leave и accept invite запрещено Firestore Rules.
+Прямое изменение membership и ролей для remove/leave, accept invite и role update запрещено Firestore Rules.
 
 ## 12. Валидация и обработка ошибок
 
@@ -539,7 +549,7 @@ Client checks:
 - email должен соответствовать простой форме `text@text.text`;
 - password не короче 6 символов;
 - нельзя приглашать собственный email;
-- role invite только editor/viewer в Select;
+- role invite и role update принимают только editor/viewer;
 - due date парсится из локального `YYYY-MM-DD`.
 
 Firestore Rules дополнительно проверяют allowed keys, roles, timestamps, максимальные длины и размеры maps/lists. Карточка обязана ссылаться на существующую колонку; при создании `createdById` совпадает с UID автора; assignees входят в members; labels — строки ограниченной длины и количества.
@@ -629,7 +639,7 @@ Firestore emulators для `demo-kanban-e2e`, создаёт локальног�
 2. **Удаление профиля участника — решено.** Используется немедленное окончательное удаление без soft delete, retention window и Undo.
 3. **Board stats — решено.** Остаются Firestore aggregation queries; denormalized counters и server projection не вводятся без измеримой необходимости.
 4. **Размер доски — решено.** Pagination/virtualization не входят в поддерживаемую модель. Жёсткое правило продукта: максимум 500 cards, 100 columns и 100 member profiles; при card cap content editing блокируется, большую доску следует разделить.
-5. **Ownership и роли — решено.** Передачи ownership нет. Из управления ролями планируется только переключение уже принятого участника между editor и viewer.
+5. **Ownership и роли — решено.** Передачи ownership нет. Owner может переключать уже принятого участника только между editor и viewer через server API.
 6. **E2E Firebase environment — решено.** Полный Cypress suite использует только
    локальные Auth/Firestore emulators и non-routable demo project
    `demo-kanban-e2e`; launcher сам создаёт пользователя и проверяет cleanup.

@@ -6,6 +6,7 @@ import { TrashSimple } from "@phosphor-icons/react"
 
 import { getCopy, roleLabels, type Locale } from "@/lib/i18n"
 import { type BoardRole } from "@/lib/types/boards"
+import type { EditableBoardRole } from "@/features/participants/data/participant-operations"
 import { type Participant } from "@/lib/types/board-ui"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -47,11 +48,16 @@ type ParticipantsSectionViewProps = {
   inviteRole: BoardRole
   invitePending: boolean
   removePendingId: string | null
+  rolePendingId: string | null
   leavePending: boolean
   onInviteEmailChange: (value: string) => void
   onInviteRoleChange: (role: BoardRole) => void
   onInviteSubmit: (event: React.FormEvent<HTMLFormElement>) => void
   onRemoveParticipant: (participantId: string) => void
+  onUpdateParticipantRole: (
+    participantId: string,
+    role: EditableBoardRole
+  ) => void
   onLeaveBoard: () => void
 }
 
@@ -69,11 +75,13 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
   inviteRole,
   invitePending,
   removePendingId,
+  rolePendingId,
   leavePending,
   onInviteEmailChange,
   onInviteRoleChange,
   onInviteSubmit,
   onRemoveParticipant,
+  onUpdateParticipantRole,
   onLeaveBoard,
 }: ParticipantsSectionViewProps) {
   const [open, setOpen] = React.useState(false)
@@ -263,9 +271,49 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
                       </div>
                     </div>
                     <div className={styles.participantActions}>
-                      <Badge variant="outline" className={styles.participantRole}>
-                        {roleLabels[uiLocale][participant.role]}
-                      </Badge>
+                      {isOwner &&
+                      !participant.isYou &&
+                      participant.role !== "owner" &&
+                      participant.role !== "member" ? (
+                        <Select
+                          value={participant.role}
+                          onValueChange={(value) =>
+                            onUpdateParticipantRole(
+                              participant.id,
+                              value as EditableBoardRole
+                            )
+                          }
+                          disabled={rolePendingId === participant.id}
+                        >
+                          <SelectTrigger
+                            size="sm"
+                            className={styles.participantRoleSelect}
+                            aria-label={`${uiCopy.board.roleLabel}: ${participant.name}`}
+                            data-testid={`participant-role-${participant.id}`}
+                          >
+                            {rolePendingId === participant.id ? (
+                              <Spinner size="xs" aria-hidden="true" />
+                            ) : (
+                              <SelectValue />
+                            )}
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="editor">
+                              {roleLabels[uiLocale].editor}
+                            </SelectItem>
+                            <SelectItem value="viewer">
+                              {roleLabels[uiLocale].viewer}
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className={styles.participantRole}
+                        >
+                          {roleLabels[uiLocale][participant.role]}
+                        </Badge>
+                      )}
                       {isOwner &&
                         !participant.isYou &&
                         participant.role !== "owner" ? (

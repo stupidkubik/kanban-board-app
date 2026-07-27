@@ -192,6 +192,9 @@ The current `firestore.rules` enforce these contracts:
 - Allow create/update on memberProfiles if user is writing their own profile doc.
 - Deny direct client deletion of memberProfiles. Removing a member or leaving a board
   goes through the server API, which updates membership and deletes the profile in one transaction.
+- Deny direct client role changes. The owner switches an accepted non-owner member
+  between `editor` and `viewer` through the server API; `members`, `ownerId`, and
+  `memberProfiles` remain unchanged.
 
 For cards:
 - Allow read if user is a board member.

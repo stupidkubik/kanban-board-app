@@ -1,6 +1,14 @@
 import { columnsApi } from "@/features/columns/data/columns-api"
+import {
+  updateBoardMemberRole as updateBoardMemberRoleDocument,
+  type UpdateBoardMemberRoleInput,
+} from "@/features/participants/data/participant-operations"
+import { getErrorMessage } from "@/lib/errors"
 import { subscribeToBoardMembers } from "@/lib/store/firestore-listeners"
+import type { MutationResult } from "@/lib/store/firestore-api-types"
 import type { BoardMemberProfile } from "@/lib/types/boards"
+
+const mutationOk: MutationResult = { ok: true }
 
 export const participantsApi = columnsApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -52,7 +60,27 @@ export const participantsApi = columnsApi.injectEndpoints({
         unsubscribe()
       },
     }),
+    updateBoardMemberRole: builder.mutation<
+      MutationResult,
+      UpdateBoardMemberRoleInput
+    >({
+      async queryFn(args) {
+        try {
+          await updateBoardMemberRoleDocument(args)
+          return { data: mutationOk }
+        } catch (error) {
+          return {
+            error: new Error(
+              getErrorMessage(error, "Update member role failed")
+            ),
+          }
+        }
+      },
+    }),
   }),
 })
 
-export const { useGetBoardMembersQuery } = participantsApi
+export const {
+  useGetBoardMembersQuery,
+  useUpdateBoardMemberRoleMutation,
+} = participantsApi

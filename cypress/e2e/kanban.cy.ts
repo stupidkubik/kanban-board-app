@@ -3,7 +3,10 @@ const setUiLocale = (win: Window) => {
   win.localStorage.setItem("uiLocaleTouched", "1")
 }
 
-const signIn = () => {
+const signIn = (
+  emailEnv = "E2E_EMAIL",
+  passwordEnv = "E2E_PASSWORD"
+) => {
   cy.intercept("POST", "/api/auth/session").as("createSession")
   cy.visit("/sign-in", { onBeforeLoad: setUiLocale })
   cy.get("body", { timeout: 30_000 })
@@ -17,8 +20,10 @@ const signIn = () => {
         return
       }
 
-      return cy.env(["E2E_EMAIL", "E2E_PASSWORD"], { log: false }).then(
-        ({ E2E_EMAIL: email, E2E_PASSWORD: password }) => {
+      return cy.env([emailEnv, passwordEnv], { log: false }).then(
+        (credentials) => {
+          const email = credentials[emailEnv]
+          const password = credentials[passwordEnv]
           if (typeof email !== "string" || typeof password !== "string") {
             throw new Error("The local E2E launcher did not provide Auth credentials.")
           }
@@ -38,6 +43,12 @@ const signIn = () => {
     "be.visible"
   )
   cy.location("pathname").should("eq", "/")
+}
+
+const signOut = () => {
+  cy.visit("/", { onBeforeLoad: setUiLocale })
+  cy.contains("button", "Sign out").click()
+  cy.location("pathname", { timeout: 30_000 }).should("eq", "/sign-in")
 }
 
 const dragAndDrop = (source: Cypress.Chainable, target: Cypress.Chainable) => {
@@ -217,5 +228,64 @@ describe("kanban core flows", () => {
     cy.get('[data-testid="invite-email"]').type("invitee@example.com")
     cy.get('[data-testid="invite-submit"]').click()
     cy.get('[data-testid="invite-email"]').should("have.value", "")
+  })
+
+  it("changes an accepted member from editor to viewer in realtime", () => {
+    const boardTitle = `E2E Roles ${Date.now()}`
+
+    signIn()
+
+    cy.intercept("POST", "/api/boards").as("createBoard")
+    cy.get('[data-testid="create-board-trigger"]').click()
+    cy.get('[data-testid="create-board-title"]').type(boardTitle)
+    cy.get('[data-testid="create-board-submit"]').click()
+    cy.wait("@createBoard", { timeout: 20_000 })
+      .its("response.statusCode")
+      .should("eq", 200)
+      .then(() => rememberBoard(boardTitle))
+
+    cy.contains('[data-testid="board-card"]', boardTitle).click()
+    cy.get('[data-testid="invite-member-trigger"]').click()
+    cy.env(["E2E_MEMBER_EMAIL"], { log: false }).then((credentials) => {
+      const email = credentials.E2E_MEMBER_EMAIL
+      if (typeof email !== "string") {
+        throw new Error("Missing local member email.")
+      }
+      cy.get('[data-testid="invite-email"]').type(email, { log: false })
+    })
+    cy.get('[data-testid="invite-submit"]').click()
+    cy.get('[data-testid="invite-email"]').should("have.value", "")
+
+    signOut()
+    signIn("E2E_MEMBER_EMAIL", "E2E_MEMBER_PASSWORD")
+
+    cy.get(`[data-testid="invite-card"][data-board-title="${boardTitle}"]`)
+      .find('[data-testid="accept-invite"]')
+      .click()
+    cy.contains('[data-testid="board-card"]', boardTitle, {
+      timeout: 30_000,
+    }).click()
+    cy.get('[data-testid="new-column-title"]').should("be.visible")
+
+    signOut()
+    signIn()
+    cy.contains('[data-testid="board-card"]', boardTitle).click()
+    cy.get('[data-testid="invite-member-trigger"]').click()
+    cy.intercept("PATCH", "/api/boards/*/members/*").as("updateMemberRole")
+    cy.get('[data-testid^="participant-role-"]').click()
+    cy.contains('[role="option"]', "Viewer").click()
+    cy.wait("@updateMemberRole")
+      .its("response.statusCode")
+      .should("eq", 200)
+    cy.contains('[role="status"]', "Member role updated.").should("be.visible")
+
+    signOut()
+    signIn("E2E_MEMBER_EMAIL", "E2E_MEMBER_PASSWORD")
+    cy.contains('[data-testid="board-card"]', boardTitle).click()
+    cy.contains("Read-only mode: editing is disabled.").should("be.visible")
+    cy.get('[data-testid="new-column-title"]').should("not.exist")
+
+    signOut()
+    signIn()
   })
 })

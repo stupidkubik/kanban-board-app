@@ -66,7 +66,12 @@ export function KanbanInvitesSection({
         </div>
         <div className={styles.cardContent}>
           {invites.map((invite) => (
-            <div key={invite.id} className={styles.boardCard}>
+            <div
+              key={invite.id}
+              className={styles.boardCard}
+              data-testid="invite-card"
+              data-board-title={invite.boardTitle}
+            >
               <div>{invite.boardTitle}</div>
               <div className={styles.inviteMeta}>
                 <span className={styles.inviteRoleLabel}>{uiCopy.board.roleLabel}</span>
@@ -75,7 +80,11 @@ export function KanbanInvitesSection({
                 </Badge>
               </div>
               <div className={styles.row}>
-                <Button onClick={() => handleAcceptInvite(invite)} type="button">
+                <Button
+                  onClick={() => handleAcceptInvite(invite)}
+                  type="button"
+                  data-testid="accept-invite"
+                >
                   {uiCopy.board.acceptInvite}
                 </Button>
                 <Button

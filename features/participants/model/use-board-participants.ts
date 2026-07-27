@@ -4,7 +4,11 @@ import * as React from "react"
 import type { User } from "firebase/auth"
 import { useRouter } from "next/navigation"
 
-import { useGetBoardMembersQuery } from "@/features/participants/data/participants-api"
+import {
+  useGetBoardMembersQuery,
+  useUpdateBoardMemberRoleMutation,
+} from "@/features/participants/data/participants-api"
+import type { EditableBoardRole } from "@/features/participants/data/participant-operations"
 import { deleteBoardMember } from "@/lib/store/firestore-operations"
 import { createBoardInvite } from "@/features/invites/data/invite-operations"
 import { getErrorMessage } from "@/lib/errors"
@@ -28,11 +32,16 @@ type UseBoardParticipantsResult = {
   inviteRole: BoardRole
   invitePending: boolean
   removePendingId: string | null
+  rolePendingId: string | null
   leavePending: boolean
   setInviteEmail: (value: string) => void
   setInviteRole: (role: BoardRole) => void
   handleInvite: (event: React.FormEvent<HTMLFormElement>) => void
   handleRemoveParticipant: (participantId: string) => void
+  handleUpdateParticipantRole: (
+    participantId: string,
+    role: EditableBoardRole
+  ) => void
   handleLeaveBoard: () => void
 }
 
@@ -50,7 +59,9 @@ export function useBoardParticipants({
   const [inviteRole, setInviteRole] = React.useState<BoardRole>("editor")
   const [invitePending, setInvitePending] = React.useState(false)
   const [removePendingId, setRemovePendingId] = React.useState<string | null>(null)
+  const [rolePendingId, setRolePendingId] = React.useState<string | null>(null)
   const [leavePending, setLeavePending] = React.useState(false)
+  const [updateBoardMemberRole] = useUpdateBoardMemberRoleMutation()
 
   const { data: memberProfiles = [] } = useGetBoardMembersQuery(boardId ?? null, {
     skip: !boardId,
@@ -195,6 +206,52 @@ export function useBoardParticipants({
     user,
   ])
 
+  const handleUpdateParticipantRole = React.useCallback(
+    async (participantId: string, role: EditableBoardRole) => {
+      if (!board || !user) {
+        return
+      }
+      if (!isOwner) {
+        setError(uiCopy.board.errors.onlyOwnerCanChangeRole)
+        return
+      }
+      if (
+        participantId === board.ownerId ||
+        board.roles?.[participantId] === "owner"
+      ) {
+        return
+      }
+
+      setError(null)
+      setRolePendingId(participantId)
+      try {
+        await updateBoardMemberRole({
+          boardId: board.id,
+          memberId: participantId,
+          role,
+        }).unwrap()
+        notifySuccess(uiCopy.board.memberRoleUpdatedToast)
+      } catch (error) {
+        setError(
+          getErrorMessage(error, uiCopy.board.errors.updateMemberRoleFailed)
+        )
+      } finally {
+        setRolePendingId(null)
+      }
+    },
+    [
+      board,
+      isOwner,
+      notifySuccess,
+      setError,
+      uiCopy.board.errors.onlyOwnerCanChangeRole,
+      uiCopy.board.errors.updateMemberRoleFailed,
+      uiCopy.board.memberRoleUpdatedToast,
+      updateBoardMemberRole,
+      user,
+    ]
+  )
+
   const handleLeaveBoard = React.useCallback(async () => {
     if (!board) {
       return
@@ -241,11 +298,13 @@ export function useBoardParticipants({
     inviteRole,
     invitePending,
     removePendingId,
+    rolePendingId,
     leavePending,
     setInviteEmail,
     setInviteRole,
     handleInvite,
     handleRemoveParticipant,
+    handleUpdateParticipantRole,
     handleLeaveBoard,
   }
 }
