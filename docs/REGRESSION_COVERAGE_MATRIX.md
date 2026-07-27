@@ -7,14 +7,14 @@ of the refactoring work plan.
 | --- | --- | --- | --- |
 | Viewer read-only | `header-section.test.tsx`; `rules.test.ts` | covered | Keep both gates green. |
 | Owner/editor content writes | `rules.test.ts` covers board metadata, columns, and cards | partial | Add a targeted component or endpoint integration scenario. |
-| Owner-only destructive actions | `board-route.test.ts` covers unauthenticated, non-owner, and owner delete paths; Rules reserve destructive operations for server routes | partial | Add component visibility coverage. |
+| Owner-only destructive actions | `board-route.test.ts` covers unauthenticated, non-owner, and owner delete paths; `participants-section-view.test.tsx` covers owner-only member controls; Rules reserve destructive operations for server routes | covered | Keep route, component, and Rules gates green. |
 | `members`/`roles` sync | `member-routes.test.ts` covers invite acceptance and member removal transactions; Rules prevent client-side membership changes | covered | Keep both server-route and Rules gates green. |
 | Listener cleanup | `firestore-api-listeners.test.ts` checks one listener per cache entry and `unsubscribe()` after removal | covered | Keep the lifecycle contract during endpoint extraction. |
 | Listener error and retry | `firestore-api-listeners.test.ts` checks forbidden state and a new subscription key | covered | Preserve the public retry contract. |
 | Optimistic rollback | `firestore-api-optimistic.test.ts` covers rejected create, move, and delete writes | covered | Add a case if a future non-move update becomes optimistic. |
 | Duplicate prevention | `firestore-api-optimistic.test.ts` repeats create with the same entity id | covered | Preserve stable ids through UI Undo/retry paths. |
 | Card move | `board-order.test.ts`; Cypress cross-column DnD | covered | Keep both unit and E2E gates green. |
-| Card cap guard | Production UI disables content editing at 500 cards | gap | Add component/model coverage for the boundary. |
+| Card cap guard | `card-cap.test.ts` covers the 499/500 boundary used by the production UI | covered | Preserve the boundary when card projections move. |
 | App Check headers | `app-check-fetch.test.ts` | covered | Keep custom request headers covered. |
 | Session and API authorization | `sign-in-page.test.tsx` covers session bootstrap; board/member route tests cover 401/403/owner scenarios | covered | Extend route coverage when authorization behavior changes. |
 | Secret-free trace | `server-trace.test.ts`; production `npm run build` baseline | covered | Keep the build trace check in the release gate. |

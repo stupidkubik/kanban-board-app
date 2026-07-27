@@ -445,7 +445,8 @@ baseline обновлён до Next.js 16.2.12, `eslint-config-next` 16.2.12 и 
 create/move/delete. Тест rollback обнаружил и закрыл безусловную invalidation
 после rejected card mutation. Route-level tests закрепляют 401/403/owner delete,
 а также атомарную синхронизацию `members`/`roles` при invite acceptance и
-member removal.
+member removal. Component coverage подтверждает owner-only participant controls,
+а pure model test закрепляет отключение card editing на границе 500 записей.
 
 | Контракт | Минимальное покрытие |
 | --- | --- |

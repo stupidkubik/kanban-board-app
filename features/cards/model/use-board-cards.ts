@@ -11,6 +11,7 @@ import {
   parseDateInput,
 } from "@/lib/board-order"
 import { useCardDnd } from "@/features/cards/model/use-card-dnd"
+import { hasReachedCardLimit } from "@/features/cards/model/card-cap"
 import {
   useCreateCardMutation,
   useDeleteCardMutation,
@@ -421,7 +422,7 @@ export const useBoardCards = ({
     cardsByColumn,
     cardColumnById,
     isCardsLoading: isCardsLoading || isCardsFetching,
-    isCardsLimitReached: cards.length >= BOARD_CARD_LIMIT,
+    isCardsLimitReached: hasReachedCardLimit(cards.length, BOARD_CARD_LIMIT),
     creatingCard,
     updatingCard,
     deletingCard,
