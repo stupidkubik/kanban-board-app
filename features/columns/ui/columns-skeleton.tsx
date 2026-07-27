@@ -4,6 +4,7 @@ import * as React from "react"
 
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import styles from "@/features/board/ui/board-page.module.css"
+import cardStyles from "@/features/cards/ui/cards.module.css"
 
 type ColumnsSkeletonProps = {
   ariaLabel?: string
@@ -25,20 +26,26 @@ export const ColumnsSkeleton = React.memo(function ColumnsSkeleton({
         >
           <CardHeader>
             <div className={styles.columnHeader}>
-              <div className={`${styles.skeletonBlock} ${styles.skeletonTitle}`} />
-              <div className={`${styles.skeletonBlock} ${styles.skeletonButton}`} />
+              <div
+                className={`${cardStyles.skeletonBlock} ${cardStyles.skeletonTitle}`}
+              />
+              <div
+                className={`${cardStyles.skeletonBlock} ${cardStyles.skeletonButton}`}
+              />
             </div>
           </CardHeader>
           <CardContent className={styles.columnBody}>
-            <ul className={styles.cardList}>
+            <ul className={cardStyles.cardList}>
               {Array.from({ length: CARD_COUNT }).map((__, cardIndex) => (
                 <li
                   key={`card-skeleton-${columnIndex}-${cardIndex}`}
-                  className={styles.cardItem}
+                  className={cardStyles.cardItem}
                 >
-                  <div className={`${styles.skeletonBlock} ${styles.skeletonLine}`} />
                   <div
-                    className={`${styles.skeletonBlock} ${styles.skeletonLine} ${styles.skeletonLineShort}`}
+                    className={`${cardStyles.skeletonBlock} ${cardStyles.skeletonLine}`}
+                  />
+                  <div
+                    className={`${cardStyles.skeletonBlock} ${cardStyles.skeletonLine} ${cardStyles.skeletonLineShort}`}
                   />
                 </li>
               ))}

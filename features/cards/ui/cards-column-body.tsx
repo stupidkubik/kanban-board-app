@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Spinner } from "@/components/ui/spinner"
 import { Field, FieldContent, FieldLabel } from "@/components/ui/field"
 import { Label } from "@/components/ui/label"
-import styles from "@/features/board/ui/board-page.module.css"
+import styles from "@/features/cards/ui/cards.module.css"
 
 type DragCardData = { columnId?: string }
 

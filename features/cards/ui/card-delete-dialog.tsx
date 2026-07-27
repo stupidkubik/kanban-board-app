@@ -14,7 +14,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Spinner } from "@/components/ui/spinner"
-import styles from "@/features/board/ui/board-page.module.css"
+import styles from "@/features/cards/ui/cards.module.css"
 
 type CardDeleteDialogProps = {
   open: boolean

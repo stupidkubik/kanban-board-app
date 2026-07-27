@@ -31,7 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import styles from "@/features/board/ui/board-page.module.css"
+import styles from "@/features/participants/ui/participants.module.css"
 
 type ParticipantsSectionViewProps = {
   uiCopy: ReturnType<typeof getCopy>

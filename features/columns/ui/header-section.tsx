@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import styles from "@/features/board/ui/board-page.module.css"
+import styles from "@/features/board/ui/board-header.module.css"
 
 type HeaderSectionProps = {
   uiCopy: BoardCopy

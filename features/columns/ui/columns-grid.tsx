@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { CardsColumnBody } from "@/features/cards/ui/cards-column-body"
 import styles from "@/features/board/ui/board-page.module.css"
+import cardStyles from "@/features/cards/ui/cards.module.css"
 import type { Card as BoardCard, Column } from "@/lib/types/boards"
 
 const isOverdueDate = (value?: number) => {
@@ -315,22 +316,24 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
         {activeCard ? (
           <div
             className={[
-              styles.cardItem,
-              styles.cardDragOverlay,
-              isOverdueDate(activeCard.dueAt) ? styles.cardItemOverdue : "",
+              cardStyles.cardItem,
+              cardStyles.cardDragOverlay,
+              isOverdueDate(activeCard.dueAt) ? cardStyles.cardItemOverdue : "",
             ]
               .filter(Boolean)
               .join(" ")}
             data-testid="card-drag-overlay"
           >
-            <div className={styles.cardHeaderRow}>
-              <div className={styles.cardTitle}>{activeCard.title}</div>
+            <div className={cardStyles.cardHeaderRow}>
+              <div className={cardStyles.cardTitle}>{activeCard.title}</div>
             </div>
             {activeCard.description ? (
-              <div className={styles.cardDescription}>{activeCard.description}</div>
+              <div className={cardStyles.cardDescription}>
+                {activeCard.description}
+              </div>
             ) : null}
             {activeCard.dueAt ? (
-              <div className={styles.cardMeta}>
+              <div className={cardStyles.cardMeta}>
                 {dueLabel}: {formatDueDate(activeCard.dueAt)}
               </div>
             ) : null}

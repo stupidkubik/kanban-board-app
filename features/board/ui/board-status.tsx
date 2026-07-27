@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import styles from "@/features/board/ui/board-page.module.css"
+import styles from "@/features/board/ui/board-status.module.css"
 
 type BoardStatusProps = {
   error: string | null
