@@ -443,7 +443,9 @@ baseline обновлён до Next.js 16.2.12, `eslint-config-next` 16.2.12 и 
 `docs/REGRESSION_COVERAGE_MATRIX.md`. Первый блок RTK Query orchestration начат:
 закреплены one-listener/cleanup, error/retry, idempotent create и rollback
 create/move/delete. Тест rollback обнаружил и закрыл безусловную invalidation
-после rejected card mutation.
+после rejected card mutation. Route-level tests закрепляют 401/403/owner delete,
+а также атомарную синхронизацию `members`/`roles` при invite acceptance и
+member removal.
 
 | Контракт | Минимальное покрытие |
 | --- | --- |
