@@ -2,19 +2,13 @@
 
 import * as React from "react"
 import { useRouter } from "next/navigation"
-import { FirebaseError } from "firebase/app"
-import {
-  GoogleAuthProvider,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  signInWithRedirect,
-} from "firebase/auth"
 
+import { AuthForm } from "./auth-form"
+import { useEmailAuthController } from "./use-email-auth-controller"
+import { useGoogleAuthController } from "./use-google-auth-controller"
+import { usePasswordResetController } from "./use-password-reset-controller"
+import { useSessionBootstrap } from "./use-session-bootstrap"
 import { useAuth } from "@/components/auth-provider"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -24,83 +18,49 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
-import { clientAuth } from "@/lib/firebase/client"
-import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
-import { getErrorMessage } from "@/lib/errors"
-import { usePreferredLocale } from "@/lib/use-preferred-locale"
 import { getCopy, languageLabels, type Locale } from "@/lib/i18n"
-import { isValidEmail } from "@/lib/validation"
+import { usePreferredLocale } from "@/lib/use-preferred-locale"
 import styles from "./sign-in.module.css"
-
-const providers = {
-  google: new GoogleAuthProvider(),
-} as const
-
-type ProviderKey = keyof typeof providers
-
-const MIN_PASSWORD_LENGTH = 6
-
-const redirectFallbackErrors = new Set([
-  "auth/popup-blocked",
-  "auth/popup-closed-by-user",
-  "auth/cancelled-popup-request",
-  "auth/operation-not-supported-in-this-environment",
-])
-
-const getFriendlyError = (
-  err: unknown,
-  errors: ReturnType<typeof getCopy>["auth"]["errors"]
-) => {
-  if (err instanceof FirebaseError) {
-    switch (err.code) {
-      case "auth/invalid-email":
-        return errors.invalidEmail
-      case "auth/missing-password":
-        return errors.missingPassword
-      case "auth/weak-password":
-        return errors.weakPassword
-      case "auth/user-not-found":
-        return errors.userNotFound
-      case "auth/wrong-password":
-        return errors.wrongPassword
-      case "auth/invalid-credential":
-        return errors.invalidCredential
-      case "auth/email-already-in-use":
-        return errors.emailAlreadyInUse
-      case "auth/account-exists-with-different-credential":
-        return errors.accountExists
-      case "auth/popup-closed-by-user":
-        return errors.popupClosed
-      case "auth/popup-blocked":
-        return errors.popupBlocked
-      case "auth/too-many-requests":
-        return errors.tooManyRequests
-      default:
-        return err.message || errors.generic
-    }
-  }
-
-  return getErrorMessage(err, errors.generic)
-}
 
 export default function SignInPage() {
   const router = useRouter()
   const { user, loading } = useAuth()
-  const [pendingProvider, setPendingProvider] = React.useState<ProviderKey | null>(null)
   const [error, setError] = React.useState<string | null>(null)
   const [notice, setNotice] = React.useState<string | null>(null)
-  const { locale: uiLocale, setLocale: handleUiLocaleChange } =
-    usePreferredLocale(user, setError)
-  const [email, setEmail] = React.useState("")
-  const [password, setPassword] = React.useState("")
-  const [mode, setMode] = React.useState<"sign-in" | "sign-up">("sign-in")
-  const [emailPending, setEmailPending] = React.useState(false)
-  const [resetPending, setResetPending] = React.useState(false)
-  const [sessionPending, setSessionPending] = React.useState(false)
-  const sessionSyncUserIdRef = React.useRef<string | null>(null)
-  const [resetMode, setResetMode] = React.useState(false)
-  const [resetEmail, setResetEmail] = React.useState("")
-  const uiCopy = React.useMemo(() => getCopy(uiLocale), [uiLocale])
+  const { locale, setLocale } = usePreferredLocale(user, setError)
+  const uiCopy = React.useMemo(() => getCopy(locale), [locale])
+
+  const emailAuth = useEmailAuthController({
+    errors: uiCopy.auth.errors,
+    setError,
+    setNotice,
+  })
+  const passwordReset = usePasswordResetController({
+    resetNotice: uiCopy.auth.resetNotice,
+    errors: uiCopy.auth.errors,
+    setError,
+    setNotice,
+  })
+  const googleAuth = useGoogleAuthController({
+    errors: uiCopy.auth.errors,
+    setError,
+    setNotice,
+  })
+  const sessionPending = useSessionBootstrap({
+    loading,
+    user,
+    router,
+    errors: uiCopy.auth.errors,
+    setError,
+  })
+
+  if (loading) {
+    return <div className={styles.loading}>{uiCopy.auth.loading}</div>
+  }
+  if (user) {
+    return null
+  }
+
   const languageControls = (
     <div className={`${styles.row} ${styles.utilityBar}`}>
       <Label className={styles.rowLabel} htmlFor="sign-in-locale">
@@ -108,8 +68,8 @@ export default function SignInPage() {
       </Label>
       <div className={styles.rowControls}>
         <Select
-          value={uiLocale}
-          onValueChange={(value) => handleUiLocaleChange(value as Locale)}
+          value={locale}
+          onValueChange={(value) => setLocale(value as Locale)}
         >
           <SelectTrigger
             id="sign-in-locale"
@@ -135,280 +95,20 @@ export default function SignInPage() {
     </div>
   )
 
-  React.useEffect(() => {
-    if (loading) {
-      return
-    }
-    if (!user) {
-      sessionSyncUserIdRef.current = null
-      return
-    }
-    if (sessionSyncUserIdRef.current === user.uid) {
-      return
-    }
-
-    sessionSyncUserIdRef.current = user.uid
-
-    const syncSession = async () => {
-      setSessionPending(true)
-      try {
-        const idToken = await user.getIdToken(true)
-        const response = await fetchWithAppCheck("/api/auth/session", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ idToken }),
-        })
-
-        if (!response.ok) {
-          throw new Error(uiCopy.auth.errors.sessionError)
-        }
-
-        router.replace("/")
-      } catch (err) {
-        sessionSyncUserIdRef.current = null
-        setError(getFriendlyError(err, uiCopy.auth.errors))
-      } finally {
-        setSessionPending(false)
-      }
-    }
-
-    void syncSession()
-  }, [loading, router, uiCopy.auth.errors, user])
-
-  const handleSignIn = async (providerKey: ProviderKey) => {
-    const provider = providers[providerKey]
-    setError(null)
-    setNotice(null)
-    setPendingProvider(providerKey)
-
-    try {
-      await signInWithPopup(clientAuth, provider)
-    } catch (err) {
-      if (err instanceof FirebaseError && redirectFallbackErrors.has(err.code)) {
-        await signInWithRedirect(clientAuth, provider)
-        return
-      }
-      setError(getFriendlyError(err, uiCopy.auth.errors))
-    } finally {
-      setPendingProvider(null)
-    }
-  }
-
-  const handleEmailAuth = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    setError(null)
-    setNotice(null)
-
-    const normalizedEmail = email.trim()
-    if (!isValidEmail(normalizedEmail)) {
-      setError(uiCopy.auth.errors.invalidEmail)
-      return
-    }
-
-    if (password.length < MIN_PASSWORD_LENGTH) {
-      setError(uiCopy.auth.errors.weakPassword)
-      return
-    }
-
-    setEmailPending(true)
-
-    try {
-      if (mode === "sign-in") {
-        await signInWithEmailAndPassword(clientAuth, normalizedEmail, password)
-      } else {
-        await createUserWithEmailAndPassword(clientAuth, normalizedEmail, password)
-      }
-    } catch (err) {
-      setError(getFriendlyError(err, uiCopy.auth.errors))
-    } finally {
-      setEmailPending(false)
-    }
-  }
-
-  const handlePasswordReset = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const normalizedEmail = resetEmail.trim()
-    setError(null)
-    setNotice(null)
-
-    if (!isValidEmail(normalizedEmail)) {
-      setError(uiCopy.auth.errors.invalidEmail)
-      return
-    }
-
-    setResetPending(true)
-
-    try {
-      await sendPasswordResetEmail(clientAuth, normalizedEmail)
-      setNotice(uiCopy.auth.resetNotice)
-    } catch (err) {
-      setError(getFriendlyError(err, uiCopy.auth.errors))
-    } finally {
-      setResetPending(false)
-    }
-  }
-
-  if (loading) {
-    return (
-      <div className={styles.loading}>{uiCopy.auth.loading}</div>
-    )
-  }
-
-  if (user) {
-    return null
-  }
-
-  if (resetMode) {
-    return (
-      <div className={styles.page}>
-        <div className={styles.card}>
-          {languageControls}
-          <div className={styles.header}>
-            <h1 className={styles.title}>{uiCopy.auth.resetTitle}</h1>
-            <p className={styles.subtitle}>{uiCopy.auth.resetSubtitle}</p>
-          </div>
-          <div className={styles.content}>
-            <form className={styles.form} onSubmit={handlePasswordReset}>
-              <Label className="srOnly" htmlFor="reset-email">
-                {uiCopy.auth.emailPlaceholder}
-              </Label>
-              <Input
-                id="reset-email"
-                type="email"
-                placeholder={uiCopy.auth.emailPlaceholder}
-                value={resetEmail}
-                onChange={(event) => setResetEmail(event.target.value)}
-                required
-              />
-              <Button type="submit" disabled={resetPending}>
-                {resetPending ? uiCopy.auth.resetSending : uiCopy.auth.resetSend}
-              </Button>
-            </form>
-            <Button
-              variant="ghost"
-              type="button"
-              disabled={resetPending}
-              onClick={() => {
-                setResetMode(false)
-                setNotice(null)
-                setError(null)
-              }}
-            >
-              {uiCopy.auth.resetBack}
-            </Button>
-            {notice ? <p className={styles.notice}>{notice}</p> : null}
-            {error ? <p className={styles.error}>{error}</p> : null}
-          </div>
-        </div>
-      </div>
-    )
-  }
-
   return (
-    <div className={styles.page}>
-      <div className={styles.card}>
-        {languageControls}
-        <div className={styles.header}>
-          <h1 className={styles.title}>{uiCopy.auth.title}</h1>
-          <p className={styles.subtitle}>{uiCopy.auth.subtitle}</p>
-        </div>
-        <div className={styles.content}>
-          <form className={styles.form} onSubmit={handleEmailAuth}>
-            <Label className="srOnly" htmlFor="auth-email">
-              {uiCopy.auth.emailPlaceholder}
-            </Label>
-            <Input
-              id="auth-email"
-              type="email"
-              placeholder={uiCopy.auth.emailPlaceholder}
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              required
-            />
-            <Label className="srOnly" htmlFor="auth-password">
-              {uiCopy.auth.passwordPlaceholder}
-            </Label>
-            <Input
-              id="auth-password"
-              type="password"
-              placeholder={uiCopy.auth.passwordPlaceholder}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              required
-            />
-            <Button type="submit" disabled={emailPending}>
-              {emailPending
-                ? uiCopy.auth.connecting
-                : mode === "sign-in"
-                  ? uiCopy.auth.signInEmail
-                  : uiCopy.auth.signUpEmail}
-            </Button>
-            {mode === "sign-in" ? (
-              <Button
-                variant="ghost"
-                type="button"
-                disabled={emailPending}
-                onClick={() => {
-                  setResetEmail(email)
-                  setResetMode(true)
-                  setNotice(null)
-                  setError(null)
-                }}
-              >
-                {uiCopy.auth.forgotPassword}
-              </Button>
-            ) : null}
-            <Button
-              variant="ghost"
-              type="button"
-              disabled={emailPending}
-              onClick={() => setMode(mode === "sign-in" ? "sign-up" : "sign-in")}
-            >
-              {mode === "sign-in"
-                ? uiCopy.auth.toggleToSignUp
-                : uiCopy.auth.toggleToSignIn}
-            </Button>
-          </form>
-          <div className={styles.divider}>{uiCopy.auth.orLabel}</div>
-          <Button
-            variant="outline"
-            className={styles.buttonGoogle}
-            onClick={() => handleSignIn("google")}
-            disabled={pendingProvider !== null || emailPending || sessionPending}
-            type="button"
-          >
-            {pendingProvider === "google" ? (
-              uiCopy.auth.connecting
-            ) : (
-              <>
-                <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16">
-                  <path
-                    fill="#EA4335"
-                    d="M12 10.2v3.9h5.5c-.2 1.4-1.6 4.1-5.5 4.1-3.3 0-6-2.7-6-6.1 0-3.3 2.7-6.1 6-6.1 1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.9 3.4 14.7 2.3 12 2.3 6.9 2.3 2.7 6.5 2.7 11.6s4.2 9.3 9.3 9.3c5.4 0 8.9-3.8 8.9-9.1 0-.6-.1-1.1-.2-1.6H12z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M3.8 7.3l3.2 2.3c.9-1.7 2.7-2.9 5-2.9 1.9 0 3.1.8 3.8 1.5l2.6-2.5C16.9 3.4 14.7 2.3 12 2.3c-3.7 0-6.9 2.2-8.2 5z"
-                  />
-                  <path
-                    fill="#FBBC05"
-                    d="M12 20.9c2.7 0 4.9-.9 6.5-2.4l-3-2.3c-.8.5-1.9.9-3.5.9-3.3 0-6-2.2-6.9-5.2l-3.3 2.5c1.4 3.8 5.1 6.5 10.2 6.5z"
-                  />
-                  <path
-                    fill="#4285F4"
-                    d="M20.7 11.8c0-.6-.1-1.1-.2-1.6H12v3.9h5.5c-.3 1.2-1.1 2.2-2.4 2.9l3 2.3c1.8-1.6 2.9-4.1 2.9-7.5z"
-                  />
-                </svg>
-                <span>{uiCopy.auth.googleButton}</span>
-              </>
-            )}
-          </Button>
-          {notice ? <p className={styles.notice}>{notice}</p> : null}
-          {error ? <p className={styles.error}>{error}</p> : null}
-        </div>
-      </div>
-    </div>
+    <AuthForm
+      uiCopy={uiCopy}
+      languageControls={languageControls}
+      error={error}
+      notice={notice}
+      {...emailAuth}
+      {...passwordReset}
+      {...googleAuth}
+      openReset={() => passwordReset.openReset(emailAuth.email)}
+      onEmailAuth={emailAuth.handleEmailAuth}
+      onPasswordReset={passwordReset.handlePasswordReset}
+      onGoogleSignIn={googleAuth.handleGoogleSignIn}
+      sessionPending={sessionPending}
+    />
   )
 }
