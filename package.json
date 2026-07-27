@@ -13,6 +13,7 @@
     "lint": "eslint",
     "format": "eslint . --fix",
     "smoke": "node scripts/smoke-kanban.mjs",
+    "migrate:stale-member-profiles": "node scripts/migrate-stale-member-profiles.mjs",
     "test": "vitest",
     "test:unit": "vitest run",
     "test:rules": "firebase emulators:exec --only firestore \"vitest run tests/firestore\"",

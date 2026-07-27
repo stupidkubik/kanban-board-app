@@ -83,7 +83,8 @@ app/            Next.js routes
 See `schema.md` for more details.
 
 ## Getting Started
-Requires Node.js 22.12 or newer (required by Firebase Admin SDK 14 and its ESM dependencies).
+Requires Node.js 22.12 or newer, as declared by the project engine constraint and
+required by the current toolchain.
 
 Install dependencies:
 ```bash
@@ -136,6 +137,7 @@ FIREBASE_APPCHECK_ENFORCE=true
 - `npm run lint` - lint
 - `npm run format` - auto-fix lint issues
 - `npm run smoke` - seed data (see `scripts/smoke-kanban.mjs`)
+- `npm run migrate:stale-member-profiles` - dry-run cleanup audit for legacy member profiles
 - `npm run test` - unit/component tests (Vitest)
 - `npm run test:rules` - Firestore rules tests (emulator)
 - `npm run cypress:open` - local Auth/Firestore emulators + Cypress UI runner
@@ -153,6 +155,20 @@ project.
 Notes:
 - `npm run test:rules` запускает Firestore emulator через `firebase emulators:exec`.
 - E2E launcher disables App Check only inside the isolated emulator process.
+
+The stale member profile migration uses the same Admin SDK credentials described
+above and is read-only by default:
+
+```bash
+npm run migrate:stale-member-profiles
+MIGRATION_APPLY=true npm run migrate:stale-member-profiles
+```
+
+Run the dry-run first and review the per-board counts. Apply mode deletes only
+profiles that are still absent from the board membership when each transaction
+commits; owner profiles are always protected. Re-run the dry-run after apply and
+expect `staleProfilesFound: 0`. Migration output contains board ids and counts,
+but no profile names or email addresses.
 
 ## Notes
 - Card order uses numeric gaps to avoid reindexing entire columns.
