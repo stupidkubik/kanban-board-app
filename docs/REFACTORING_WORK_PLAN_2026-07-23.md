@@ -49,7 +49,7 @@
 | AUD-05 | Закрыт 27 июля: authenticated Vercel/Firebase review завершён, решение зафиксировано | закрыт | открытое решение №8 |
 | AUD-06 | Сопровождать 3 high и 8 moderate production advisories без `npm audit fix --force` | средний, постоянный | dependency maintenance |
 | AUD-07 | Не обновлять `firebase-admin` до 14.x без preview/runtime проверки | высокий, постоянный | deployment compatibility |
-| AUD-08 | Проверка закрыта 27 июля; legacy E2E Auth user удалён вручную, orphan `users/{uid}` ожидает отдельного разрешения на удаление | средний | внешняя инфраструктура |
+| AUD-08 | Закрыт 27 июля: legacy E2E Auth user и orphan `users/{uid}` удалены; read-only Admin SDK check подтвердил 0/0 | закрыт | внешняя инфраструктура |
 | AUD-09 | При необходимости выполнить Lighthouse/browser profiling и ограниченный load check | низкий, по сигналу | performance validation |
 | AUD-10 | Декомпозировать крупные связные модули только под тестами и вместе с понятными границами ответственности | средний | рефакторинг |
 
@@ -513,6 +513,8 @@ Structural refactor может менять расположение файло�
 - Оценка: 2–3 рабочих дня
 - Риск: высокий из-за realtime cache и optimistic state
 - Зависимости: фаза 2
+- Статус: начата 27 июля; шаг 1 вынесен в `firestore-base-api.ts` и
+  `firestore-api-types.ts` без изменения публичных hooks, cache keys и tag names
 
 ### Цель
 

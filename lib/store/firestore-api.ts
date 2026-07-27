@@ -1,7 +1,12 @@
-import { createApi, fakeBaseQuery } from "@reduxjs/toolkit/query/react"
-
 import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
 import { getErrorMessage } from "@/lib/errors"
+import { firestoreBaseApi } from "@/lib/store/firestore-base-api"
+import type {
+  BoardQueryInput,
+  BoardQueryState,
+  CreateBoardResult,
+  MutationResult,
+} from "@/lib/store/firestore-api-types"
 import {
   createBoard as createBoardDocument,
   createColumn as createColumnDocument,
@@ -55,14 +60,6 @@ import {
 export type { Invite } from "@/lib/store/firestore-normalizers"
 export { BOARD_CARD_LIMIT, BOARD_COLUMN_LIMIT, BOARD_MEMBER_LIMIT }
 
-type MutationResult = { ok: true }
-type CreateBoardResult = MutationResult & { boardId: string }
-type BoardQueryState = {
-  status: "loading" | "ready" | "not-found" | "forbidden" | "error"
-  board: Board | null
-}
-type BoardQueryInput = { boardId: string | null; subscriptionKey: number }
-
 const mutationOk: MutationResult = { ok: true }
 // Read RTK Query cache to seed optimistic updates.
 const getCachedColumns = (state: RootState, boardId: string) => {
@@ -78,10 +75,7 @@ const getCachedCards = (
   return result.data ?? []
 }
 
-export const firestoreApi = createApi({
-  reducerPath: "firestoreApi",
-  baseQuery: fakeBaseQuery(),
-  tagTypes: ["Board", "Invite", "Column", "Member", "Card"],
+export const firestoreApi = firestoreBaseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Firestore listeners drive the cache; queryFn is a stub and onCacheEntryAdded updates it.
     getBoards: builder.query<Board[], string | null>({

@@ -76,9 +76,9 @@ that the Auth user is gone. Before deletion, the account had:
 - no `memberProfiles` documents;
 - one `users/{uid}` document.
 
-The `users/{uid}` document remains because Firebase Auth deletion does not
-cascade into Firestore. Removing this orphan is a separate destructive cleanup
-and requires explicit approval.
+The orphan `users/{uid}` document was subsequently deleted manually. A
+read-only Admin SDK check confirmed that neither the Auth user nor a matching
+Firestore user document remains.
 
 App Check findings:
 
