@@ -582,7 +582,11 @@ Rules suite содержит 11 emulator-сценариев.
 
 ### 13.3 Cypress
 
-Сценарии покрывают create board -> two columns -> card -> DnD и отправку invite с актуальными test ids. Для пет-проекта принят прямой запуск против текущего Firebase project без отдельного test project: нужны выделенные E2E credentials и явный write opt-in, а `afterEach` удаляет созданные доски. Без внешних credentials suite статически проверяется, но не запускается.
+Сценарии покрывают create board -> two columns -> card -> DnD и отправку invite с
+актуальными test ids. Suite полностью изолирован: launcher поднимает Auth и
+Firestore emulators для `demo-kanban-e2e`, создаёт локального пользователя,
+запускает Next.js и после тестов независимо проверяет cleanup через Admin SDK.
+Внешние credentials и cloud Firebase project не используются.
 
 ## 14. Нефункциональные характеристики текущей версии
 
@@ -626,6 +630,8 @@ Rules suite содержит 11 emulator-сценариев.
 3. **Board stats — решено.** Остаются Firestore aggregation queries; denormalized counters и server projection не вводятся без измеримой необходимости.
 4. **Размер доски — решено.** Pagination/virtualization не входят в поддерживаемую модель. Жёсткое правило продукта: максимум 500 cards, 100 columns и 100 member profiles; при card cap content editing блокируется, большую доску следует разделить.
 5. **Ownership и роли — решено.** Передачи ownership нет. Из управления ролями планируется только переключение уже принятого участника между editor и viewer.
-6. **E2E Firebase environment — решено.** Отдельный test project не создаётся; прямые E2E используют текущий Firebase project, выделенные credentials, явный `CYPRESS_E2E_ALLOW_WRITES=true` и обязательный cleanup созданных досок.
+6. **E2E Firebase environment — решено.** Полный Cypress suite использует только
+   локальные Auth/Firestore emulators и non-routable demo project
+   `demo-kanban-e2e`; launcher сам создаёт пользователя и проверяет cleanup.
 7. **Deployment и credentials — решено.** Целевая платформа — Vercel: https://kanban-board-app-ten-psi.vercel.app/. Admin SDK получает service-account JSON только из защищённой environment variable `FIREBASE_SERVICE_ACCOUNT`; локальные credential-файлы не входят в git или deployment trace. Production build явно использует Webpack. `firebase-admin` остаётся на совместимой ветке 13.x до подтверждённого исправления Vercel runtime для цепочки `jwks-rsa@4 -> jose@6`; переход на 14.x требует preview deployment, smoke-проверки `/` и server API, а также проверки runtime logs.
 8. **Telemetry — открыто, требуется проверка инфраструктуры.** Предпочтительный минимальный вариант — ограничиться Vercel Observability и Firebase Console без нового SDK или внешнего sink, но сначала нужно подтвердить: какие runtime errors и latency действительно доступны в Vercel; отображаются ли Firestore usage/quota в Firebase; настроены ли billing/quota alerts; достаточны ли retention и уведомления для разбора production-инцидента. Только после этой проверки решается, нужны ли Sentry, OpenTelemetry, Log Drains, performance SDK, формальные SLO или собственный metrics backend.

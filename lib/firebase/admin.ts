@@ -20,9 +20,28 @@ const getAdminCredential = () => {
   }
 };
 
+const getEmulatorProjectId = () =>
+  process.env.GCLOUD_PROJECT ??
+  process.env.FIREBASE_PROJECT_ID ??
+  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
+
+const isEmulatorMode = () =>
+  Boolean(
+    process.env.FIREBASE_AUTH_EMULATOR_HOST ||
+      process.env.FIRESTORE_EMULATOR_HOST
+  );
+
 const initAdminApp = () => {
   if (getApps().length) {
     return getApps()[0];
+  }
+
+  if (isEmulatorMode()) {
+    const projectId = getEmulatorProjectId();
+    if (!projectId) {
+      throw new Error("Firebase emulator mode requires a project id.");
+    }
+    return initializeApp({ projectId });
   }
 
   return initializeApp({ credential: getAdminCredential() });

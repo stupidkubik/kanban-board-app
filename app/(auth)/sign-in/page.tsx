@@ -97,6 +97,7 @@ export default function SignInPage() {
   const [emailPending, setEmailPending] = React.useState(false)
   const [resetPending, setResetPending] = React.useState(false)
   const [sessionPending, setSessionPending] = React.useState(false)
+  const sessionSyncUserIdRef = React.useRef<string | null>(null)
   const [resetMode, setResetMode] = React.useState(false)
   const [resetEmail, setResetEmail] = React.useState("")
   const uiCopy = React.useMemo(() => getCopy(uiLocale), [uiLocale])
@@ -135,9 +136,18 @@ export default function SignInPage() {
   )
 
   React.useEffect(() => {
-    if (loading || !user || sessionPending) {
+    if (loading) {
       return
     }
+    if (!user) {
+      sessionSyncUserIdRef.current = null
+      return
+    }
+    if (sessionSyncUserIdRef.current === user.uid) {
+      return
+    }
+
+    sessionSyncUserIdRef.current = user.uid
 
     const syncSession = async () => {
       setSessionPending(true)
@@ -157,6 +167,7 @@ export default function SignInPage() {
 
         router.replace("/")
       } catch (err) {
+        sessionSyncUserIdRef.current = null
         setError(getFriendlyError(err, uiCopy.auth.errors))
       } finally {
         setSessionPending(false)
@@ -164,7 +175,7 @@ export default function SignInPage() {
     }
 
     void syncSession()
-  }, [loading, router, sessionPending, uiCopy.auth.errors, user])
+  }, [loading, router, uiCopy.auth.errors, user])
 
   const handleSignIn = async (providerKey: ProviderKey) => {
     const provider = providers[providerKey]

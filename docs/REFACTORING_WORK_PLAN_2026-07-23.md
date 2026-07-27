@@ -44,7 +44,7 @@
 | --- | --- | --- | --- |
 | AUD-01 | Проверить, требуется ли ротация service-account ключа, который мог попасть в старый deployment artifact | высокий, условный | внешняя инфраструктура |
 | AUD-02 | Очистить `memberProfiles`, оставшиеся от удалённых участников до исправления lifecycle | высокий | одноразовая data migration |
-| AUD-03 | Фактически запустить Cypress E2E с реальными credentials и проверить cleanup | высокий | release validation |
+| AUD-03 | Фактически запустить изолированный Cypress E2E и проверить cleanup | закрыт 27 июля | release validation |
 | AUD-04 | Выполнить контролируемый production smoke и зафиксировать результат | высокий | release validation |
 | AUD-05 | Проверить реальную настройку Vercel Observability и Firebase Console | средний | открытое решение №8 |
 | AUD-06 | Сопровождать 2 high и 9 moderate production advisories без `npm audit fix --force` | средний, постоянный | dependency maintenance |
@@ -93,7 +93,8 @@ DnD controller, Firestore listener adapters, data operations, locale lifecycle �
 - Pagination и virtualization не вводятся.
 - Product caps остаются: 500 cards, 100 columns, 100 member profiles.
 - Большую доску нужно разделить; скрытые данные нельзя частично редактировать.
-- Для E2E используется текущий Firebase project, выделенная учётная запись, явный write opt-in и cleanup.
+- Полный E2E использует только локальные Auth/Firestore emulators и demo project;
+  cloud Firebase проверяется отдельным контролируемым smoke.
 - Production остаётся на Vercel, сборка — `next build --webpack`.
 - `firebase-admin` остаётся на 13.x до отдельной совместимой миграции.
 - Внешняя telemetry система не выбирается до проверки Vercel Observability и Firebase Console.
@@ -146,24 +147,36 @@ git diff --check
 
 - Приоритет: P0
 - Оценка: 0,5–1 рабочий день
-- Зависимости: доступ к текущим Firebase E2E credentials
+- Зависимости: локальные Java и Firebase CLI
 
 ### Цель
 
-Получить подтверждённую исходную точку перед structural refactor. Сейчас unit/rules/build проверены, но Cypress с внешними credentials фактически не запускался.
+Получить подтверждённую исходную точку перед structural refactor, включая
+воспроизводимый E2E без внешних credentials и cloud writes.
+
+### Прогресс на 27 июля 2026 года
+
+- Пункт 0.1 пересмотрен: Cypress полностью переведён на локальные Auth/Firestore
+  emulators под non-routable project `demo-kanban-e2e`.
+- `npm ci`, lint, unit suite, Rules suite, production Webpack build и server-trace check прошли.
+- Cypress: 2/2 сценария прошли; DnD и server-route delete подтверждены.
+- Независимая Admin-проверка подтвердила отсутствие boards, invites, columns,
+  cards и memberProfiles после suite.
+- Результат записан в `docs/BASELINE_VALIDATION_2026-07-25.md`; повтор полного
+  gate на одном commit SHA остаётся финальной формальностью Gate A.
 
 ### Работы
 
-#### 0.1 Согласовать E2E-контракт с принятым решением
+#### 0.1 Согласовать E2E-контракт с принятым решением — выполнено
 
-- Удалить из runtime-сообщения Cypress устаревшее требование отдельного test project.
-- Оставить обязательными:
-  - `CYPRESS_E2E_EMAIL`;
-  - `CYPRESS_E2E_PASSWORD`;
-  - `CYPRESS_E2E_ALLOW_WRITES=true`.
-- Использовать уникальные префиксы/названия данных каждого запуска.
-- Проверить, что cleanup работает и после успешного теста, и после падения шага.
-- Не логировать пароль, токены или Firebase config сверх публичных client values.
+- `npm run cypress:run` сам поднимает Auth/Firestore emulators, Next.js и Cypress.
+- Используется только non-routable demo project `demo-kanban-e2e`.
+- Локальный Auth-пользователь создаётся launcher’ом; credentials не являются
+  секретом и не читаются из `.env.local`.
+- Уникальные названия создаются для каждого сценария.
+- `afterEach` удаляет доски через server API; launcher независимо проверяет
+  отсутствие root collections и board subcollections.
+- App Check отключается только внутри emulator child process.
 
 #### 0.2 Выполнить полный baseline
 
@@ -174,21 +187,21 @@ git diff --check
 3. `npm run test:unit`;
 4. `npm run test:rules`;
 5. `npm run build`;
-6. `npm run cypress:run`.
+6. `npm run cypress:run` (самодостаточный emulator run).
 
 Зафиксировать:
 
 - версии Node.js, npm, Java и Firebase emulator;
 - commit SHA;
 - количество unit/rules/E2E сценариев;
-- Firebase project id без credentials;
+- emulator project id;
 - список созданных и удалённых E2E boards.
 
 #### 0.3 Проверить cleanup
 
-- После Cypress найти документы по E2E-префиксу.
+- После Cypress выполнить независимые Admin queries к emulator.
 - Убедиться, что не осталось boards, columns, cards, profiles или invites.
-- Если cleanup ненадёжен, вынести его в отдельную idempotent команду, которую можно запустить повторно.
+- Launcher завершает run ошибкой при любом leftover.
 
 ### Результаты фазы
 
@@ -903,10 +916,12 @@ Labels имеют единый board-level каталог, rename/recolor не �
 
 Начать с фазы 0:
 
-1. исправить устаревший текст Cypress про обязательный отдельный test project;
-2. настроить E2E credentials и write opt-in;
-3. запустить полный baseline;
-4. проверить cleanup в текущем Firebase project;
-5. только после этого переходить к migration и structural refactor.
+1. [x] перевести Cypress на Auth/Firestore emulators;
+2. [x] добавить локальный seed и изоляцию от `.env.local`;
+3. [x] запустить E2E baseline;
+4. [x] независимо проверить cleanup;
+5. [ ] повторить полный gate на итоговом commit SHA;
+6. [ ] перейти к migration stale member profiles и остальным Gate A работам.
 
-Это закрывает самый важный пробел аудита: сейчас код и selectors E2E обновлены, но рабочий end-to-end contract ещё не подтверждён реальным запуском.
+Рабочий end-to-end contract подтверждён реальным запуском без cloud writes и
+долгоживущих локальных service-account ключей.

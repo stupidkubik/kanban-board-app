@@ -18,12 +18,12 @@
 | --- | --- | --- |
 | `npm ci` | пройдено | Установлено 1327 пакетов строго по обновлённому `package-lock.json`. |
 | `npm run lint` | пройдено | Ошибок ESLint нет. |
-| `npm run test` | пройдено | 14 файлов и 34 unit/component теста пройдены; rules suite отдельно запускается через emulator. |
+| `npm run test` | пройдено | 15 файлов и 35 unit/component тестов пройдены; rules suite отдельно запускается через emulator. |
 | `npm run test:rules` | пройдено | 11/11 тестов Firestore Rules через эмулятор Java 25. |
 | `npm run build` | пройдено | Next.js 16.2.11; webpack production build и проверка 14 server trace-манифестов не нашли credential-файлы. |
 | `npm audit --omit=dev` | upstream-риск | Повторная проверка: 9 moderate и 2 high, без critical; совместимого auto-fix нет. |
 | `npm outdated` | частично обработано | Patch/minor версии обновлены; `firebase-admin` удерживается на 13.x из-за подтверждённой несовместимости 14.x с Vercel runtime. |
-| Cypress E2E | обновлён, не запускался | Учетные данные не настроены; suite теперь требует явный write opt-in и удаляет созданные доски в `afterEach`. Отдельный Firebase test project для пет-проекта не используется. |
+| Cypress E2E | пройден | 2 сценария проходят на локальных Auth/Firestore emulators; launcher подтверждает отсутствие board data после cleanup. |
 | Smoke script | не запускался | Скрипт создаёт/изменяет внешние данные и не нужен для read-only аудита. |
 
 ## Приоритетные находки
@@ -93,7 +93,11 @@ Undo случайно маскирует проблему: восстановл�
 
 Кроме того, E2E создаёт минимум две доски и приглашение на каждый запуск, но cleanup отсутствует. Поэтому даже после настройки credentials тесты, вероятно, упадут и будут загрязнять Firebase.
 
-Решение: селекторы обновлены под текущую board page, добавлены стабильные test ids. Для пет-проекта отдельный Firebase test project не создаётся: suite запускается с выделенными E2E credentials против текущего проекта, требует явный `CYPRESS_E2E_ALLOW_WRITES=true`, а `afterEach` удаляет все созданные доски и их subcollections. Фактический прогон остаётся release-gate с внешними credentials.
+Решение: селекторы обновлены под текущую board page, добавлены стабильные test ids.
+Полный suite запускается только против локальных Auth/Firestore emulators с demo
+project `demo-kanban-e2e`. Launcher создаёт локального Auth-пользователя, а
+`afterEach` удаляет доски через production-like server route. Независимая Admin
+проверка подтверждает отсутствие boards, invites и board subcollections.
 
 ## Функциональные расхождения и целостность данных
 
@@ -240,7 +244,7 @@ Google profile avatars обрабатываются через оптимиза�
 2. [x] Сделать единый locale lifecycle через `usePreferredLocale`.
 3. [x] Добавить not-found/forbidden/loading/retry states.
 4. [x] Обновить Cypress selectors, обязательный write opt-in и cleanup.
-5. [ ] Фактически запустить suite с E2E credentials и подтвердить отсутствие тестовых данных после cleanup.
+5. [x] Фактически запустить suite на emulators и подтвердить отсутствие тестовых данных после cleanup.
 
 ### Этап 3 — стоимость и производительность
 

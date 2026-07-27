@@ -85,9 +85,10 @@ The app must not search for or package service-account JSON from the project tre
 - NEXT_PUBLIC_FIREBASE_APP_CHECK_DEBUG=true
 - FIREBASE_APPCHECK_ENFORCE=true
 
-### Cypress E2E env
-- CYPRESS_E2E_EMAIL
-- CYPRESS_E2E_PASSWORD
+### Cypress E2E
+- `npm run cypress:run` starts isolated Auth + Firestore emulators under `demo-kanban-e2e`.
+- The launcher seeds a local Auth user and verifies cleanup; no external E2E credentials are required.
+- Do not point the default Cypress suite at the cloud Firebase project.
 
 ## Commands (use repo scripts)
 Install:

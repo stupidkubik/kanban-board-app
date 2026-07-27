@@ -138,25 +138,21 @@ FIREBASE_APPCHECK_ENFORCE=true
 - `npm run smoke` - seed data (see `scripts/smoke-kanban.mjs`)
 - `npm run test` - unit/component tests (Vitest)
 - `npm run test:rules` - Firestore rules tests (emulator)
-- `npm run cypress:open` - Cypress UI runner
-- `npm run cypress:run` - Cypress headless run
+- `npm run cypress:open` - local Auth/Firestore emulators + Cypress UI runner
+- `npm run cypress:run` - isolated local Auth/Firestore emulator E2E
 
 ## Testing
-Environment for Cypress:
-```
-CYPRESS_E2E_EMAIL=...
-CYPRESS_E2E_PASSWORD=...
-CYPRESS_E2E_ALLOW_WRITES=true
-```
 
-Direct E2E uses the currently configured Firebase project; a separate test project
-is not required for this pet project. The suite refuses to write without the
-explicit flag, uses dedicated E2E credentials, and removes every board it creates
-in `afterEach`.
+`npm run cypress:run` is self-contained: Firebase CLI starts Auth and Firestore
+emulators under the non-routable demo project `demo-kanban-e2e`, the launcher starts
+Next.js on port 3100, seeds a local Auth user, runs Cypress, and verifies that no
+boards, invites, columns, cards, or member profiles remain. It does not read
+Cypress credentials from `.env.local` and cannot write to the cloud Firebase
+project.
 
 Notes:
 - `npm run test:rules` запускает Firestore emulator через `firebase emulators:exec`.
-- E2E тесты предполагают, что App Check отключен локально либо настроен debug-токен.
+- E2E launcher disables App Check only inside the isolated emulator process.
 
 ## Notes
 - Card order uses numeric gaps to avoid reindexing entire columns.

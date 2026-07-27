@@ -320,6 +320,7 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
             ]
               .filter(Boolean)
               .join(" ")}
+            data-testid="card-drag-overlay"
           >
             <div className={styles.cardHeaderRow}>
               <div className={styles.cardTitle}>{activeCard.title}</div>

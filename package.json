@@ -16,8 +16,8 @@
     "test": "vitest",
     "test:unit": "vitest run",
     "test:rules": "firebase emulators:exec --only firestore \"vitest run tests/firestore\"",
-    "cypress:open": "cypress open",
-    "cypress:run": "cypress run"
+    "cypress:open": "firebase emulators:exec --project demo-kanban-e2e --only auth,firestore \"node scripts/run-cypress-e2e.mjs --open\"",
+    "cypress:run": "firebase emulators:exec --project demo-kanban-e2e --only auth,firestore \"node scripts/run-cypress-e2e.mjs\""
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
