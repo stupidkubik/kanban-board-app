@@ -35,19 +35,19 @@
 - Доска ограничена 500 карточками, 100 колонками и 100 профилями.
 - Добавлен автоматический card-order rebalance.
 - Production работает на Vercel с Webpack и `firebase-admin` 13.x.
-- Unit/component suite содержит 34 проходящих теста; Firestore Rules suite — 11 сценариев.
+- Unit/component suite содержит 40 проходящих тестов; Firestore Rules suite — 11 сценариев.
 - Документация описывает текущие роли, API, schema, limits и принятые продуктовые решения.
 
 ### 2.2 Незакрытые остатки аудита
 
 | ID | Остаток | Приоритет | Характер работы |
 | --- | --- | --- | --- |
-| AUD-01 | Проверить, требуется ли ротация service-account ключа, который мог попасть в старый deployment artifact | высокий, условный | внешняя инфраструктура |
-| AUD-02 | Очистить `memberProfiles`, оставшиеся от удалённых участников до исправления lifecycle | высокий | одноразовая data migration |
+| AUD-01 | Закрыт 27 июля: Git/trace чисты, Vercel secret обновлён, локальная JSON-копия удалена | закрыт | внешняя инфраструктура |
+| AUD-02 | Миграция stale `memberProfiles` подготовлена и проверена на emulator; production dry-run/apply ожидаются | высокий | одноразовая data migration |
 | AUD-03 | Фактически запустить изолированный Cypress E2E и проверить cleanup | закрыт 27 июля | release validation |
 | AUD-04 | Выполнить контролируемый production smoke и зафиксировать результат | высокий | release validation |
 | AUD-05 | Проверить реальную настройку Vercel Observability и Firebase Console | средний | открытое решение №8 |
-| AUD-06 | Сопровождать 2 high и 9 moderate production advisories без `npm audit fix --force` | средний, постоянный | dependency maintenance |
+| AUD-06 | Сопровождать 3 high и 8 moderate production advisories без `npm audit fix --force` | средний, постоянный | dependency maintenance |
 | AUD-07 | Не обновлять `firebase-admin` до 14.x без preview/runtime проверки | высокий, постоянный | deployment compatibility |
 | AUD-08 | Проверить реальные данные, usage/billing, production logs и лимиты, не покрытые исходным аудитом | средний | внешняя инфраструктура |
 | AUD-09 | При необходимости выполнить Lighthouse/browser profiling и ограниченный load check | низкий, по сигналу | performance validation |
@@ -160,10 +160,13 @@ git diff --check
   emulators под non-routable project `demo-kanban-e2e`.
 - `npm ci`, lint, unit suite, Rules suite, production Webpack build и server-trace check прошли.
 - Cypress: 2/2 сценария прошли; DnD и server-route delete подтверждены.
+- После исправления гонки initial snapshot и DnD helper выполнены три
+  последовательных зелёных Cypress run.
 - Независимая Admin-проверка подтвердила отсутствие boards, invites, columns,
-  cards и memberProfiles после suite.
-- Результат записан в `docs/BASELINE_VALIDATION_2026-07-25.md`; повтор полного
-  gate на одном commit SHA остаётся финальной формальностью Gate A.
+  cards и memberProfiles после каждого run.
+- Полный gate пройден на code baseline
+  `34c968063fe6e56725207004fd5885f12223be28`, результат записан в
+  `docs/BASELINE_VALIDATION_2026-07-25.md`.
 
 ### Работы
 
@@ -224,6 +227,11 @@ git diff --check
 
 Работа выполняется только если ключ из старого локального файла когда-либо использовался в опубликованной сборке или Vercel environment.
 
+Проверка закрыта 27 июля и зафиксирована в
+`docs/CREDENTIAL_AUDIT_2026-07-27.md`: Git history и server trace чисты, полный
+JSON перенесён в защищённую Vercel Variable, новый deployment отвечает без
+initialization errors, file fallback не используется, локальная копия удалена.
+
 Шаги:
 
 1. Найти active service-account key IDs в Google Cloud IAM.
@@ -246,6 +254,10 @@ git diff --check
 - в документации зафиксирован только key ID/дата ротации, но не секрет.
 
 ### 1.2 Одноразово очистить stale `memberProfiles`
+
+Статус на 27 июля: безопасный admin script, pure unit tests и emulator-проверка
+dry-run/apply/re-run готовы. Production запуск остаётся отдельной контролируемой
+операцией по runbook `docs/MIGRATION_STALE_MEMBER_PROFILES_2026-07-27.md`.
 
 Создать отдельный admin script, безопасный по умолчанию:
 
@@ -884,6 +896,9 @@ Labels имеют единый board-level каталог, rename/recolor не �
 
 ### Gate A — можно начинать structural refactor
 
+Статус: пройден 27 июля 2026 года на code baseline
+`34c968063fe6e56725207004fd5885f12223be28`.
+
 - baseline полностью зелёный;
 - E2E фактически запущен;
 - cleanup подтверждён;
@@ -920,8 +935,8 @@ Labels имеют единый board-level каталог, rename/recolor не �
 2. [x] добавить локальный seed и изоляцию от `.env.local`;
 3. [x] запустить E2E baseline;
 4. [x] независимо проверить cleanup;
-5. [ ] повторить полный gate на итоговом commit SHA;
-6. [ ] перейти к migration stale member profiles и остальным Gate A работам.
+5. [x] повторить полный gate на итоговом commit SHA;
+6. [x] подготовить migration stale member profiles и перейти к остальным Gate A работам.
 
-Рабочий end-to-end contract подтверждён реальным запуском без cloud writes и
-долгоживущих локальных service-account ключей.
+Рабочий end-to-end contract подтверждён реальным запуском без cloud writes и без
+использования долгоживущих локальных service-account ключей.
