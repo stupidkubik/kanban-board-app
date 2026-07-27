@@ -46,10 +46,10 @@
 | AUD-02 | Закрыт 27 июля: production dry-run проверил 7 boards/7 profiles, stale profiles — 0 | закрыт | одноразовая data migration |
 | AUD-03 | Фактически запустить изолированный Cypress E2E и проверить cleanup | закрыт 27 июля | release validation |
 | AUD-04 | Закрыт 27 июля: два production smoke и HTTP redirect/sign-in verification прошли с cleanup | закрыт | release validation |
-| AUD-05 | Read-only runbook готов; authenticated Vercel/Firebase review ожидает авторизованную сессию | средний | открытое решение №8 |
+| AUD-05 | Закрыт 27 июля: authenticated Vercel/Firebase review завершён, решение зафиксировано | закрыт | открытое решение №8 |
 | AUD-06 | Сопровождать 3 high и 8 moderate production advisories без `npm audit fix --force` | средний, постоянный | dependency maintenance |
 | AUD-07 | Не обновлять `firebase-admin` до 14.x без preview/runtime проверки | высокий, постоянный | deployment compatibility |
-| AUD-08 | Проверить реальные данные, usage/billing, production logs и лимиты, не покрытые исходным аудитом | средний | внешняя инфраструктура |
+| AUD-08 | Проверка закрыта 27 июля; isolated legacy E2E Auth user ожидает отдельного разрешения на удаление | средний | внешняя инфраструктура |
 | AUD-09 | При необходимости выполнить Lighthouse/browser profiling и ограниченный load check | низкий, по сигналу | performance validation |
 | AUD-10 | Декомпозировать крупные связные модули только под тестами и вместе с понятными границами ответственности | средний | рефакторинг |
 
@@ -322,11 +322,21 @@ page также отвечают без 500.
 
 ### 1.4 Проверить observability — открытый вопрос №8
 
-Статус на 27 июля: public HTTP checks и production smoke завершены, а
-authenticated console review описан в
-`docs/OBSERVABILITY_AUDIT_2026-07-27.md`. Доступная browser session не
-авторизована в Vercel/Firebase, поэтому retention, alerts, billing, quota и App
-Check enforcement остаются непроверенными и не считаются настроенными.
+Статус на 27 июля: authenticated read-only review завершён и записан в
+`docs/OBSERVABILITY_AUDIT_2026-07-27.md`. Vercel + Firebase Console выбраны как
+достаточный baseline для текущего пет-проекта; внешний telemetry SDK не
+добавляется без воспроизводимого client-side diagnostic gap.
+
+Vercel Hobby даёт raw logs максимум за час и 12-часовой Observability overview;
+за проверенный период function errors/timeouts — 0%, anomaly alerts и 30-day
+retention требуют Pro. Firebase работает на Spark; Firestore за 24 часа показал
+249 reads, 7 writes, 6 deletes, пик 5 listeners и 4 connections. App Check web
+app зарегистрирован, но Firestore/Auth enforcement выключен и требует отдельного
+staged rollout.
+
+Также найден legacy cloud-E2E Auth user: board memberships и `memberProfiles`
+отсутствуют, но `users/{uid}` существует. Его удаление не выполнялось без
+явного разрешения.
 
 Нельзя считать Vercel Observability и Firebase Console настроенными только потому, что проекты существуют.
 

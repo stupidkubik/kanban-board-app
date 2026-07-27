@@ -121,7 +121,7 @@ Production deployment:
 - Store `FIREBASE_SERVICE_ACCOUNT` only as a protected Vercel environment variable; never commit or bundle a credential file.
 - Production builds explicitly use Webpack. `firebase-admin` stays on the compatible 13.x line because 14.x currently produces a Vercel runtime `ERR_REQUIRE_ESM` through `jwks-rsa@4 -> jose@6`.
 - Treat upgrading Firebase Admin to 14.x as a separate compatibility migration: deploy a preview, verify `/` and protected API routes, and inspect runtime logs before promoting it.
-- Observability decision is pending the authenticated console review documented in `docs/OBSERVABILITY_AUDIT_2026-07-27.md`; do not add an external telemetry SDK before that evidence is collected.
+- The authenticated review in `docs/OBSERVABILITY_AUDIT_2026-07-27.md` confirms Vercel plus Firebase Console as the current monitoring baseline; do not add an external telemetry SDK without a concrete client-side diagnostic gap.
 
 App Check (recommended):
 ```
