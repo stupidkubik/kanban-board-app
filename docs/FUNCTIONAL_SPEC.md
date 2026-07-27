@@ -470,7 +470,7 @@ Redux `boardUiSlice` хранит по board:
 | `dueAt` | Timestamp/null | используется |
 | `assigneeIds` | string[] | несколько исполнителей, максимум 20 current members |
 | `labelIds` | string[] | до 10 IDs из board catalog |
-| `labels` | string[] | legacy read-only; удаляется migration |
+| `labels` | string[] | legacy compatibility read-only; production migration завершена |
 | `archived` | boolean | reserved data-layer field; `true` скрывается из active kanban |
 | `createdAt` | Timestamp | используется для данных |
 | `updatedAt` | Timestamp | используется для данных |
@@ -672,7 +672,10 @@ Firestore emulators для `demo-kanban-e2e`, создаёт локальног�
 - Main page fan-out устранён; остаются две one-shot count aggregation и один capped profile preview на board при монтировании списка.
 - Rebalance ограничен 500 карточками одной колонки; большие колонки требуют отдельной pagination/server strategy.
 - Нет service worker/offline mutation queue.
-- Route/root error boundaries показывают recovery UI и correlation id; render errors пишутся структурированно. Фактическая настройка и достаточность Vercel Observability и Firebase Console для production-мониторинга ещё не проверены; решение по внешнему telemetry sink остаётся открытым.
+- Route/root error boundaries показывают recovery UI и correlation id; render
+  errors пишутся структурированно. Проверка Vercel Observability и Firebase
+  Console подтвердила их достаточность для текущего масштаба; внешний telemetry
+  sink добавляется только при доказанном browser-only диагностическом пробеле.
 - Responsive styles находятся в CSS Modules; основной board CSS крупный и общий для нескольких секций.
 - Целевая production-платформа — Vercel. Секрет Admin SDK хранится в защищённой переменной `FIREBASE_SERVICE_ACCOUNT`; credential-файлы в source/build запрещены.
 - Vercel production build явно использует Webpack. `firebase-admin` удерживается на совместимой ветке 13.x: ветка 14.x через `jwks-rsa@4 -> jose@6` вызывает `ERR_REQUIRE_ESM` в Vercel Functions runtime.
@@ -712,4 +715,9 @@ Firestore emulators для `demo-kanban-e2e`, создаёт локальног�
    локальные Auth/Firestore emulators и non-routable demo project
    `demo-kanban-e2e`; launcher сам создаёт пользователя и проверяет cleanup.
 7. **Deployment и credentials — решено.** Целевая платформа — Vercel: https://kanban-board-app-ten-psi.vercel.app/. Admin SDK получает service-account JSON только из защищённой environment variable `FIREBASE_SERVICE_ACCOUNT`; локальные credential-файлы не входят в git или deployment trace. Production build явно использует Webpack. `firebase-admin` остаётся на совместимой ветке 13.x до подтверждённого исправления Vercel runtime для цепочки `jwks-rsa@4 -> jose@6`; переход на 14.x требует preview deployment, smoke-проверки `/` и server API, а также проверки runtime logs.
-8. **Telemetry — открыто, требуется проверка инфраструктуры.** Предпочтительный минимальный вариант — ограничиться Vercel Observability и Firebase Console без нового SDK или внешнего sink, но сначала нужно подтвердить: какие runtime errors и latency действительно доступны в Vercel; отображаются ли Firestore usage/quota в Firebase; настроены ли billing/quota alerts; достаточны ли retention и уведомления для разбора production-инцидента. Только после этой проверки решается, нужны ли Sentry, OpenTelemetry, Log Drains, performance SDK, формальные SLO или собственный metrics backend.
+8. **Telemetry — решено для текущего масштаба.** Проверка Vercel Hobby и
+   Firebase Spark подтвердила доступность недавних runtime errors, route status,
+   Functions errors/timeouts и Firestore usage/connections. Этого достаточно
+   вместе с error boundaries, correlation id и structured logging. Client error
+   sink, Sentry/OpenTelemetry и Log Drains не добавляются без конкретного
+   browser-only инцидента; перед релизами повторяется console review.

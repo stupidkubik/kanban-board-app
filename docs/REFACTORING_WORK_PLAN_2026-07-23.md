@@ -902,6 +902,12 @@ Labels имеют единый board-level каталог, rename/recolor не �
 - Приоритет: P1
 - Оценка: 1–2 рабочих дня
 - Зависимости: завершённая выбранная feature-фаза
+- Статус: закрыта 27 июля. Clean install, lint, 106 unit/component tests,
+  12 Rules scenarios, Webpack build/16 traces и Cypress 3/3 прошли. Оба
+  production migration dry-run чисты, audit содержит 0 critical, preview
+  `dpl_61qTbWpt1Qwc6K1dNjCfzmnojrok` не дал runtime errors. Проверенный release
+  опубликован как `dpl_BbeqJFYm6y3hCLh1V5yfwhiT52Sk`; post-deploy smoke и
+  cleanup прошли. Полное evidence: `docs/RELEASE_2026-07-27.md`.
 
 ### Полный gate
 
@@ -1018,6 +1024,8 @@ Labels имеют единый board-level каталог, rename/recolor не �
 
 ### Gate D — можно выпускать production
 
+- Статус: пройден 27 июля 2026 года; release deployment
+  `dpl_BbeqJFYm6y3hCLh1V5yfwhiT52Sk`.
 - полный gate фазы 8 зелёный;
 - preview не содержит runtime errors;
 - migration имеет dry-run и rollback/repair procedure;

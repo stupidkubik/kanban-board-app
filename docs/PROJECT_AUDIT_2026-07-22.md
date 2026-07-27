@@ -1,30 +1,40 @@
 # Аудит Kanban Board App
 
-Дата исходного аудита: 22 июля 2026 года; remediation обновлён 23 июля 2026 года
+Дата исходного аудита: 22 июля 2026 года; release remediation обновлён 27 июля 2026 года
 Объект аудита: состояние ветки `main` на коммите `d153001` до изменения документации
 Формат: статический анализ кода и документации, установка по lock-файлу, lint, тесты, production-сборка и аудит зависимостей.
 
-Статус remediation: все локально исправимые P0/P1 и большинство P2/P3 закрыты отдельными проверенными коммитами. Fallback на credential-файл удалён, server traces проверяются автоматически, custom API получают App Check token, операции целостности перенесены в server transactions, rules coverage расширен, а основные read/performance риски ограничены. После возврата на совместимую с Vercel ветку Firebase Admin production audit содержит 11 записей (9 moderate, 2 high, 0 critical); оставшиеся цепочки Next.js и Firebase Admin требуют корректных upstream-релизов, а не предложенных npm несовместимых downgrade.
+Статус remediation: фазы 0–8 закрыты и выпущены в production. Fallback на
+credential-файл удалён, server traces проверяются автоматически, custom API
+получают App Check token, операции целостности перенесены в server transactions,
+а assignments и board-level label catalog реализованы. Production audit
+содержит 11 записей (8 moderate, 3 high, 0 critical); цепочки Next.js и Firebase
+Admin требуют совместимых upstream-релизов, а не предложенных npm downgrade.
 
 ## Краткий вывод
 
 Проект собирается, типизируется и проходит имеющиеся unit/component-тесты и тесты Firestore Rules. Архитектурная основа здравая: функциональность разделена по feature-модулям, доступ проверяется и в UI, и в Firestore Rules, realtime-подписки освобождаются, а опасное удаление доски выполняется на сервере с проверкой владельца.
 
-Этап стабилизации выполнен: устранены риски deployment secrets, App Check, сиротских данных и stale profiles для новых операций; сокращён realtime fan-out, введены caps и order repair. До расширения продукта остаются операционные действия с production-инфраструктурой и постепенная декомпозиция крупных, но связных UI/orchestration модулей по мере их изменения.
+Этап стабилизации и production release выполнен. Preview и production runtime
+проверены, migration dry-runs чисты, production smoke удалил синтетические
+данные, а Vercel/Firebase observability признана достаточной для текущего
+масштаба. Дальнейшая декомпозиция выполняется только вместе с изменяемой
+функциональностью.
 
 ## Что было проверено
 
 | Проверка | Результат | Комментарий |
 | --- | --- | --- |
-| `npm ci` | пройдено | Установлено 1327 пакетов строго по обновлённому `package-lock.json`. |
+| `npm ci` | пройдено | Установлено 1333 пакета строго по `package-lock.json`. |
 | `npm run lint` | пройдено | Ошибок ESLint нет. |
-| `npm run test` | пройдено | 15 файлов и 35 unit/component тестов пройдены; rules suite отдельно запускается через emulator. |
-| `npm run test:rules` | пройдено | 11/11 тестов Firestore Rules через эмулятор Java 25. |
-| `npm run build` | пройдено | Next.js 16.2.11; webpack production build и проверка 14 server trace-манифестов не нашли credential-файлы. |
-| `npm audit --omit=dev` | upstream-риск | Повторная проверка: 9 moderate и 2 high, без critical; совместимого auto-fix нет. |
+| `npm run test` | пройдено | 30 файлов и 106 unit/component тестов; 1 файл/12 тестов условно пропущены. |
+| `npm run test:rules` | пройдено | 12/12 тестов Firestore Rules через emulator. |
+| `npm run build` | пройдено | Next.js 16.2.12; Webpack build и 16 server traces не содержат credential-файлы. |
+| `npm audit --omit=dev` | upstream-риск | 8 moderate и 3 high, без critical; совместимого auto-fix нет. |
 | `npm outdated` | частично обработано | Patch/minor версии обновлены; `firebase-admin` удерживается на 13.x из-за подтверждённой несовместимости 14.x с Vercel runtime. |
-| Cypress E2E | пройден | 2 сценария проходят на локальных Auth/Firestore emulators; launcher подтверждает отсутствие board data после cleanup. |
-| Smoke script | не запускался | Скрипт создаёт/изменяет внешние данные и не нужен для read-only аудита. |
+| Cypress E2E | пройден | 3 сценария на Auth/Firestore emulators; cleanup включает labels и все board subcollections. |
+| Preview/production | пройдено | Preview без runtime errors; проверенный deployment выпущен как `dpl_BbeqJFYm6y3hCLh1V5yfwhiT52Sk`. |
+| Smoke script | пройден | Board, columns, profile, label и assigned/labeled card проверены; cleanup подтверждён. |
 
 ## Приоритетные находки
 
@@ -69,7 +79,9 @@ Undo случайно маскирует проблему: восстановл�
 
 ### P1 — production-зависимости содержат известные уязвимости — частично устранено
 
-После обновления patch/minor зависимостей и возврата на совместимую с Vercel ветку `firebase-admin` 13.x production-дерево содержит 11 записей: 2 high и 9 moderate; critical-уязвимостей больше нет. Ключевые оставшиеся цепочки:
+После обновления patch/minor зависимостей и возврата на совместимую с Vercel
+ветку `firebase-admin` 13.x production-дерево содержит 11 записей: 3 high и
+8 moderate; critical-уязвимостей нет. Ключевые оставшиеся цепочки:
 
 - `next@16.2.11 -> sharp` и `postcss` — high/moderate; исправленные версии ещё не доступны через совместимый релиз Next.js;
 - `firebase-admin@13.x -> @google-cloud/firestore/google-gax` и `@google-cloud/storage` — moderate;
@@ -121,11 +133,14 @@ project `demo-kanban-e2e`. Launcher создаёт локального Auth-п�
 
 Решение: create board и accept invite перенесены в защищённые Admin SDK transactions. Клиент передаёт заранее созданный board id, повторные запросы обрабатываются идемпотентно, а прямой client accept запрещён правилами. Rename board также перенесён на сервер и атомарно обновляет `boardTitle` во всех ожидающих invitations.
 
-### P2 — archived/assignees/labels описаны, но не являются UI-функциями — прояснено
+### P2 — archived/assignees/labels описаны, но не являются UI-функциями — устранено для assignments/labels
 
 Типы, normalizers и card mutations поддерживают `assigneeIds`, `labels`, `archived`, однако интерфейс не позволяет назначать участников, управлять labels или архивировать карточки. Более того, запросы не фильтруют `archived`, поэтому внешне архивированная карточка продолжит отображаться. В `schema.md` поля `archived` заявлены также для board и column, но Firestore Rules их запрещают.
 
-Решение: поля явно отмечены в schema/spec как reserved data-layer, а ложные `archived` для board/column удалены из schema. Карточки с `archived: true` теперь исключаются из active kanban; assignment/labels/archive UI по-прежнему не заявлены как готовый функционал.
+Решение: несколько исполнителей и board-level label catalog реализованы в UI,
+Rules и server API. Rename/recolor label не переписывает cards, delete очищает
+references. `archived` остаётся reserved без отдельного UI; карточки с
+`archived: true` исключаются из active kanban.
 
 ### P2 — нет явного состояния «нет доступа / доска не найдена» — устранено
 
@@ -152,7 +167,10 @@ project `demo-kanban-e2e`. Launcher создаёт локального Auth-п�
 
 Сейчас проверены базовый read, viewer/editor update, создание column/card и принятие invite. Не покрыты owner/editor/viewer для update/delete карточек и колонок, удаление доски, invite create/read/delete, remove member, leave board, memberProfiles и `users/{uid}`.
 
-Добавлены сценарии update/delete карточек по ролям, malformed relationships/data, server-only rename/accept/remove, invite create/read/decline, memberProfiles и users. Suite содержит 11 проходящих emulator-тестов; дальнейшие новые операции должны добавляться в ту же матрицу.
+Добавлены сценарии update/delete карточек по ролям, malformed
+relationships/data, server-only rename/accept/remove, label catalog, invite
+create/read/decline, memberProfiles и users. Suite содержит 12 проходящих
+emulator-тестов; новые операции должны добавляться в ту же матрицу.
 
 ### P3 — отсутствуют системные security headers и rate limiting — устранено для текущего deployment
 
@@ -202,7 +220,10 @@ Google profile avatars обрабатываются через оптимиза�
 
 ### P2 — нет error boundary и наблюдаемости — базовый уровень устранён
 
-Добавлены route-level и root error boundaries с восстановлением через `reset`, понятным fallback UI и correlation id. Необработанные render errors журналируются единым структурированным событием без stack trace и содержимого пользовательских данных. Предпочтительный минимальный вариант — Vercel Observability и Firebase Console без внешнего sink, но их фактическая настройка, доступные метрики, retention и alerts ещё не проверены. Решение по Sentry, OTel, Log Drains и собственному metrics backend остаётся открытым до этой инфраструктурной проверки.
+Добавлены route-level и root error boundaries с восстановлением через `reset`,
+понятным fallback UI и correlation id. Аутентифицированная проверка подтвердила,
+что Vercel Observability и Firebase Console достаточны для текущего масштаба;
+внешний sink откладывается до конкретного browser-only диагностического пробела.
 
 ### P3 — документация расходится с реализацией — устранено
 
@@ -257,12 +278,12 @@ Google profile avatars обрабатываются через оптимиза�
 
 1. [x] Выполнить целевое разбиение критичной orchestration: DnD controller и Firestore listener adapters вынесены; дальнейшее дробление делать вместе с функциональными изменениями.
 2. [x] Централизовать data access, locale, errors и timestamp normalization.
-3. [ ] Проверить фактическую настройку Vercel Observability и Firebase Console, затем решить, достаточно ли их вместе с существующими error boundaries, correlation id и structured logging без внешнего telemetry sink.
-4. Только затем развивать assignments, labels, archive, audit log, reminders и offline queue.
+3. [x] Проверить Vercel Observability и Firebase Console; текущего набора вместе с error boundaries, correlation id и structured logging достаточно.
+4. [x] Реализовать assignments и labels; archive, audit log, reminders и offline queue остаются отдельным backlog.
 
 ## Ограничения аудита
 
-- Не исследовались реальные Firebase data и настройки Console, usage/billing и alerts; production logs проверялись только при разборе Vercel 500.
+- Firebase usage/Auth/App Check и Vercel runtime/retention проверены 27 июля; настройки и enforcement не изменялись.
 - Не выполнялись Lighthouse, browser profiling и нагрузочное тестирование.
-- E2E не запускался из-за отсутствующих E2E credentials; write opt-in и cleanup теперь обязательны. Smoke не запускался, чтобы не изменять внешние данные.
+- E2E выполнен на изолированных emulators; guarded production smoke выполнен с подтверждённым cleanup.
 - Audit зависимостей отражает состояние npm registry на дату документа и должен повторяться перед каждым релизом.

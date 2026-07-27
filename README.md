@@ -7,7 +7,8 @@ Realtime kanban with Firebase Auth + Firestore, optimistic UI, and drag-and-drop
 - [`docs/FUNCTIONAL_SPEC.md`](docs/FUNCTIONAL_SPEC.md) — complete as-is functional description and refactoring invariants.
 - [`docs/PROJECT_AUDIT_2026-07-22.md`](docs/PROJECT_AUDIT_2026-07-22.md) — current-state audit, risks, optimization findings, and recommended work order.
 - [`docs/DEPENDENCY_POLICY.md`](docs/DEPENDENCY_POLICY.md) — release dependency checklist and compatibility constraints.
-- [`docs/OBSERVABILITY_AUDIT_2026-07-27.md`](docs/OBSERVABILITY_AUDIT_2026-07-27.md) — collected production evidence and the remaining authenticated console review.
+- [`docs/OBSERVABILITY_AUDIT_2026-07-27.md`](docs/OBSERVABILITY_AUDIT_2026-07-27.md) — authenticated Vercel/Firebase review and monitoring decision.
+- [`docs/RELEASE_2026-07-27.md`](docs/RELEASE_2026-07-27.md) — phase 8 gate results, deployment evidence, and rollback procedure.
 - [`schema.md`](schema.md) — Firestore schema reference.
 - [`BACKLOG.md`](BACKLOG.md) — earlier improvement ideas.
 
@@ -121,6 +122,7 @@ The app never searches for credential files inside the project. Do not place ser
 
 Production deployment:
 - Target platform: Vercel — https://kanban-board-app-ten-psi.vercel.app/
+- Current phase 8 release: Vercel deployment `dpl_BbeqJFYm6y3hCLh1V5yfwhiT52Sk`.
 - Store `FIREBASE_SERVICE_ACCOUNT` only as a protected Vercel environment variable; never commit or bundle a credential file.
 - Production builds explicitly use Webpack. `firebase-admin` stays on the compatible 13.x line because 14.x currently produces a Vercel runtime `ERR_REQUIRE_ESM` through `jwks-rsa@4 -> jose@6`.
 - Treat upgrading Firebase Admin to 14.x as a separate compatibility migration: deploy a preview, verify `/` and protected API routes, and inspect runtime logs before promoting it.

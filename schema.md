@@ -120,7 +120,7 @@ Fields:
 - `createdById` (string)
 - `assigneeIds` (array<string>, optional)
 - `labelIds` (array<string>, optional)
-- `labels` (legacy array<string>, read-only until migration)
+- `labels` (legacy array<string>, compatibility read only)
 - `dueAt` (Timestamp, optional)
 - `createdAt` (Timestamp)
 - `updatedAt` (Timestamp, optional)
@@ -129,10 +129,11 @@ Fields:
 `assigneeIds` powers the card assignee picker and assignee chips. Values are
 limited to 20 current board member UIDs; cards do not duplicate member profile
 data. `labelIds` powers the card multi-select and color chips, is limited to 10
-unique IDs, and must reference the board catalog. Legacy `labels` names are read
-only and migrated with `npm run migrate:card-labels`; run without
-`MIGRATION_APPLY=true` for a dry run. `archived` remains reserved, and archived
-cards are excluded from the active kanban view.
+unique IDs, and must reference the board catalog. Legacy `labels` names remain a
+read-only compatibility input for `npm run migrate:card-labels`; run without
+`MIGRATION_APPLY=true` for a dry run. The production apply and the phase 8
+verification found no remaining legacy cards. `archived` remains reserved, and
+archived cards are excluded from the active kanban view.
 
 Ordering notes:
 - `order` is a numeric sort key. It is not required to be sequential.

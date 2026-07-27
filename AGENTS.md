@@ -83,8 +83,7 @@ The app must not search for or package service-account JSON from the project tre
 - Keep `next build --webpack` for production until the Vercel runtime incompatibility is resolved.
 - Keep `firebase-admin` on the compatible 13.x line. Version 14.x currently fails in Vercel Functions with `ERR_REQUIRE_ESM` through `jwks-rsa@4 -> jose@6`.
 - Treat an upgrade to Firebase Admin 14.x as a preview-deployment migration and verify `/`, protected API routes, and runtime logs before promotion.
-- Do not assume Vercel Observability or Firebase Console monitoring is fully configured. Verify available runtime errors, latency, retention, usage/quota data, and alerts before deciding whether an external telemetry SDK is needed.
-- The 27 July 2026 review found Vercel Observability plus Firebase Console sufficient for the current scale; repeat the review before releases and add an external telemetry sink only for a demonstrated diagnostic gap.
+- The 27 July 2026 review found Vercel Observability plus Firebase Console sufficient for the current scale. Repeat the runtime-error, latency, retention, usage/quota, and App Check review before releases; add an external telemetry sink only for a demonstrated diagnostic gap.
 
 ### App Check (recommended)
 - NEXT_PUBLIC_FIREBASE_APP_CHECK_SITE_KEY
