@@ -21,6 +21,8 @@ import { Spinner } from "@/components/ui/spinner"
 import styles from "@/features/cards/ui/cards.module.css"
 import type { CardAssignee } from "@/lib/types/board-ui"
 import { CardAssigneePicker } from "@/features/cards/ui/card-assignee-picker"
+import { CardLabelPicker } from "@/features/labels/ui/card-label-picker"
+import type { BoardLabel } from "@/lib/types/boards"
 
 type CardEditDialogProps = {
   open: boolean
@@ -29,9 +31,11 @@ type CardEditDialogProps = {
   uiCopy: BoardCopy
   editingCard: EditingCardDraft
   assignees: CardAssignee[]
+  labels: BoardLabel[]
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void
   onFieldChange: (field: "title" | "description" | "due", value: string) => void
   onToggleAssignee: (assigneeId: string) => void
+  onToggleLabel: (labelId: string) => void
   onClose: () => void
 }
 
@@ -42,9 +46,11 @@ export function CardEditDialog({
   uiCopy,
   editingCard,
   assignees,
+  labels,
   onSubmit,
   onFieldChange,
   onToggleAssignee,
+  onToggleLabel,
   onClose,
 }: CardEditDialogProps) {
   return (
@@ -120,6 +126,15 @@ export function CardEditDialog({
             disabled={!canEdit || updatingCard}
             testId="edit-card-assignees"
             onToggle={onToggleAssignee}
+          />
+          <CardLabelPicker
+            labels={labels}
+            selectedIds={editingCard.labelIds}
+            label={uiCopy.board.cardLabelsLabel}
+            emptyLabel={uiCopy.board.cardLabelsEmpty}
+            disabled={!canEdit || updatingCard}
+            testId="edit-card-labels"
+            onToggle={onToggleLabel}
           />
           <AlertDialogFooter>
             <AlertDialogCancel type="button" size="sm">

@@ -12,6 +12,7 @@ import { CardEditDialog } from "@/features/cards/ui/card-edit-dialog"
 import { useBoardCards } from "@/features/cards/model/use-board-cards"
 import { ColumnsSkeleton } from "@/features/columns/ui/columns-skeleton"
 import { useBoardAssignees } from "@/features/cards/model/use-board-assignees"
+import { useBoardLabels } from "@/features/labels/model/use-board-labels"
 
 type CardsSectionProps = {
   boardId: string | null
@@ -60,6 +61,7 @@ export const CardsSection = React.memo(function CardsSection({
     board,
     user
   )
+  const { labels, labelsById, labelIds } = useBoardLabels(boardId)
   const {
     cardsByColumn,
     creatingCard,
@@ -70,11 +72,13 @@ export const CardsSection = React.memo(function CardsSection({
     newCardDescriptionByColumn,
     newCardDueByColumn,
     newCardAssigneeIdsByColumn,
+    newCardLabelIdsByColumn,
     toggleAddCard,
     handleCardTitleChange,
     handleCardDescriptionChange,
     handleCardDueChange,
     toggleCardAssignee,
+    toggleCardLabel,
     cancelCreateCard,
     handleCreateCard,
     editingCard,
@@ -84,6 +88,7 @@ export const CardsSection = React.memo(function CardsSection({
     resetEditCard,
     handleUpdateCard,
     toggleEditingAssignee,
+    toggleEditingLabel,
     deleteCardOpen,
     deleteCardTitle,
     startDeletingCard,
@@ -108,6 +113,7 @@ export const CardsSection = React.memo(function CardsSection({
     uiCopy,
     setError,
     availableAssigneeIds: assigneeIds,
+    availableLabelIds: labelIds,
   })
 
   const showColumnsSkeleton = isColumnsLoading && columns.length === 0
@@ -122,8 +128,10 @@ export const CardsSection = React.memo(function CardsSection({
         uiCopy={uiCopy}
         editingCard={editingCard}
         assignees={assignees}
+        labels={labels}
         onFieldChange={handleEditingFieldChange}
         onToggleAssignee={toggleEditingAssignee}
+        onToggleLabel={toggleEditingLabel}
         onSubmit={handleUpdateCard}
         onClose={resetEditCard}
       />
@@ -177,8 +185,12 @@ export const CardsSection = React.memo(function CardsSection({
           newCardAssigneeIdsByColumn={newCardAssigneeIdsByColumn}
           assignees={assignees}
           assigneesById={assigneesById}
+          labels={labels}
+          labelsById={labelsById}
+          newCardLabelIdsByColumn={newCardLabelIdsByColumn}
           onChangeCardDue={handleCardDueChange}
           onToggleCardAssignee={toggleCardAssignee}
+          onToggleCardLabel={toggleCardLabel}
           onCreateCard={handleCreateCard}
           onCancelCreateCard={cancelCreateCard}
           onStartEditingCard={startEditingCard}

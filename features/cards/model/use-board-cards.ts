@@ -20,6 +20,7 @@ type UseBoardCardsArgs = {
   uiCopy: BoardCopy
   setError: (message: string | null) => void
   availableAssigneeIds: ReadonlySet<string>
+  availableLabelIds: ReadonlySet<string>
 }
 
 export const useBoardCards = (args: UseBoardCardsArgs) => {

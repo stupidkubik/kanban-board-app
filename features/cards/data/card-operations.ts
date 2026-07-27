@@ -10,6 +10,7 @@ import {
 
 import { clientDb } from "@/lib/firebase/client"
 import { normalizeAssigneeIds } from "@/features/cards/model/card-assignees"
+import { normalizeLabelIds } from "@/features/labels/model/label-normalizers"
 
 export type CreateCardInput = {
   boardId: string
@@ -20,7 +21,7 @@ export type CreateCardInput = {
   createdById: string
   order?: number
   assigneeIds?: string[]
-  labels?: string[]
+  labelIds?: string[]
   dueAt?: Date | null
   archived?: boolean
 }
@@ -33,7 +34,7 @@ export type UpdateCardInput = {
   description?: string | null
   order?: number
   assigneeIds?: string[]
-  labels?: string[]
+  labelIds?: string[]
   dueAt?: Date | null
   archived?: boolean
 }
@@ -68,8 +69,8 @@ const buildCardUpdates = (input: UpdateCardInput) => {
   if (Array.isArray(input.assigneeIds)) {
     updates.assigneeIds = normalizeAssigneeIds(input.assigneeIds)
   }
-  if (Array.isArray(input.labels)) {
-    updates.labels = input.labels
+  if (Array.isArray(input.labelIds)) {
+    updates.labelIds = normalizeLabelIds(input.labelIds)
   }
   if (input.dueAt instanceof Date || input.dueAt === null) {
     updates.dueAt = input.dueAt
@@ -90,7 +91,7 @@ export const createCard = async ({
   createdById,
   order,
   assigneeIds,
-  labels,
+  labelIds,
   dueAt,
   archived,
 }: CreateCardInput) => {
@@ -109,8 +110,8 @@ export const createCard = async ({
   if (assigneeIds !== undefined) {
     payload.assigneeIds = normalizeAssigneeIds(assigneeIds)
   }
-  if (labels !== undefined) {
-    payload.labels = labels
+  if (labelIds !== undefined) {
+    payload.labelIds = normalizeLabelIds(labelIds)
   }
   if (dueAt !== undefined) {
     payload.dueAt = dueAt

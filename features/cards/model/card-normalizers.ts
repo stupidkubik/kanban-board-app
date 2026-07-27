@@ -4,6 +4,7 @@ import { clientDb } from "@/lib/firebase/client"
 import { toMillis } from "@/lib/firestore-values"
 import type { Card } from "@/lib/types/boards"
 import { normalizeAssigneeIds } from "@/features/cards/model/card-assignees"
+import { normalizeLabelIds } from "@/features/labels/model/label-normalizers"
 
 export type CardRecord = {
   columnId?: string
@@ -13,6 +14,7 @@ export type CardRecord = {
   createdById?: string
   createdBy?: string
   assigneeIds?: unknown
+  labelIds?: unknown
   labels?: unknown
   dueAt?: unknown
   createdAt?: unknown
@@ -48,6 +50,14 @@ export const normalizeCard = (boardId: string, id: string, data: CardRecord): Ca
     }
   }
 
+  if (Array.isArray(data.labelIds)) {
+    const labelIds = normalizeLabelIds(data.labelIds)
+    if (labelIds.length) {
+      card.labelIds = labelIds
+    }
+  }
+
+  // Legacy names remain readable for migration, but are no longer writable.
   if (Array.isArray(data.labels)) {
     const labels = data.labels.filter(
       (label): label is string => typeof label === "string"

@@ -176,6 +176,69 @@
   border-radius: var(--radius-sm);
 }
 
+.labelPicker {
+  min-width: 0;
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.labelOptions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.labelOption {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.labelDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: var(--label-color);
+}
+
+.cardLabels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.cardLabelChip {
+  padding: 3px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  color: white;
+  background: var(--label-color);
+}
+
+.labelOption[data-color="gray"],
+.cardLabelChip[data-color="gray"] { --label-color: #64748b; }
+.labelOption[data-color="red"],
+.cardLabelChip[data-color="red"] { --label-color: #ef4444; }
+.labelOption[data-color="orange"],
+.cardLabelChip[data-color="orange"] { --label-color: #f97316; }
+.labelOption[data-color="yellow"],
+.cardLabelChip[data-color="yellow"] { --label-color: #ca8a04; }
+.labelOption[data-color="green"],
+.cardLabelChip[data-color="green"] { --label-color: #16a34a; }
+.labelOption[data-color="blue"],
+.cardLabelChip[data-color="blue"] { --label-color: #2563eb; }
+.labelOption[data-color="purple"],
+.cardLabelChip[data-color="purple"] { --label-color: #9333ea; }
+.labelOption[data-color="pink"],
+.cardLabelChip[data-color="pink"] { --label-color: #db2777; }
+
 .assigneePickerLabel {
   padding: 0 4px;
   font-size: 11px;

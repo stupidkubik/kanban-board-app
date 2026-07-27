@@ -37,6 +37,14 @@ type UpdateCardAssigneesOptimisticArgs = {
   columnIds?: string[]
 }
 
+type UpdateCardLabelsOptimisticArgs = {
+  dispatch: AppDispatch
+  boardId: string
+  cardId: string
+  labelIds: string[]
+  columnIds?: string[]
+}
+
 const buildCardSorter = () => (first: Card, second: Card) => {
   return first.order - second.order
 }
@@ -260,5 +268,38 @@ export const optimisticUpdateCardAssignees = ({
     )
   })
 
+  return combinePatches(patches)
+}
+
+export const optimisticUpdateCardLabels = ({
+  dispatch,
+  boardId,
+  cardId,
+  labelIds,
+  columnIds,
+}: UpdateCardLabelsOptimisticArgs): PatchResult => {
+  const patches: PatchResult[] = []
+  const patchList = (draft: Card[]) => {
+    const card = draft.find((item) => item.id === cardId)
+    if (card) {
+      card.labelIds = [...labelIds]
+    }
+  }
+  patches.push(
+    dispatch(
+      firestoreApi.util.updateQueryData("getCards", { boardId }, patchList)
+    )
+  )
+  new Set(columnIds ?? []).forEach((columnId) => {
+    patches.push(
+      dispatch(
+        firestoreApi.util.updateQueryData(
+          "getCards",
+          { boardId, columnId },
+          patchList
+        )
+      )
+    )
+  })
   return combinePatches(patches)
 }

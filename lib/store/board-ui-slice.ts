@@ -17,6 +17,7 @@ const initialEditingCard: EditingCardDraft = {
   description: "",
   due: "",
   assigneeIds: [],
+  labelIds: [],
 }
 
 const emptyBoardUi: BoardUiState = {
@@ -46,6 +47,7 @@ const ensureColumnDraft = (boardState: BoardUiState, columnId: string) => {
       description: "",
       due: "",
       assigneeIds: [],
+      labelIds: [],
     }
   }
   return boardState.addCardByColumn[columnId]
@@ -87,6 +89,7 @@ const boardUiSlice = createSlice({
         description: "",
         due: "",
         assigneeIds: [],
+        labelIds: [],
       }
     },
     startEditingCard(
@@ -98,6 +101,7 @@ const boardUiSlice = createSlice({
         description?: string | null
         due?: string
         assigneeIds?: string[]
+        labelIds?: string[]
       }>
     ) {
       const boardState = ensureBoardState(state, action.payload.boardId)
@@ -107,6 +111,7 @@ const boardUiSlice = createSlice({
         description: action.payload.description ?? "",
         due: action.payload.due ?? "",
         assigneeIds: action.payload.assigneeIds ?? [],
+        labelIds: action.payload.labelIds ?? [],
       }
     },
     updateEditingCardField(
@@ -157,6 +162,40 @@ const boardUiSlice = createSlice({
         draft.assigneeIds.push(action.payload.assigneeId)
       }
     },
+    toggleAddCardLabel(
+      state,
+      action: PayloadAction<{
+        boardId: string
+        columnId: string
+        labelId: string
+      }>
+    ) {
+      const draft = ensureColumnDraft(
+        ensureBoardState(state, action.payload.boardId),
+        action.payload.columnId
+      )
+      const index = draft.labelIds.indexOf(action.payload.labelId)
+      if (index >= 0) {
+        draft.labelIds.splice(index, 1)
+      } else if (draft.labelIds.length < 10) {
+        draft.labelIds.push(action.payload.labelId)
+      }
+    },
+    toggleEditingCardLabel(
+      state,
+      action: PayloadAction<{ boardId: string; labelId: string }>
+    ) {
+      const draft = ensureBoardState(
+        state,
+        action.payload.boardId
+      ).editingCard
+      const index = draft.labelIds.indexOf(action.payload.labelId)
+      if (index >= 0) {
+        draft.labelIds.splice(index, 1)
+      } else if (draft.labelIds.length < 10) {
+        draft.labelIds.push(action.payload.labelId)
+      }
+    },
     stopEditingCard(state, action: PayloadAction<{ boardId: string }>) {
       const boardState = ensureBoardState(state, action.payload.boardId)
       boardState.editingCard = { ...initialEditingCard }
@@ -172,6 +211,8 @@ export const {
   updateEditingCardField,
   toggleAddCardAssignee,
   toggleEditingCardAssignee,
+  toggleAddCardLabel,
+  toggleEditingCardLabel,
   stopEditingCard,
 } = boardUiSlice.actions
 

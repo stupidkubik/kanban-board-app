@@ -1,6 +1,11 @@
 import { collection, doc, limit, onSnapshot, orderBy, query, where } from "firebase/firestore"
 
 import { isVisibleCard, normalizeCard, type CardRecord } from "@/features/cards/model/card-normalizers"
+import {
+  BOARD_LABEL_LIMIT,
+  normalizeBoardLabel,
+  type BoardLabelRecord,
+} from "@/features/labels/model/label-normalizers"
 import { clientDb } from "@/lib/firebase/client"
 import {
   memberFieldPath,
@@ -13,7 +18,13 @@ import {
   type InviteRecord,
   type MemberProfileRecord,
 } from "@/lib/store/firestore-normalizers"
-import type { Board, BoardMemberProfile, Card, Column } from "@/lib/types/boards"
+import type {
+  Board,
+  BoardLabel,
+  BoardMemberProfile,
+  Card,
+  Column,
+} from "@/lib/types/boards"
 
 export const BOARD_COLUMN_LIMIT = 100
 export const BOARD_MEMBER_LIMIT = 100
@@ -128,6 +139,35 @@ export function subscribeToBoardMembers(
         ),
       ),
     onError,
+  )
+}
+
+export function subscribeToBoardLabels(
+  boardId: string,
+  onData: Listener<BoardLabel[]>,
+  onError: ListenerError
+) {
+  const labelsQuery = query(
+    collection(clientDb, "boards", boardId, "labels"),
+    orderBy("order", "asc"),
+    limit(BOARD_LABEL_LIMIT)
+  )
+
+  return onSnapshot(
+    labelsQuery,
+    (snapshot) =>
+      onData(
+        snapshot.docs
+          .map((docSnapshot) =>
+            normalizeBoardLabel(
+              boardId,
+              docSnapshot.id,
+              docSnapshot.data() as BoardLabelRecord
+            )
+          )
+          .filter((label): label is BoardLabel => Boolean(label))
+      ),
+    onError
   )
 }
 

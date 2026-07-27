@@ -280,6 +280,38 @@ describe("Firestore RTK Query optimistic card mutations", () => {
     store.dispatch(firestoreApi.util.resetApiState())
   })
 
+  it("rolls back label ids in board and column caches after a rejected write", async () => {
+    const write = deferred()
+    mocks.updateCard.mockReturnValue(write.promise)
+    const store = makeStore()
+    await seedCards(store, [card])
+
+    const mutation = store.dispatch(
+      firestoreApi.endpoints.updateCard.initiate({
+        boardId,
+        cardId: card.id,
+        labelIds: ["label-1", "label-2"],
+      })
+    )
+    await vi.waitFor(() => {
+      expect(selectCards(store, { boardId })[0]).toMatchObject({
+        labelIds: ["label-1", "label-2"],
+      })
+      expect(
+        selectCards(store, { boardId, columnId: todoColumn.id })[0]
+      ).toMatchObject({ labelIds: ["label-1", "label-2"] })
+    })
+
+    write.reject(new Error("label update failed"))
+    await mutation
+
+    expect(selectCards(store, { boardId })[0].labelIds).toBeUndefined()
+    expect(
+      selectCards(store, { boardId, columnId: todoColumn.id })[0].labelIds
+    ).toBeUndefined()
+    store.dispatch(firestoreApi.util.resetApiState())
+  })
+
   it("restores the same entity after a rejected optimistic delete", async () => {
     const write = deferred()
     mocks.deleteCard.mockReturnValue(write.promise)

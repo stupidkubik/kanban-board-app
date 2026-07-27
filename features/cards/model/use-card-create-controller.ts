@@ -15,8 +15,10 @@ import {
   setAddCardField,
   toggleAddCardForm,
   toggleAddCardAssignee,
+  toggleAddCardLabel,
 } from "@/lib/store/board-ui-slice"
 import { normalizeAssigneeIds } from "@/features/cards/model/card-assignees"
+import { normalizeLabelIds } from "@/features/labels/model/label-normalizers"
 import type { BoardCopy } from "@/lib/types/board-ui"
 import { isNonEmpty } from "@/lib/validation"
 
@@ -26,6 +28,7 @@ type UseCardCreateControllerArgs = {
   uiCopy: BoardCopy
   setError: (message: string | null) => void
   availableAssigneeIds: ReadonlySet<string>
+  availableLabelIds: ReadonlySet<string>
 }
 
 export const useCardCreateController = ({
@@ -34,6 +37,7 @@ export const useCardCreateController = ({
   uiCopy,
   setError,
   availableAssigneeIds,
+  availableLabelIds,
 }: UseCardCreateControllerArgs) => {
   const dispatch = useAppDispatch()
   const addCardDrafts = useAppSelector(
@@ -47,6 +51,7 @@ export const useCardCreateController = ({
     const newCardDescriptionByColumn: Record<string, string> = {}
     const newCardDueByColumn: Record<string, string> = {}
     const newCardAssigneeIdsByColumn: Record<string, string[]> = {}
+    const newCardLabelIdsByColumn: Record<string, string[]> = {}
 
     Object.entries(addCardDrafts).forEach(([columnId, draft]) => {
       showAddCardByColumn[columnId] = draft.open
@@ -54,6 +59,7 @@ export const useCardCreateController = ({
       newCardDescriptionByColumn[columnId] = draft.description
       newCardDueByColumn[columnId] = draft.due
       newCardAssigneeIdsByColumn[columnId] = draft.assigneeIds
+      newCardLabelIdsByColumn[columnId] = draft.labelIds
     })
 
     return {
@@ -62,6 +68,7 @@ export const useCardCreateController = ({
       newCardDescriptionByColumn,
       newCardDueByColumn,
       newCardAssigneeIdsByColumn,
+      newCardLabelIdsByColumn,
     }
   }, [addCardDrafts])
 
@@ -126,6 +133,7 @@ export const useCardCreateController = ({
             draft.assigneeIds,
             availableAssigneeIds
           ),
+          labelIds: normalizeLabelIds(draft.labelIds, availableLabelIds),
         }).unwrap()
         dispatch(resetAddCardForm({ boardId, columnId }))
       } catch (error) {
@@ -135,6 +143,7 @@ export const useCardCreateController = ({
     [
       addCardDrafts,
       availableAssigneeIds,
+      availableLabelIds,
       boardId,
       createCard,
       dispatch,
@@ -171,6 +180,14 @@ export const useCardCreateController = ({
         }
       },
       [availableAssigneeIds, boardId, dispatch]
+    ),
+    toggleCardLabel: React.useCallback(
+      (columnId: string, labelId: string) => {
+        if (boardId && availableLabelIds.has(labelId)) {
+          dispatch(toggleAddCardLabel({ boardId, columnId, labelId }))
+        }
+      },
+      [availableLabelIds, boardId, dispatch]
     ),
     cancelCreateCard,
     handleCreateCard,

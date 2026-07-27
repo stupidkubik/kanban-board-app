@@ -32,7 +32,11 @@ import {
 import { CardsColumnBody } from "@/features/cards/ui/cards-column-body"
 import styles from "@/features/board/ui/board-page.module.css"
 import cardStyles from "@/features/cards/ui/cards.module.css"
-import type { Card as BoardCard, Column } from "@/lib/types/boards"
+import type {
+  BoardLabel,
+  Card as BoardCard,
+  Column,
+} from "@/lib/types/boards"
 import type { CardAssignee } from "@/lib/types/board-ui"
 
 const isOverdueDate = (value?: number) => {
@@ -102,8 +106,12 @@ type ColumnsGridProps = {
   newCardAssigneeIdsByColumn: Record<string, string[]>
   assignees: CardAssignee[]
   assigneesById: Map<string, CardAssignee>
+  newCardLabelIdsByColumn: Record<string, string[]>
+  labels: BoardLabel[]
+  labelsById: Map<string, BoardLabel>
   onChangeCardDue: (columnId: string, value: string) => void
   onToggleCardAssignee: (columnId: string, assigneeId: string) => void
+  onToggleCardLabel: (columnId: string, labelId: string) => void
   onCreateCard: (event: React.FormEvent<HTMLFormElement>, columnId: string) => void
   onCancelCreateCard: (columnId: string) => void
   onStartEditingCard: (card: BoardCard) => void
@@ -147,8 +155,12 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
   newCardAssigneeIdsByColumn,
   assignees,
   assigneesById,
+  newCardLabelIdsByColumn,
+  labels,
+  labelsById,
   onChangeCardDue,
   onToggleCardAssignee,
+  onToggleCardLabel,
   onCreateCard,
   onCancelCreateCard,
   onStartEditingCard,
@@ -300,19 +312,25 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
                       newCardTitle={newCardTitleByColumn[column.id] ?? ""}
                       newCardDescription={newCardDescriptionByColumn[column.id] ?? ""}
                       newCardDue={newCardDueByColumn[column.id] ?? ""}
-                      newCardAssigneeIds={
-                        newCardAssigneeIdsByColumn[column.id] ?? []
-                      }
-                      assignees={assignees}
-                      assigneesById={assigneesById}
+              newCardAssigneeIds={
+                newCardAssigneeIdsByColumn[column.id] ?? []
+              }
+              newCardLabelIds={newCardLabelIdsByColumn[column.id] ?? []}
+              assignees={assignees}
+              assigneesById={assigneesById}
+              labels={labels}
+              labelsById={labelsById}
                       onChangeCardTitle={(value) => onChangeCardTitle(column.id, value)}
                       onChangeCardDescription={(value) =>
                         onChangeCardDescription(column.id, value)
                       }
                       onChangeCardDue={(value) => onChangeCardDue(column.id, value)}
-                      onToggleCardAssignee={(assigneeId) =>
-                        onToggleCardAssignee(column.id, assigneeId)
-                      }
+              onToggleCardAssignee={(assigneeId) =>
+                onToggleCardAssignee(column.id, assigneeId)
+              }
+              onToggleCardLabel={(labelId) =>
+                onToggleCardLabel(column.id, labelId)
+              }
                       onCreateCard={(event) => onCreateCard(event, column.id)}
                       onCancelCreateCard={() => onCancelCreateCard(column.id)}
                       onToggleAddCard={(open) => onToggleAddCard(column.id, open)}

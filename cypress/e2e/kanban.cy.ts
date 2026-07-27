@@ -163,6 +163,14 @@ describe("kanban core flows", () => {
     cy.contains('[data-testid="board-card"]', boardTitle).click()
     cy.url({ timeout: 45_000 }).should("match", /\/boards\/[^/]+$/)
 
+    cy.get('[data-testid="new-label-name"]').type("Bug")
+    cy.get('[data-testid="new-label-color"]').select("red")
+    cy.get('[data-testid="create-label"]').click()
+    cy.get('[data-testid^="label-row-"]')
+      .should("have.length", 1)
+      .find('input[aria-label^="Label name"]')
+      .should("have.value", "Bug")
+
     cy.get('[data-testid="new-column-title"]').type("Todo")
     cy.get('[data-testid="create-column-submit"]').click()
     cy.contains('[data-testid^="column-"]', "Todo").should("exist")
@@ -174,6 +182,9 @@ describe("kanban core flows", () => {
     cy.contains('[data-testid^="column-"]', "Todo").within(() => {
       cy.get('[data-testid^="add-card-"]').click()
       cy.get('[data-testid^="new-card-title-"]').type(cardTitle)
+      cy.get('[data-testid^="new-card-labels-"] input[type="checkbox"]')
+        .should("have.length", 1)
+        .check()
       cy.get('[data-testid^="create-card-"]').click()
     })
 
@@ -189,12 +200,27 @@ describe("kanban core flows", () => {
 
     cy.contains('[data-testid^="column-"]', "Done")
       .find(`[data-card-title="${cardTitle}"]`)
-      .should("exist")
+      .find('[data-testid="card-labels"]')
+      .should("contain.text", "Bug")
 
-    cy.get(`[data-card-title="${cardTitle}"]`).click()
+    cy.get(`[data-card-title="${cardTitle}"]`).focus().type("{enter}")
     cy.get("#edit-card-title").clear().type(editedCardTitle)
-    cy.contains("button", "Save").click()
+    cy.get('[role="alertdialog"]').contains("button", "Save").click()
     cy.get(`[data-card-title="${editedCardTitle}"]`).should("exist")
+
+    cy.get('[data-testid^="label-row-"]').within(() => {
+      cy.get('input[aria-label^="Label name"]').clear().type("Critical")
+      cy.get('select[aria-label^="Label color"]').select("purple")
+      cy.contains("button", "Save").click()
+    })
+    cy.get(`[data-card-title="${editedCardTitle}"]`)
+      .find('[data-testid="card-labels"]')
+      .should("contain.text", "Critical")
+    cy.get('button[aria-label^="Delete label:"]').click()
+    cy.get('[data-testid="delete-label-confirm"]').click()
+    cy.get(`[data-card-title="${editedCardTitle}"]`)
+      .find('[data-testid="card-labels"]')
+      .should("not.exist")
 
     cy.get(`[data-card-title="${editedCardTitle}"]`)
       .find('button[aria-label="Delete card"]')
@@ -299,6 +325,8 @@ describe("kanban core flows", () => {
     cy.contains('[data-testid="board-card"]', boardTitle).click()
     cy.contains("Read-only mode: editing is disabled.").should("be.visible")
     cy.get('[data-testid="new-column-title"]').should("not.exist")
+    cy.get('[data-testid="labels-section"]').should("be.visible")
+    cy.get('[data-testid="new-label-name"]').should("not.exist")
     cy.get(`[data-card-title="${assignedCardTitle}"]`)
       .find('[data-testid="card-assignees"]')
       .children()

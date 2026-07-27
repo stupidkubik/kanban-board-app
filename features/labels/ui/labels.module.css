@@ -1,0 +1,80 @@
+.catalog {
+  width: 100%;
+}
+
+.catalog[data-slot="card"] {
+  gap: 12px;
+  padding: 14px 16px 16px;
+}
+
+.header {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0;
+}
+
+.description,
+.empty,
+.limit {
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+.createForm,
+.labelRow {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(110px, 150px) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.list {
+  display: grid;
+  gap: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.labelRow {
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+}
+
+.colorSelect {
+  min-height: 36px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  padding: 0 10px;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+.swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  margin-right: 6px;
+  background: var(--label-color, #64748b);
+}
+
+@media (max-width: 680px) {
+  .createForm,
+  .labelRow {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    justify-content: flex-start;
+  }
+}

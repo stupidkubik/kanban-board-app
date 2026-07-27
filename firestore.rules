@@ -55,6 +55,8 @@ service cloud.firestore {
         "ownerId",
         "members",
         "roles",
+        "labelIds",
+        "labelNames",
         "language",
         "createdAt",
         "updatedAt",
@@ -99,6 +101,28 @@ service cloud.firestore {
 
     function rolesUnchanged() {
       return request.resource.data.roles == resource.data.roles;
+    }
+
+    function labelCatalogUnchanged() {
+      return ((!resource.data.keys().hasAny(["labelIds"])
+          && !request.resource.data.keys().hasAny(["labelIds"]))
+        || (resource.data.keys().hasAny(["labelIds"])
+          && request.resource.data.keys().hasAny(["labelIds"])
+          && request.resource.data.labelIds == resource.data.labelIds))
+        && ((!resource.data.keys().hasAny(["labelNames"])
+          && !request.resource.data.keys().hasAny(["labelNames"]))
+        || (resource.data.keys().hasAny(["labelNames"])
+          && request.resource.data.keys().hasAny(["labelNames"])
+          && request.resource.data.labelNames == resource.data.labelNames));
+    }
+
+    function labelCatalogEmptyOnCreate() {
+      return (!request.resource.data.keys().hasAny(["labelIds"])
+          && !request.resource.data.keys().hasAny(["labelNames"]))
+        || (request.resource.data.labelIds is map
+          && request.resource.data.labelNames is map
+          && request.resource.data.labelIds.size() == 0
+          && request.resource.data.labelNames.size() == 0);
     }
 
     function membersValid() {
@@ -184,6 +208,7 @@ service cloud.firestore {
         && membersValid()
         && rolesValid()
         && membersRolesInSync()
+        && labelCatalogEmptyOnCreate()
         && request.resource.data.members[request.auth.uid] == true
         && request.resource.data.roles[request.auth.uid] == "owner"
         && isLanguageValid();
@@ -200,12 +225,14 @@ service cloud.firestore {
           && request.resource.data.roles[request.auth.uid] == "owner"
           && boardTitleUnchanged()
           && membersUnchanged()
-          && rolesUnchanged())
+          && rolesUnchanged()
+          && labelCatalogUnchanged())
         || (isEditor()
           && ownerUnchanged()
           && boardTitleUnchanged()
           && membersUnchanged()
-          && rolesUnchanged()));
+          && rolesUnchanged()
+          && labelCatalogUnchanged()));
       allow delete: if isOwner();
     }
 
@@ -304,6 +331,7 @@ service cloud.firestore {
         "order",
         "createdById",
         "assigneeIds",
+        "labelIds",
         "labels",
         "dueAt",
         "createdAt",
@@ -362,20 +390,19 @@ service cloud.firestore {
           && request.resource.data.assigneeIds.hasOnly(boardData(boardId).members.keys()));
     }
 
-    function cardLabelsValid() {
+    function cardLabelIdsValid(boardId) {
+      return !request.resource.data.keys().hasAny(["labelIds"])
+        || (request.resource.data.labelIds is list
+          && request.resource.data.labelIds.size() <= 10
+          && request.resource.data.labelIds.size() == request.resource.data.labelIds.toSet().size()
+          && (request.resource.data.labelIds.size() == 0
+            || (boardData(boardId).labelIds is map
+              && request.resource.data.labelIds.hasOnly(boardData(boardId).labelIds.keys()))));
+    }
+
+    function legacyCardLabelsUnchanged() {
       return !request.resource.data.keys().hasAny(["labels"])
-        || (request.resource.data.labels is list
-          && request.resource.data.labels.size() <= 10
-          && (request.resource.data.labels.size() < 1 || (request.resource.data.labels[0] is string && request.resource.data.labels[0].size() <= 50))
-          && (request.resource.data.labels.size() < 2 || (request.resource.data.labels[1] is string && request.resource.data.labels[1].size() <= 50))
-          && (request.resource.data.labels.size() < 3 || (request.resource.data.labels[2] is string && request.resource.data.labels[2].size() <= 50))
-          && (request.resource.data.labels.size() < 4 || (request.resource.data.labels[3] is string && request.resource.data.labels[3].size() <= 50))
-          && (request.resource.data.labels.size() < 5 || (request.resource.data.labels[4] is string && request.resource.data.labels[4].size() <= 50))
-          && (request.resource.data.labels.size() < 6 || (request.resource.data.labels[5] is string && request.resource.data.labels[5].size() <= 50))
-          && (request.resource.data.labels.size() < 7 || (request.resource.data.labels[6] is string && request.resource.data.labels[6].size() <= 50))
-          && (request.resource.data.labels.size() < 8 || (request.resource.data.labels[7] is string && request.resource.data.labels[7].size() <= 50))
-          && (request.resource.data.labels.size() < 9 || (request.resource.data.labels[8] is string && request.resource.data.labels[8].size() <= 50))
-          && (request.resource.data.labels.size() < 10 || (request.resource.data.labels[9] is string && request.resource.data.labels[9].size() <= 50)));
+        || request.resource.data.labels == resource.data.labels;
     }
 
     function cardDueAtValid() {
@@ -528,8 +555,9 @@ service cloud.firestore {
         && cardCreatedByValid()
         && cardCreatedByMatchesAuthor()
         && cardDescriptionValid()
+        && cardLabelIdsValid(boardId)
+        && legacyCardLabelsUnchanged()
         && cardAssigneesValid(boardId)
-        && cardLabelsValid()
         && cardDueAtValid()
         && cardArchivedValid()
         && cardTimestampsValid();
@@ -541,14 +569,22 @@ service cloud.firestore {
         && cardOrderValid()
         && cardCreatedByValid()
         && cardDescriptionValid()
+        && cardLabelIdsValid(boardId)
+        && legacyCardLabelsUnchanged()
         && cardAssigneesValid(boardId)
-        && cardLabelsValid()
         && cardDueAtValid()
         && cardArchivedValid()
         && cardTimestampsValid()
         && cardCreatedByUnchanged()
         && cardCreatedAtUnchanged();
       allow delete: if isBoardOwner(boardId);
+    }
+
+    match /boards/{boardId}/labels/{labelId} {
+      allow read: if isBoardMember(boardId) && hasBoardRole(boardId);
+      // Catalog writes are server-only to atomically enforce case-insensitive
+      // uniqueness, the 50-label cap, and safe card cleanup on delete.
+      allow create, update, delete: if false;
     }
 
     match /boards/{boardId}/memberProfiles/{memberId} {

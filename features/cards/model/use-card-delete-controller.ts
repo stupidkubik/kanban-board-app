@@ -72,7 +72,7 @@ export const useCardDeleteController = ({
               createdById: snapshot.createdById,
               order: snapshot.order,
               assigneeIds: snapshot.assigneeIds,
-              labels: snapshot.labels,
+              labelIds: snapshot.labelIds,
               dueAt: snapshot.dueAt ? new Date(snapshot.dueAt) : null,
               archived: snapshot.archived,
             }).unwrap()

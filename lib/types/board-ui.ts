@@ -4,6 +4,7 @@ export type AddCardDraft = {
   description: string
   due: string
   assigneeIds: string[]
+  labelIds: string[]
 }
 
 export type EditingCardDraft = {
@@ -12,6 +13,7 @@ export type EditingCardDraft = {
   description: string
   due: string
   assigneeIds: string[]
+  labelIds: string[]
 }
 
 import type { BoardRoleLabel } from "@/lib/types/boards"

@@ -85,6 +85,28 @@ const seedColumn = async (
   })
 }
 
+const seedLabel = async (
+  env: RulesTestEnvironment,
+  boardId: string,
+  labelId = "label-1"
+) => {
+  await env.withSecurityRulesDisabled(async (context) => {
+    const db = context.firestore()
+    await updateDoc(doc(db, "boards", boardId), {
+      labelIds: { [labelId]: true },
+      labelNames: { bug: labelId },
+    })
+    await setDoc(doc(db, "boards", boardId, "labels", labelId), {
+      name: "Bug",
+      normalizedName: "bug",
+      color: "red",
+      order: 1,
+      createdAt: makeTimestamp(),
+      updatedAt: makeTimestamp(),
+    })
+  })
+}
+
 describeRules("firestore rules", () => {
   let env: RulesTestEnvironment | null = null
 
@@ -224,10 +246,48 @@ describeRules("firestore rules", () => {
     )
   })
 
+  it("allows members to read labels and reserves catalog writes for server routes", async () => {
+    const boardId = `board-${Math.random().toString(36).slice(2)}`
+    await seedBoard(env!, boardId)
+    await seedLabel(env!, boardId)
+
+    const viewerDb = env!.authenticatedContext("viewer").firestore()
+    const editorDb = env!.authenticatedContext("editor").firestore()
+    const ownerDb = env!.authenticatedContext("owner").firestore()
+    const outsiderDb = env!.authenticatedContext("outsider").firestore()
+
+    await assertSucceeds(
+      getDoc(doc(viewerDb, "boards", boardId, "labels", "label-1"))
+    )
+    await assertFails(
+      getDoc(doc(outsiderDb, "boards", boardId, "labels", "label-1"))
+    )
+    await assertFails(
+      setDoc(doc(editorDb, "boards", boardId, "labels", "label-2"), {
+        name: "Feature",
+        normalizedName: "feature",
+        color: "blue",
+        order: 2,
+        createdAt: makeTimestamp(),
+        updatedAt: makeTimestamp(),
+      })
+    )
+    await assertFails(
+      updateDoc(doc(editorDb, "boards", boardId, "labels", "label-1"), {
+        name: "Critical",
+        updatedAt: makeTimestamp(),
+      })
+    )
+    await assertFails(
+      deleteDoc(doc(ownerDb, "boards", boardId, "labels", "label-1"))
+    )
+  })
+
   it("rejects malformed card relationships and bounded fields", async () => {
     const boardId = `board-${Math.random().toString(36).slice(2)}`
     await seedBoard(env!, boardId)
     await seedColumn(env!, boardId)
+    await seedLabel(env!, boardId)
     const db = env!.authenticatedContext("editor").firestore()
     const baseCard = {
       columnId: "col-1",
@@ -260,6 +320,24 @@ describeRules("firestore rules", () => {
       setDoc(doc(db, "boards", boardId, "cards", "bad-label"), {
         ...baseCard,
         labels: [42],
+      })
+    )
+    await assertSucceeds(
+      setDoc(doc(db, "boards", boardId, "cards", "valid-label"), {
+        ...baseCard,
+        labelIds: ["label-1"],
+      })
+    )
+    await assertFails(
+      setDoc(doc(db, "boards", boardId, "cards", "unknown-label"), {
+        ...baseCard,
+        labelIds: ["unknown"],
+      })
+    )
+    await assertFails(
+      setDoc(doc(db, "boards", boardId, "cards", "duplicate-label"), {
+        ...baseCard,
+        labelIds: ["label-1", "label-1"],
       })
     )
     await assertFails(

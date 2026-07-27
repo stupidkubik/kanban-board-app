@@ -45,6 +45,8 @@ export const normalizeBoard = (id: string, data: Omit<Board, "id"> & { createdBy
     ownerId,
     members: data.members ?? {},
     roles: data.roles,
+    labelIds: data.labelIds,
+    labelNames: data.labelNames,
     language: data.language,
   }
 

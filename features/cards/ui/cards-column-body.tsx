@@ -17,6 +17,9 @@ import styles from "@/features/cards/ui/cards.module.css"
 import type { CardAssignee } from "@/lib/types/board-ui"
 import { CardAssigneePicker } from "@/features/cards/ui/card-assignee-picker"
 import { CardAssigneeList } from "@/features/cards/ui/card-assignee-list"
+import { CardLabelPicker } from "@/features/labels/ui/card-label-picker"
+import { CardLabelList } from "@/features/labels/ui/card-label-list"
+import type { BoardLabel } from "@/lib/types/boards"
 
 type DragCardData = { columnId?: string }
 
@@ -40,6 +43,8 @@ type SortableCardItemProps = {
   formatDueDate: (value?: number) => string | null
   assigneesById: Map<string, CardAssignee>
   assigneesLabel: string
+  labelsById: Map<string, BoardLabel>
+  labelsLabel: string
 }
 
 const SortableCardItem = ({
@@ -53,6 +58,8 @@ const SortableCardItem = ({
   formatDueDate,
   assigneesById,
   assigneesLabel,
+  labelsById,
+  labelsLabel,
 }: SortableCardItemProps) => {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({
@@ -75,6 +82,9 @@ const SortableCardItem = ({
   const cardAssignees = (card.assigneeIds ?? [])
     .map((id) => assigneesById.get(id))
     .filter((assignee): assignee is CardAssignee => Boolean(assignee))
+  const cardLabels = (card.labelIds ?? [])
+    .map((id) => labelsById.get(id))
+    .filter((label): label is BoardLabel => Boolean(label))
   const className = [
     styles.cardItem,
     isDragging ? styles.cardDragging : "",
@@ -139,6 +149,7 @@ const SortableCardItem = ({
         </div>
       ) : null}
       <CardAssigneeList assignees={cardAssignees} label={assigneesLabel} />
+      <CardLabelList labels={cardLabels} ariaLabel={labelsLabel} />
     </li>
   )
 }
@@ -162,10 +173,14 @@ type CardsColumnBodyProps = {
   newCardAssigneeIds: string[]
   assignees: CardAssignee[]
   assigneesById: Map<string, CardAssignee>
+  newCardLabelIds: string[]
+  labels: BoardLabel[]
+  labelsById: Map<string, BoardLabel>
   onChangeCardTitle: (value: string) => void
   onChangeCardDescription: (value: string) => void
   onChangeCardDue: (value: string) => void
   onToggleCardAssignee: (assigneeId: string) => void
+  onToggleCardLabel: (labelId: string) => void
   onCreateCard: (event: React.FormEvent<HTMLFormElement>) => void
   onCancelCreateCard: () => void
   onToggleAddCard: (open: boolean) => void
@@ -193,10 +208,14 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
   newCardAssigneeIds,
   assignees,
   assigneesById,
+  newCardLabelIds,
+  labels,
+  labelsById,
   onChangeCardTitle,
   onChangeCardDescription,
   onChangeCardDue,
   onToggleCardAssignee,
+  onToggleCardLabel,
   onCreateCard,
   onCancelCreateCard,
   onToggleAddCard,
@@ -258,6 +277,8 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
                   formatDueDate={formatDueDate}
                   assigneesById={assigneesById}
                   assigneesLabel={uiCopy.board.cardAssigneesLabel}
+                  labelsById={labelsById}
+                  labelsLabel={uiCopy.board.cardLabelsLabel}
                 />
               </React.Fragment>
             ))}
@@ -356,6 +377,15 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
             disabled={!canEdit || creatingCard}
             testId={`new-card-assignees-${columnId}`}
             onToggle={onToggleCardAssignee}
+          />
+          <CardLabelPicker
+            labels={labels}
+            selectedIds={newCardLabelIds}
+            label={uiCopy.board.cardLabelsLabel}
+            emptyLabel={uiCopy.board.cardLabelsEmpty}
+            disabled={!canEdit || creatingCard}
+            testId={`new-card-labels-${columnId}`}
+            onToggle={onToggleCardLabel}
           />
         </form>
       ) : canEdit ? (

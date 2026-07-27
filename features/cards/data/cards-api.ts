@@ -16,8 +16,10 @@ import {
   optimisticDeleteCard,
   optimisticMoveCard,
   optimisticUpdateCardAssignees,
+  optimisticUpdateCardLabels,
 } from "@/features/cards/model/optimistic-helpers"
 import { normalizeAssigneeIds } from "@/features/cards/model/card-assignees"
+import { normalizeLabelIds } from "@/features/labels/model/label-normalizers"
 import { getErrorMessage } from "@/lib/errors"
 import type { RootState } from "@/lib/store"
 import type { MutationResult } from "@/lib/store/firestore-api-types"
@@ -46,6 +48,9 @@ export const cardsApi = cardQueriesApi.injectEndpoints({
         try {
           if (Array.isArray(args.assigneeIds)) {
             args.assigneeIds = normalizeAssigneeIds(args.assigneeIds)
+          }
+          if (Array.isArray(args.labelIds)) {
+            args.labelIds = normalizeLabelIds(args.labelIds)
           }
           args.cardId = ensureCardId(args.boardId, args.cardId)
           args.order = ensureCardOrder(args.order)
@@ -77,8 +82,8 @@ export const cardsApi = cardQueriesApi.injectEndpoints({
         if (Array.isArray(args.assigneeIds)) {
           optimisticCard.assigneeIds = normalizeAssigneeIds(args.assigneeIds)
         }
-        if (Array.isArray(args.labels)) {
-          optimisticCard.labels = args.labels
+        if (Array.isArray(args.labelIds)) {
+          optimisticCard.labelIds = normalizeLabelIds(args.labelIds)
         }
         if (args.dueAt instanceof Date) {
           optimisticCard.dueAt = args.dueAt.getTime()
@@ -105,6 +110,9 @@ export const cardsApi = cardQueriesApi.injectEndpoints({
         try {
           if (Array.isArray(args.assigneeIds)) {
             args.assigneeIds = normalizeAssigneeIds(args.assigneeIds)
+          }
+          if (Array.isArray(args.labelIds)) {
+            args.labelIds = normalizeLabelIds(args.labelIds)
           }
           await updateCardDocument(args)
           return { data: mutationOk }
@@ -143,6 +151,17 @@ export const cardsApi = cardQueriesApi.injectEndpoints({
               boardId: args.boardId,
               cardId: args.cardId,
               assigneeIds: normalizeAssigneeIds(args.assigneeIds),
+              columnIds,
+            })
+          )
+        }
+        if (Array.isArray(args.labelIds)) {
+          patches.push(
+            optimisticUpdateCardLabels({
+              dispatch,
+              boardId: args.boardId,
+              cardId: args.cardId,
+              labelIds: normalizeLabelIds(args.labelIds),
               columnIds,
             })
           )

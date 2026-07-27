@@ -12,8 +12,10 @@ import {
   stopEditingCard,
   updateEditingCardField,
   toggleEditingCardAssignee,
+  toggleEditingCardLabel,
 } from "@/lib/store/board-ui-slice"
 import { normalizeAssigneeIds } from "@/features/cards/model/card-assignees"
+import { normalizeLabelIds } from "@/features/labels/model/label-normalizers"
 import type { BoardCopy } from "@/lib/types/board-ui"
 import type { Card } from "@/lib/types/boards"
 import { isNonEmpty } from "@/lib/validation"
@@ -24,6 +26,7 @@ type UseCardEditControllerArgs = {
   uiCopy: BoardCopy
   setError: (message: string | null) => void
   availableAssigneeIds: ReadonlySet<string>
+  availableLabelIds: ReadonlySet<string>
 }
 
 export const useCardEditController = ({
@@ -32,6 +35,7 @@ export const useCardEditController = ({
   uiCopy,
   setError,
   availableAssigneeIds,
+  availableLabelIds,
 }: UseCardEditControllerArgs) => {
   const dispatch = useAppDispatch()
   const editingCard = useAppSelector(
@@ -70,10 +74,11 @@ export const useCardEditController = ({
             card.assigneeIds,
             availableAssigneeIds
           ),
+          labelIds: normalizeLabelIds(card.labelIds, availableLabelIds),
         })
       )
     },
-    [availableAssigneeIds, boardId, canEdit, dispatch]
+    [availableAssigneeIds, availableLabelIds, boardId, canEdit, dispatch]
   )
 
   const handleUpdateCard = React.useCallback(
@@ -104,6 +109,10 @@ export const useCardEditController = ({
             editingCard.assigneeIds,
             availableAssigneeIds
           ),
+          labelIds: normalizeLabelIds(
+            editingCard.labelIds,
+            availableLabelIds
+          ),
         }).unwrap()
         resetEditCard()
       } catch (error) {
@@ -112,6 +121,7 @@ export const useCardEditController = ({
     },
     [
       availableAssigneeIds,
+      availableLabelIds,
       boardId,
       editingCard,
       resetEditCard,
@@ -137,6 +147,14 @@ export const useCardEditController = ({
         }
       },
       [availableAssigneeIds, boardId, dispatch]
+    ),
+    toggleEditingLabel: React.useCallback(
+      (labelId: string) => {
+        if (boardId && availableLabelIds.has(labelId)) {
+          dispatch(toggleEditingCardLabel({ boardId, labelId }))
+        }
+      },
+      [availableLabelIds, boardId, dispatch]
     ),
   }
 }

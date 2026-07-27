@@ -21,6 +21,7 @@ import { ParticipantsSection } from "@/features/participants/ui/participants-sec
 import { useNotifications } from "@/features/notifications/ui/notifications-provider"
 import { useUpdateBoardLanguageMutation } from "@/features/boards/data/boards-api"
 import { getErrorMessage } from "@/lib/errors"
+import { LabelsSection } from "@/features/labels/ui/labels-section"
 
 type BoardContentProps = {
   boardId: string
@@ -132,6 +133,12 @@ export const BoardContent = React.memo(function BoardContent({
         onCreateColumn={handleCreateColumn}
         uiCopy={uiCopy}
         uiLocale={uiLocale}
+        setError={setError}
+      />
+      <LabelsSection
+        boardId={boardId}
+        canEdit={canEdit}
+        uiCopy={uiCopy}
         setError={setError}
       />
       <CardsSection

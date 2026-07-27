@@ -44,6 +44,10 @@ export const notificationsErrorsCopy = {
         leaveBoardFailed: "Не удалось покинуть доску.",
         acceptInviteFailed: "Не удалось принять приглашение.",
         declineInviteFailed: "Не удалось отклонить приглашение.",
+        labelNameRequired: "Введите название метки.",
+        createLabelFailed: "Не удалось создать метку.",
+        updateLabelFailed: "Не удалось обновить метку.",
+        deleteLabelFailed: "Не удалось удалить метку.",
     }
 },
   en: {
@@ -89,6 +93,10 @@ export const notificationsErrorsCopy = {
         leaveBoardFailed: "Leave board error.",
         acceptInviteFailed: "Accept invite error.",
         declineInviteFailed: "Decline invite error.",
+        labelNameRequired: "Enter a label name.",
+        createLabelFailed: "Create label error.",
+        updateLabelFailed: "Update label error.",
+        deleteLabelFailed: "Delete label error.",
     }
 },
 } satisfies Record<Locale, Pick<BoardCopy, "boardDeleteQueuedToast" | "boardDeleteUndoToast" | "cardDeletedToast" | "cardRestoredToast" | "columnDeletedToast" | "columnRestoredToast" | "memberRoleUpdatedToast" | "errors">>

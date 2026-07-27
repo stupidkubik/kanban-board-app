@@ -22,11 +22,14 @@ describe("CardEditDialog", () => {
           description: "",
           due: "",
           assigneeIds: [],
+          labelIds: [],
         }}
         assignees={[]}
+        labels={[]}
         onSubmit={vi.fn()}
         onFieldChange={onFieldChange}
         onToggleAssignee={vi.fn()}
+        onToggleLabel={vi.fn()}
         onClose={vi.fn()}
       />
     )
@@ -56,11 +59,14 @@ describe("CardEditDialog", () => {
           description: "",
           due: "",
           assigneeIds: [],
+          labelIds: [],
         }}
         assignees={[]}
+        labels={[]}
         onSubmit={onSubmit}
         onFieldChange={vi.fn()}
         onToggleAssignee={vi.fn()}
+        onToggleLabel={vi.fn()}
         onClose={vi.fn()}
       />
     )
@@ -72,6 +78,7 @@ describe("CardEditDialog", () => {
   it("toggles multiple assignees and disables editing for viewers", async () => {
     const user = userEvent.setup()
     const onToggleAssignee = vi.fn()
+    const onToggleLabel = vi.fn()
     const { rerender } = render(
       <CardEditDialog
         open
@@ -84,14 +91,34 @@ describe("CardEditDialog", () => {
           description: "",
           due: "",
           assigneeIds: ["owner"],
+          labelIds: ["label-1"],
         }}
         assignees={[
           { id: "owner", name: "Owner", email: null, photoURL: null },
           { id: "editor", name: "Editor", email: null, photoURL: null },
         ]}
+        labels={[
+          {
+            id: "label-1",
+            boardId: "board-1",
+            name: "Bug",
+            normalizedName: "bug",
+            color: "red",
+            order: 1,
+          },
+          {
+            id: "label-2",
+            boardId: "board-1",
+            name: "Backend",
+            normalizedName: "backend",
+            color: "blue",
+            order: 2,
+          },
+        ]}
         onSubmit={vi.fn()}
         onFieldChange={vi.fn()}
         onToggleAssignee={onToggleAssignee}
+        onToggleLabel={onToggleLabel}
         onClose={vi.fn()}
       />
     )
@@ -99,6 +126,9 @@ describe("CardEditDialog", () => {
     expect(screen.getByRole("checkbox", { name: "Owner" })).toBeChecked()
     await user.click(screen.getByRole("checkbox", { name: "Editor" }))
     expect(onToggleAssignee).toHaveBeenCalledWith("editor")
+    expect(screen.getByRole("checkbox", { name: "Bug" })).toBeChecked()
+    await user.click(screen.getByRole("checkbox", { name: "Backend" }))
+    expect(onToggleLabel).toHaveBeenCalledWith("label-2")
 
     rerender(
       <CardEditDialog
@@ -112,17 +142,30 @@ describe("CardEditDialog", () => {
           description: "",
           due: "",
           assigneeIds: ["owner"],
+          labelIds: ["label-1"],
         }}
         assignees={[
           { id: "owner", name: "Owner", email: null, photoURL: null },
         ]}
+        labels={[
+          {
+            id: "label-1",
+            boardId: "board-1",
+            name: "Bug",
+            normalizedName: "bug",
+            color: "red",
+            order: 1,
+          },
+        ]}
         onSubmit={vi.fn()}
         onFieldChange={vi.fn()}
         onToggleAssignee={onToggleAssignee}
+        onToggleLabel={onToggleLabel}
         onClose={vi.fn()}
       />
     )
 
     expect(screen.getByRole("checkbox", { name: "Owner" })).toBeDisabled()
+    expect(screen.getByRole("checkbox", { name: "Bug" })).toBeDisabled()
   })
 })

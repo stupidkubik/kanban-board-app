@@ -89,6 +89,8 @@ export type BoardCopy = {
     cardDueDateLabel: string;
     cardAssigneesLabel: string;
     cardAssigneesEmpty: string;
+    cardLabelsLabel: string;
+    cardLabelsEmpty: string;
     createCard: string;
     creatingCard: string;
     editCardTitle: string;
@@ -110,6 +112,26 @@ export type BoardCopy = {
     columnDeletedToast: string;
     columnRestoredToast: string;
     memberRoleUpdatedToast: string;
+    labelsTitle: string;
+    labelsDescription: string;
+    labelNamePlaceholder: string;
+    labelColorLabel: string;
+    labelColorGray: string;
+    labelColorRed: string;
+    labelColorOrange: string;
+    labelColorYellow: string;
+    labelColorGreen: string;
+    labelColorBlue: string;
+    labelColorPurple: string;
+    labelColorPink: string;
+    createLabel: string;
+    creatingLabel: string;
+    saveLabel: string;
+    deleteLabel: string;
+    deleteLabelTitle: string;
+    deleteLabelDescription: string;
+    labelEmpty: string;
+    labelLimitReached: string;
     participantsTitle: string;
     participantsShow: string;
     participantsHide: string;
@@ -178,6 +200,10 @@ export type BoardCopy = {
         leaveBoardFailed: string;
         acceptInviteFailed: string;
         declineInviteFailed: string;
+        labelNameRequired: string;
+        createLabelFailed: string;
+        updateLabelFailed: string;
+        deleteLabelFailed: string;
     };
 };
 
