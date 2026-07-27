@@ -96,13 +96,14 @@ export const firestoreApi = createApi({
           : [{ type: "Board" as const, id: "LIST" }],
       async onCacheEntryAdded(
         uid,
-        { updateCachedData, cacheEntryRemoved }
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
       ) {
         if (!uid) {
           await cacheEntryRemoved
           return
         }
 
+        await cacheDataLoaded
         const unsubscribe = subscribeToBoards(
           uid,
           (nextBoards) => {
@@ -132,13 +133,14 @@ export const firestoreApi = createApi({
           : [{ type: "Board" as const, id: "DETAIL" }],
       async onCacheEntryAdded(
         args,
-        { updateCachedData, cacheEntryRemoved }
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
       ) {
         if (!args.boardId) {
           await cacheEntryRemoved
           return
         }
 
+        await cacheDataLoaded
         const boardId = args.boardId
         const unsubscribe = subscribeToBoard(
           boardId,
@@ -185,13 +187,14 @@ export const firestoreApi = createApi({
           : [{ type: "Invite" as const, id: "LIST" }],
       async onCacheEntryAdded(
         email,
-        { updateCachedData, cacheEntryRemoved }
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
       ) {
         if (!email) {
           await cacheEntryRemoved
           return
         }
 
+        await cacheDataLoaded
         const unsubscribe = subscribeToInvites(
           email,
           (nextInvites) => {
@@ -315,13 +318,14 @@ export const firestoreApi = createApi({
       },
       async onCacheEntryAdded(
         boardId,
-        { updateCachedData, cacheEntryRemoved }
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
       ) {
         if (!boardId) {
           await cacheEntryRemoved
           return
         }
 
+        await cacheDataLoaded
         const unsubscribe = subscribeToColumns(
           boardId,
           (nextColumns) => {
@@ -359,13 +363,14 @@ export const firestoreApi = createApi({
       },
       async onCacheEntryAdded(
         boardId,
-        { updateCachedData, cacheEntryRemoved }
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
       ) {
         if (!boardId) {
           await cacheEntryRemoved
           return
         }
 
+        await cacheDataLoaded
         const unsubscribe = subscribeToBoardMembers(
           boardId,
           (nextMembers) => {
@@ -407,13 +412,14 @@ export const firestoreApi = createApi({
       },
       async onCacheEntryAdded(
         args,
-        { updateCachedData, cacheEntryRemoved }
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
       ) {
         if (!args?.boardId) {
           await cacheEntryRemoved
           return
         }
 
+        await cacheDataLoaded
         const unsubscribe = subscribeToCards(
           args,
           (nextCards) => {

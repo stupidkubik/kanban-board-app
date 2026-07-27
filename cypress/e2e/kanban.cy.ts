@@ -80,7 +80,7 @@ const dragAndDrop = (source: Cypress.Chainable, target: Cypress.Chainable) => {
         clientY: targetY,
       })
       cy.wait(50)
-      cy.wrap($source).trigger("pointerup", {
+      cy.get("body").trigger("pointerup", {
         ...pointerOptions,
         button: 0,
         buttons: 0,
