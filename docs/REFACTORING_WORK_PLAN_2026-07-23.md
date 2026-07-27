@@ -49,7 +49,7 @@
 | AUD-05 | Закрыт 27 июля: authenticated Vercel/Firebase review завершён, решение зафиксировано | закрыт | открытое решение №8 |
 | AUD-06 | Сопровождать 3 high и 8 moderate production advisories без `npm audit fix --force` | средний, постоянный | dependency maintenance |
 | AUD-07 | Не обновлять `firebase-admin` до 14.x без preview/runtime проверки | высокий, постоянный | deployment compatibility |
-| AUD-08 | Проверка закрыта 27 июля; isolated legacy E2E Auth user ожидает отдельного разрешения на удаление | средний | внешняя инфраструктура |
+| AUD-08 | Проверка закрыта 27 июля; legacy E2E Auth user удалён вручную, orphan `users/{uid}` ожидает отдельного разрешения на удаление | средний | внешняя инфраструктура |
 | AUD-09 | При необходимости выполнить Lighthouse/browser profiling и ограниченный load check | низкий, по сигналу | performance validation |
 | AUD-10 | Декомпозировать крупные связные модули только под тестами и вместе с понятными границами ответственности | средний | рефакторинг |
 
@@ -438,6 +438,12 @@ baseline обновлён до Next.js 16.2.12, `eslint-config-next` 16.2.12 и 
 ### 2.1 Матрица regression coverage
 
 Добавить или подтвердить тесты:
+
+Статус на 27 июля: фактическое покрытие и оставшиеся gaps зафиксированы в
+`docs/REGRESSION_COVERAGE_MATRIX.md`. Первый блок RTK Query orchestration начат:
+закреплены one-listener/cleanup, error/retry, idempotent create и rollback
+create/move/delete. Тест rollback обнаружил и закрыл безусловную invalidation
+после rejected card mutation.
 
 | Контракт | Минимальное покрытие |
 | --- | --- |

@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import type { Board } from "@/lib/types/boards"
 
 const mocks = vi.hoisted(() => ({
+  fetchWithAppCheck: vi.fn(),
   subscribeToBoard: vi.fn(),
   unsubscribe: vi.fn(),
 }))
@@ -48,7 +49,7 @@ vi.mock("@/features/cards/model/optimistic-helpers", () => ({
 }))
 
 vi.mock("@/lib/firebase/app-check-fetch", () => ({
-  fetchWithAppCheck: vi.fn(),
+  fetchWithAppCheck: mocks.fetchWithAppCheck,
 }))
 
 import { firestoreApi } from "@/lib/store/firestore-api"
@@ -61,13 +62,23 @@ const board: Board = {
   roles: { "owner-1": "owner" },
 }
 
+const makeStore = () =>
+  configureStore({
+    reducer: {
+      [firestoreApi.reducerPath]: firestoreApi.reducer,
+    },
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(firestoreApi.middleware),
+  })
+
 describe("Firestore RTK Query listeners", () => {
   afterEach(() => {
+    mocks.fetchWithAppCheck.mockReset()
     mocks.subscribeToBoard.mockReset()
     mocks.unsubscribe.mockReset()
   })
 
-  it("keeps a synchronous initial board snapshot after cache initialization", async () => {
+  it("starts one listener per cache entry and keeps a synchronous initial snapshot", async () => {
     mocks.subscribeToBoard.mockImplementation(
       (
         _boardId: string,
@@ -78,25 +89,84 @@ describe("Firestore RTK Query listeners", () => {
       }
     )
 
-    const store = configureStore({
-      reducer: {
-        [firestoreApi.reducerPath]: firestoreApi.reducer,
-      },
-      middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware().concat(firestoreApi.middleware),
-    })
+    const store = makeStore()
     const args = { boardId: board.id, subscriptionKey: 0 }
-    const subscription = store.dispatch(firestoreApi.endpoints.getBoard.initiate(args))
+    const firstSubscription = store.dispatch(
+      firestoreApi.endpoints.getBoard.initiate(args)
+    )
+    const secondSubscription = store.dispatch(
+      firestoreApi.endpoints.getBoard.initiate(args)
+    )
 
-    await subscription
+    await Promise.all([firstSubscription, secondSubscription])
     await vi.waitFor(() => {
       expect(firestoreApi.endpoints.getBoard.select(args)(store.getState()).data).toEqual({
         status: "ready",
         board,
       })
     })
+    expect(mocks.subscribeToBoard).toHaveBeenCalledOnce()
 
     store.dispatch(firestoreApi.util.resetApiState())
     await vi.waitFor(() => expect(mocks.unsubscribe).toHaveBeenCalledOnce())
+  })
+
+  it("maps listener authorization errors to forbidden state", async () => {
+    let onError: (() => void) | undefined
+    mocks.subscribeToBoard.mockImplementation(
+      (
+        _boardId: string,
+        _onData: (nextBoard: Board | null) => void,
+        nextOnError: () => void
+      ) => {
+        onError = nextOnError
+        return mocks.unsubscribe
+      }
+    )
+    mocks.fetchWithAppCheck.mockResolvedValue(new Response(null, { status: 403 }))
+
+    const store = makeStore()
+    const args = { boardId: board.id, subscriptionKey: 0 }
+    await store.dispatch(firestoreApi.endpoints.getBoard.initiate(args))
+    expect(onError).toBeTypeOf("function")
+
+    onError?.()
+    await vi.waitFor(() => {
+      expect(firestoreApi.endpoints.getBoard.select(args)(store.getState()).data).toEqual({
+        status: "forbidden",
+        board: null,
+      })
+    })
+
+    store.dispatch(firestoreApi.util.resetApiState())
+    await vi.waitFor(() => expect(mocks.unsubscribe).toHaveBeenCalledOnce())
+  })
+
+  it("creates a fresh listener when retry changes the subscription key", async () => {
+    mocks.subscribeToBoard.mockReturnValue(mocks.unsubscribe)
+
+    const store = makeStore()
+    const firstArgs = { boardId: board.id, subscriptionKey: 0 }
+    const retryArgs = { boardId: board.id, subscriptionKey: 1 }
+
+    await store.dispatch(firestoreApi.endpoints.getBoard.initiate(firstArgs))
+    await store.dispatch(firestoreApi.endpoints.getBoard.initiate(retryArgs))
+
+    expect(mocks.subscribeToBoard).toHaveBeenCalledTimes(2)
+    expect(mocks.subscribeToBoard).toHaveBeenNthCalledWith(
+      1,
+      board.id,
+      expect.any(Function),
+      expect.any(Function)
+    )
+    expect(mocks.subscribeToBoard).toHaveBeenNthCalledWith(
+      2,
+      board.id,
+      expect.any(Function),
+      expect.any(Function)
+    )
+
+    store.dispatch(firestoreApi.util.resetApiState())
+    await vi.waitFor(() => expect(mocks.unsubscribe).toHaveBeenCalledTimes(2))
   })
 })

@@ -64,18 +64,21 @@ Cloud Firestore for the last 24 hours showed:
 The volume is far below a level that justifies pagination, denormalized counters,
 or load optimization without a separate performance signal.
 
-Authentication has four users. Email/password and Google providers are enabled.
-The current billing-period DAU and MAU charts contain no data.
+Authentication had four users at the time of the console inspection.
+Email/password and Google providers are enabled. The current billing-period DAU
+and MAU charts contain no data.
 
-One user is an identifiable legacy cloud-E2E account from the pre-emulator
-workflow. A read-only Admin SDK check found:
+One identifiable legacy cloud-E2E Auth user from the pre-emulator workflow was
+deleted manually on 27 July. A follow-up read-only Admin SDK check confirmed
+that the Auth user is gone. Before deletion, the account had:
 
 - no board memberships;
 - no `memberProfiles` documents;
 - one `users/{uid}` document.
 
-Deleting the Auth user and its `users/{uid}` document is a separate destructive
-cleanup and requires explicit approval.
+The `users/{uid}` document remains because Firebase Auth deletion does not
+cascade into Firestore. Removing this orphan is a separate destructive cleanup
+and requires explicit approval.
 
 App Check findings:
 
