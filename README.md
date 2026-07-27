@@ -136,7 +136,7 @@ FIREBASE_APPCHECK_ENFORCE=true
 - `npm run start` - run production server
 - `npm run lint` - lint
 - `npm run format` - auto-fix lint issues
-- `npm run smoke` - seed data (see `scripts/smoke-kanban.mjs`)
+- `npm run smoke` - guarded production smoke (requires `SMOKE_ALLOW_WRITES=true`)
 - `npm run migrate:stale-member-profiles` - dry-run cleanup audit for legacy member profiles
 - `npm run test` - unit/component tests (Vitest)
 - `npm run test:rules` - Firestore rules tests (emulator)
@@ -169,6 +169,18 @@ profiles that are still absent from the board membership when each transaction
 commits; owner profiles are always protected. Re-run the dry-run after apply and
 expect `staleProfilesFound: 0`. Migration output contains board ids and counts,
 but no profile names or email addresses.
+
+The production smoke is write-protected by default:
+
+```bash
+SMOKE_ALLOW_WRITES=true npm run smoke
+```
+
+It prints the selected project and synthetic `smoke-*` UID before writing,
+creates one uniquely prefixed board with two columns, verifies list/order
+queries, deletes all created data in `finally`, and independently verifies that
+the board and columns no longer exist. A custom `SMOKE_TEST_UID` is accepted only
+when it also uses the restricted `smoke-*` format.
 
 ## Notes
 - Card order uses numeric gaps to avoid reindexing entire columns.

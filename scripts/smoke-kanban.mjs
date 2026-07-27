@@ -1,7 +1,27 @@
 #!/usr/bin/env node
 
-import { applicationDefault, cert, initializeApp } from "firebase-admin/app"
+import { randomUUID } from "node:crypto"
+
+import nextEnv from "@next/env"
+import {
+  applicationDefault,
+  cert,
+  deleteApp,
+  initializeApp,
+} from "firebase-admin/app"
 import { FieldValue, getFirestore } from "firebase-admin/firestore"
+
+import {
+  createSmokeIdentity,
+  isSafeSmokeUid,
+} from "./smoke-kanban-logic.mjs"
+
+nextEnv.loadEnvConfig(process.cwd())
+
+if (process.env.SMOKE_ALLOW_WRITES !== "true") {
+  console.error("Production smoke writes require SMOKE_ALLOW_WRITES=true.")
+  process.exit(1)
+}
 
 let projectId =
   process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? process.env.FIREBASE_PROJECT_ID ?? ""
@@ -28,21 +48,37 @@ if (!projectId) {
   process.exit(1)
 }
 
-initializeApp({
+const app = initializeApp({
   credential: serviceAccount ? cert(serviceAccount) : applicationDefault(),
   projectId,
 })
 
-const db = getFirestore()
+const db = getFirestore(app)
 
 const run = async () => {
-  const uid = process.env.SMOKE_TEST_UID ?? "smoke-user"
   const now = Date.now()
-  const boardTitle = `Smoke Board ${now}`
+  const identity = createSmokeIdentity(now, randomUUID())
+  const uid = process.env.SMOKE_TEST_UID ?? identity.uid
+  const boardTitle = identity.boardTitle
   const columnTitles = ["Todo", "In Progress"]
 
+  if (!isSafeSmokeUid(uid)) {
+    throw new Error(
+      "SMOKE_TEST_UID must be a synthetic id beginning with smoke- and contain only lowercase letters, digits, or hyphens."
+    )
+  }
+
+  process.stdout.write(
+    `${JSON.stringify({
+      smoke: "kanban",
+      projectId,
+      uid,
+      boardTitle,
+    })}\n`
+  )
+
   let boardRef = null
-  let columnRefs = []
+  let runError = null
 
   try {
     boardRef = await db.collection("boards").add({
@@ -66,7 +102,9 @@ const run = async () => {
         createdAt: FieldValue.serverTimestamp(),
         updatedAt: FieldValue.serverTimestamp(),
       })
-      columnRefs.push(columnRef)
+      if (!columnRef.id) {
+        throw new Error(`Column creation failed: ${title}`)
+      }
     }
 
     const boardsSnapshot = await db
@@ -91,18 +129,53 @@ const run = async () => {
       }
     }
 
-    console.log("Smoke test passed.")
+    process.stdout.write("Smoke assertions passed.\n")
+  } catch (error) {
+    runError = error
   } finally {
-    for (const columnRef of columnRefs) {
-      await columnRef.delete()
+    try {
+      if (boardRef) {
+        const columnsSnapshot = await boardRef.collection("columns").get()
+        const cleanupBatch = db.batch()
+        columnsSnapshot.docs.forEach((column) => cleanupBatch.delete(column.ref))
+        if (!columnsSnapshot.empty) {
+          await cleanupBatch.commit()
+        }
+        await boardRef.delete()
+
+        const [boardAfterCleanup, columnsAfterCleanup, matchingBoards] =
+          await Promise.all([
+            boardRef.get(),
+            boardRef.collection("columns").limit(1).get(),
+            db.collection("boards").where("title", "==", boardTitle).limit(1).get(),
+          ])
+        if (
+          boardAfterCleanup.exists ||
+          !columnsAfterCleanup.empty ||
+          !matchingBoards.empty
+        ) {
+          throw new Error("Smoke cleanup verification found leftover data.")
+        }
+      }
+      process.stdout.write("Smoke cleanup verified.\n")
+    } catch (cleanupError) {
+      throw new AggregateError(
+        runError ? [runError, cleanupError] : [cleanupError],
+        "Smoke run or cleanup failed."
+      )
     }
-    if (boardRef) {
-      await boardRef.delete()
-    }
+  }
+
+  if (runError) {
+    throw runError
   }
 }
 
-run().catch((error) => {
+try {
+  await run()
+} catch (error) {
   console.error("Smoke test failed:", error)
-  process.exit(1)
-})
+  process.exitCode = 1
+} finally {
+  await deleteApp(app)
+}

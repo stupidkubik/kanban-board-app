@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import nextEnv from "@next/env"
 import { applicationDefault, cert, deleteApp, initializeApp } from "firebase-admin/app"
 import { FieldPath, getFirestore } from "firebase-admin/firestore"
 
@@ -8,6 +9,8 @@ import {
   findStaleProfileIds,
   getProtectedMemberIds,
 } from "./stale-member-profiles-logic.mjs"
+
+nextEnv.loadEnvConfig(process.cwd())
 
 const PAGE_SIZE = 100
 const applyChanges = process.env.MIGRATION_APPLY === "true"

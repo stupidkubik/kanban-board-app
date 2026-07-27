@@ -3,7 +3,7 @@
 ## Статус
 
 Миграция подготовлена и проверена на локальном Firestore emulator. Production
-dry-run и apply ещё не выполнялись.
+dry-run выполнен 27 июля; stale profiles не найдены, поэтому apply не требуется.
 
 ## Контракт безопасности
 
@@ -32,11 +32,22 @@ dry-run и apply ещё не выполнялись.
 
 Pure comparison и batching logic покрыты unit tests.
 
+## Production dry-run
+
+Проверен Firebase project `kanban-mvp-1baf2`:
+
+- boards scanned: 7;
+- profiles scanned: 7;
+- stale profiles found: 0;
+- stale profiles deleted: 0.
+
+Поскольку dry-run не нашёл кандидатов, destructive apply не запускался.
+
 ## Production runbook
 
-Перед запуском выбрать и явно проверить целевой project id, затем предоставить
-Admin SDK credentials через защищённое environment или ADC. Не копировать
-credential JSON в репозиторий или отчёт.
+Перед повторным запуском выбрать и явно проверить целевой project id. Скрипт
+загружает локальный `.env.local`, но системные environment variables имеют
+приоритет. Не копировать credential JSON в репозиторий или отчёт.
 
 ```bash
 npm run migrate:stale-member-profiles

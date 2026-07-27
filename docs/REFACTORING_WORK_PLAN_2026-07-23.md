@@ -43,9 +43,9 @@
 | ID | Остаток | Приоритет | Характер работы |
 | --- | --- | --- | --- |
 | AUD-01 | Закрыт 27 июля: Git/trace чисты, Vercel secret обновлён, локальная JSON-копия удалена | закрыт | внешняя инфраструктура |
-| AUD-02 | Миграция stale `memberProfiles` подготовлена и проверена на emulator; production dry-run/apply ожидаются | высокий | одноразовая data migration |
+| AUD-02 | Закрыт 27 июля: production dry-run проверил 7 boards/7 profiles, stale profiles — 0 | закрыт | одноразовая data migration |
 | AUD-03 | Фактически запустить изолированный Cypress E2E и проверить cleanup | закрыт 27 июля | release validation |
-| AUD-04 | Выполнить контролируемый production smoke и зафиксировать результат | высокий | release validation |
+| AUD-04 | Закрыт 27 июля: два production smoke и HTTP redirect/sign-in verification прошли с cleanup | закрыт | release validation |
 | AUD-05 | Проверить реальную настройку Vercel Observability и Firebase Console | средний | открытое решение №8 |
 | AUD-06 | Сопровождать 3 high и 8 moderate production advisories без `npm audit fix --force` | средний, постоянный | dependency maintenance |
 | AUD-07 | Не обновлять `firebase-admin` до 14.x без preview/runtime проверки | высокий, постоянный | deployment compatibility |
@@ -256,8 +256,9 @@ initialization errors, file fallback не используется, локаль
 ### 1.2 Одноразово очистить stale `memberProfiles`
 
 Статус на 27 июля: безопасный admin script, pure unit tests и emulator-проверка
-dry-run/apply/re-run готовы. Production запуск остаётся отдельной контролируемой
-операцией по runbook `docs/MIGRATION_STALE_MEMBER_PROFILES_2026-07-27.md`.
+dry-run/apply/re-run готовы. Production dry-run проверил 7 boards и 7 profiles,
+stale profiles не найдены, поэтому apply не выполнялся. Результат записан в
+`docs/MIGRATION_STALE_MEMBER_PROFILES_2026-07-27.md`.
 
 Создать отдельный admin script, безопасный по умолчанию:
 
@@ -287,6 +288,11 @@ dry-run/apply/re-run готовы. Production запуск остаётся от
 - повторный запуск ничего не меняет.
 
 ### 1.3 Выполнить контролируемый smoke
+
+Статус на 27 июля: скрипт требует `SMOKE_ALLOW_WRITES=true`, принимает только
+synthetic `smoke-*` UID, использует уникальный prefix и независимо проверяет
+cleanup. Два последовательных production run прошли; `/ -> /sign-in` и sign-in
+page также отвечают без 500.
 
 Текущий `npm run smoke` напрямую создаёт board и columns через Admin SDK, проверяет list/order queries и удаляет созданные документы в `finally`.
 
