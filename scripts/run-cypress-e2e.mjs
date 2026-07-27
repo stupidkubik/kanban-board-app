@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 import { spawn } from "node:child_process"
+import { rmSync } from "node:fs"
+import path from "node:path"
 import { initializeApp } from "firebase-admin/app"
 import { getFirestore } from "firebase-admin/firestore"
 
@@ -31,6 +33,7 @@ const appEnvironment = {
   NEXT_PUBLIC_RECAPTCHA_SITE_KEY: "",
   NEXT_PUBLIC_FIREBASE_APP_CHECK_DEBUG: "",
   FIREBASE_APPCHECK_ENFORCE: "false",
+  E2E_DISABLE_TURBOPACK_CACHE: "true",
 }
 
 const waitForUrl = async (url, timeoutMs = 30_000) => {
@@ -94,6 +97,57 @@ const seedAuthUsers = async () => {
   }
 }
 
+const warmUpAppRoutes = async () => {
+  const routeChecks = [
+    { path: "/", expectedStatuses: [200] },
+    { path: "/boards/e2e-warmup", expectedStatuses: [200] },
+    {
+      path: "/api/auth/session",
+      init: { method: "POST" },
+      expectedStatuses: [400, 401],
+    },
+    {
+      path: "/api/boards",
+      init: { method: "POST" },
+      expectedStatuses: [401],
+    },
+    {
+      path: "/api/boards/e2e-warmup/labels",
+      init: { method: "POST" },
+      expectedStatuses: [401],
+    },
+    {
+      path: "/api/boards/e2e-warmup/labels/e2e-warmup",
+      init: { method: "PATCH" },
+      expectedStatuses: [401],
+    },
+    {
+      path: "/api/boards/e2e-warmup/members/e2e-warmup",
+      init: { method: "PATCH" },
+      expectedStatuses: [401],
+    },
+    {
+      path: "/api/invites/e2e-warmup/accept",
+      init: { method: "POST" },
+      expectedStatuses: [401],
+    },
+    {
+      path: "/api/boards/e2e-warmup",
+      init: { method: "DELETE" },
+      expectedStatuses: [401],
+    },
+  ]
+
+  for (const { path, init, expectedStatuses } of routeChecks) {
+    const response = await fetch(`${APP_URL}${path}`, init)
+    if (!expectedStatuses.includes(response.status)) {
+      throw new Error(
+        `E2E route warmup failed: ${init?.method ?? "GET"} ${path} returned ${response.status}.`
+      )
+    }
+  }
+}
+
 const verifyCleanup = async () => {
   const cleanupApp = initializeApp({ projectId: PROJECT_ID }, "e2e-cleanup")
   const cleanupDb = getFirestore(cleanupApp)
@@ -102,6 +156,7 @@ const verifyCleanup = async () => {
     ["boardInvites", cleanupDb.collection("boardInvites").limit(1)],
     ["columns", cleanupDb.collectionGroup("columns").limit(1)],
     ["cards", cleanupDb.collectionGroup("cards").limit(1)],
+    ["labels", cleanupDb.collectionGroup("labels").limit(1)],
     ["memberProfiles", cleanupDb.collectionGroup("memberProfiles").limit(1)],
   ]
   const checks = await Promise.all(
@@ -137,6 +192,11 @@ const runProcess = (command, args, options = {}) =>
     })
   })
 
+rmSync(path.join(process.cwd(), ".next", "dev"), {
+  recursive: true,
+  force: true,
+})
+
 const nextProcess = spawn(
   process.execPath,
   [
@@ -159,6 +219,7 @@ try {
   await resetEmulators()
   await seedAuthUsers()
   await waitForUrl(`${APP_URL}/sign-in`)
+  await warmUpAppRoutes()
 
   exitCode = await runProcess(
     "./node_modules/.bin/cypress",

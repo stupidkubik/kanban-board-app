@@ -32,7 +32,7 @@ const signIn = (
           cy.get("#auth-password").type(password, { log: false })
           cy.contains("button", "Sign in with Email").click()
           return cy
-            .wait("@createSession", { timeout: 30_000 })
+            .wait("@createSession", { timeout: 60_000 })
             .its("response.statusCode")
             .should("eq", 200)
         }
@@ -155,13 +155,16 @@ describe("kanban core flows", () => {
     cy.get('[data-testid="create-board-trigger"]').click()
     cy.get('[data-testid="create-board-title"]').type(boardTitle)
     cy.get('[data-testid="create-board-submit"]').click()
-    cy.wait("@createBoard", { timeout: 20_000 })
+    cy.wait("@createBoard", { timeout: 60_000 })
       .its("response.statusCode")
       .should("eq", 200)
       .then(() => rememberBoard(boardTitle))
 
     cy.contains('[data-testid="board-card"]', boardTitle).click()
     cy.url({ timeout: 45_000 }).should("match", /\/boards\/[^/]+$/)
+    cy.get('[data-testid="labels-section"]', { timeout: 60_000 }).should(
+      "be.visible"
+    )
 
     cy.get('[data-testid="new-label-name"]').type("Bug")
     cy.get('[data-testid="new-label-color"]').select("red")
@@ -181,7 +184,12 @@ describe("kanban core flows", () => {
 
     cy.contains('[data-testid^="column-"]', "Todo").within(() => {
       cy.get('[data-testid^="add-card-"]').click()
-      cy.get('[data-testid^="new-card-title-"]').type(cardTitle)
+      cy.get('[data-testid^="new-card-title-"]')
+        .type(cardTitle, { delay: 25 })
+      cy.get('[data-testid^="new-card-title-"]').should(
+        "have.value",
+        cardTitle
+      )
       cy.get('[data-testid^="new-card-labels-"] input[type="checkbox"]')
         .should("have.length", 1)
         .check()
@@ -244,7 +252,7 @@ describe("kanban core flows", () => {
     cy.get('[data-testid="create-board-trigger"]').click()
     cy.get('[data-testid="create-board-title"]').type(boardTitle)
     cy.get('[data-testid="create-board-submit"]').click()
-    cy.wait("@createBoard", { timeout: 20_000 })
+    cy.wait("@createBoard", { timeout: 60_000 })
       .its("response.statusCode")
       .should("eq", 200)
       .then(() => rememberBoard(boardTitle))
@@ -266,7 +274,7 @@ describe("kanban core flows", () => {
     cy.get('[data-testid="create-board-trigger"]').click()
     cy.get('[data-testid="create-board-title"]').type(boardTitle)
     cy.get('[data-testid="create-board-submit"]').click()
-    cy.wait("@createBoard", { timeout: 20_000 })
+    cy.wait("@createBoard", { timeout: 60_000 })
       .its("response.statusCode")
       .should("eq", 200)
       .then(() => rememberBoard(boardTitle))

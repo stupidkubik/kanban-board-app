@@ -15,6 +15,10 @@ const contentSecurityPolicy = [
 ].join("; ")
 
 const nextConfig: NextConfig = {
+  experimental: {
+    turbopackFileSystemCacheForDev:
+      process.env.E2E_DISABLE_TURBOPACK_CACHE !== "true",
+  },
   images: {
     remotePatterns: [
       {

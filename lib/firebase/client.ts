@@ -4,7 +4,11 @@ import { getApp, getApps, initializeApp } from "firebase/app";
 import { ReCaptchaV3Provider, initializeAppCheck } from "firebase/app-check";
 import type { AppCheck } from "firebase/app-check";
 import { connectAuthEmulator, getAuth } from "firebase/auth";
-import { connectFirestoreEmulator, getFirestore } from "firebase/firestore";
+import {
+  connectFirestoreEmulator,
+  getFirestore,
+  initializeFirestore,
+} from "firebase/firestore";
 
 import { firebaseConfig, hasFirebaseConfig } from "@/lib/firebase/config";
 
@@ -16,10 +20,16 @@ if (!hasFirebaseConfig()) {
 
 const clientApp = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const clientAuth = getAuth(clientApp);
-const clientDb = getFirestore(clientApp);
 const isBrowser = typeof window !== "undefined";
 const useFirebaseEmulators =
   process.env.NEXT_PUBLIC_FIREBASE_USE_EMULATORS === "true";
+const clientDb =
+  useFirebaseEmulators && isBrowser
+    ? initializeFirestore(clientApp, {
+        experimentalForceLongPolling: true,
+        experimentalLongPollingOptions: { timeoutSeconds: 5 },
+      })
+    : getFirestore(clientApp);
 const emulatorGlobal = globalThis as typeof globalThis & {
   __KANBAN_FIREBASE_EMULATORS_CONNECTED__?: boolean;
 };
