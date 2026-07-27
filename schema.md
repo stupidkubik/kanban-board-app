@@ -99,8 +99,10 @@ Fields:
 - `updatedAt` (Timestamp, optional)
 - `archived` (bool, optional)
 
-`assigneeIds`, `labels`, and `archived` are reserved data-layer fields, not
-finished UI features. Archived cards are excluded from the active kanban view.
+`assigneeIds` powers the card assignee picker and assignee chips. Values are
+limited to 20 current board member UIDs; cards do not duplicate member profile
+data. `labels` remains a reserved data-layer field. `archived` is also reserved,
+and archived cards are excluded from the active kanban view.
 
 Ordering notes:
 - `order` is a numeric sort key. It is not required to be sequential.
@@ -191,7 +193,8 @@ The current `firestore.rules` enforce these contracts:
 - Allow read on `boards/{boardId}/memberProfiles/{memberId}` if user is a board member.
 - Allow create/update on memberProfiles if user is writing their own profile doc.
 - Deny direct client deletion of memberProfiles. Removing a member or leaving a board
-  goes through the server API, which updates membership and deletes the profile in one transaction.
+  goes through the server API, which removes the UID from assigned cards and then
+  updates membership and deletes the profile in one transaction.
 - Deny direct client role changes. The owner switches an accepted non-owner member
   between `editor` and `viewer` through the server API; `members`, `ownerId`, and
   `memberProfiles` remain unchanged.

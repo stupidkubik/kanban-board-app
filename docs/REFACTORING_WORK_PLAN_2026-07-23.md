@@ -737,6 +737,14 @@ Structural refactor может менять расположение файло�
 - Приоритет: P2 среди новых функций
 - Оценка: 2–3 рабочих дня
 - Зависимости: участники и card refactor
+- Статус: закрыта 27 июля. Create/edit card поддерживают до 20 актуальных
+  участников с дедупликацией UID; cards показывают chips с profile/auth
+  fallback, viewer сохраняет read-only просмотр. Assignment update оптимистично
+  синхронизирует board/per-column caches и откатывается при ошибке. Remove-member
+  route batch-удаляет UID из максимум 500 cards, а UI скрывает отсутствующие в
+  membership stale UID. Финальный gate: lint, 89 unit/component tests,
+  11 Rules scenarios, production build/14 traces и Cypress 3/3 с двумя
+  исполнителями, realtime editor -> viewer и подтверждённым emulator cleanup.
 
 ### Целевой контракт
 

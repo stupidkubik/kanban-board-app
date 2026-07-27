@@ -292,18 +292,27 @@ Owner/editor открывает форму внутри конкретной к�
 - обязательный title;
 - optional description;
 - optional due date через HTML date input.
+- до 20 исполнителей из актуальных участников доски.
 
 Client заранее генерирует Firestore card id и `order = Date.now()`. Создание оптимистично добавляет card в board-level RTK cache и возможный per-column cache; при ошибке patch откатывается.
 
 #### Просмотр
 
-Card показывает title, description при наличии и due date в формате `DD.MM.YY`. Для editor/owner card кликабельна и keyboard-focusable; viewer видит её без edit behavior.
+Card показывает title, description при наличии, due date в формате `DD.MM.YY`
+и chips назначенных участников с avatar/name/email fallback. Для editor/owner
+card кликабельна и keyboard-focusable; viewer видит card и исполнителей без edit
+behavior.
 
 #### Редактирование
 
-Owner/editor открывает dialog и изменяет title, description и due date. Пустое description сохраняется как `null`; пустой due date снимает срок.
+Owner/editor открывает dialog и изменяет title, description, due date и
+нескольких исполнителей. Пустое description сохраняется как `null`; пустой due
+date снимает срок. Дубликаты UID удаляются, а отсутствующие в актуальном
+membership UID не предлагаются и не сохраняются клиентом.
 
-Изменение content ожидает Firestore listener; optimistic move helper для него не применяется, если column/order не изменились.
+Изменение title/description/due date ожидает Firestore listener. Изменение
+исполнителей оптимистично обновляет board-level и per-column RTK caches и
+откатывается при ошибке записи.
 
 #### Перемещение
 
@@ -441,7 +450,7 @@ Redux `boardUiSlice` хранит по board:
 | `order` | number | используется DnD |
 | `createdById` | UID string | записывается, не показывается |
 | `dueAt` | Timestamp/null | используется |
-| `assigneeIds` | string[] | data-layer only |
+| `assigneeIds` | string[] | несколько исполнителей, максимум 20 current members |
 | `labels` | string[] | data-layer only |
 | `archived` | boolean | reserved data-layer field; `true` скрывается из active kanban |
 | `createdAt` | Timestamp | используется для данных |
@@ -528,7 +537,11 @@ Legacy reads поддерживают `invitedBy -> invitedById`.
 1. Проверяет App Check и server session cookie.
 2. Разрешает owner удалить другого участника либо non-owner удалить самого себя.
 3. Запрещает удаление/выход owner и проверяет актуальное membership.
-4. В одной transaction удаляет UID из `members`/`roles` и документ `memberProfiles/{uid}`.
+4. Находит не более 500 cards с UID в `assigneeIds` и batch-операцией удаляет
+   назначение; превышение product cap возвращает 409 без изменения membership.
+5. В одной transaction удаляет UID из `members`/`roles` и документ
+   `memberProfiles/{uid}`. UI дополнительно скрывает stale UID, которого уже нет
+   среди актуальных members.
 
 `PATCH /api/boards/[boardId]/members/[memberId]`:
 
@@ -551,6 +564,8 @@ Client checks:
 - нельзя приглашать собственный email;
 - role invite и role update принимают только editor/viewer;
 - due date парсится из локального `YYYY-MM-DD`.
+- assignee IDs дедуплицируются, ограничиваются 20 значениями и фильтруются по
+  актуальным board members.
 
 Firestore Rules дополнительно проверяют allowed keys, roles, timestamps, максимальные длины и размеры maps/lists. Карточка обязана ссылаться на существующую колонку; при создании `createdById` совпадает с UID автора; assignees входят в members; labels — строки ограниченной длины и количества.
 
