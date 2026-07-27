@@ -143,6 +143,7 @@ FIREBASE_APPCHECK_ENFORCE=true
 - `npm run format` - auto-fix lint issues
 - `npm run smoke` - guarded production smoke (requires `SMOKE_ALLOW_WRITES=true`)
 - `npm run migrate:stale-member-profiles` - dry-run cleanup audit for legacy member profiles
+- `npm run migrate:card-labels` - dry-run migration audit for legacy card label strings
 - `npm run test` - unit/component tests (Vitest)
 - `npm run test:rules` - Firestore rules tests (emulator)
 - `npm run cypress:open` - local Auth/Firestore emulators + Cypress UI runner
@@ -175,6 +176,17 @@ commits; owner profiles are always protected. Re-run the dry-run after apply and
 expect `staleProfilesFound: 0`. Migration output contains board ids and counts,
 but no profile names or email addresses.
 
+The card label migration follows the same dry-run-first contract:
+
+```bash
+npm run migrate:card-labels
+MIGRATION_APPLY=true npm run migrate:card-labels
+```
+
+Apply mode creates board-level catalog entries, replaces legacy card label names
+with `labelIds`, and removes the legacy field. Re-run the dry-run after apply and
+expect no legacy cards, no new catalog entries, and no catalog index changes.
+
 The production smoke is write-protected by default:
 
 ```bash
@@ -182,10 +194,11 @@ SMOKE_ALLOW_WRITES=true npm run smoke
 ```
 
 It prints the selected project and synthetic `smoke-*` UID before writing,
-creates one uniquely prefixed board with two columns, verifies list/order
+creates one uniquely prefixed board with two columns, a member profile, a label,
+and an assigned/labeled card. It verifies the release data model and list/order
 queries, deletes all created data in `finally`, and independently verifies that
-the board and columns no longer exist. A custom `SMOKE_TEST_UID` is accepted only
-when it also uses the restricted `smoke-*` format.
+the board and every created subcollection are empty. A custom `SMOKE_TEST_UID`
+is accepted only when it also uses the restricted `smoke-*` format.
 
 ## Notes
 - Card order uses numeric gaps to avoid reindexing entire columns.

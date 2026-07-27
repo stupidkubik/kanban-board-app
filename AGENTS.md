@@ -9,7 +9,7 @@ Key features:
 - Sign in with email/password or Google + password reset
 - Create/rename/delete boards and set board language (ru/en)
 - Invite members by email with roles: owner / editor / viewer (viewer is read-only)
-- Manage columns and cards (title, description, due date) and drag cards between columns
+- Manage columns and cards (title, description, due date, multiple assignees, labels) and drag cards between columns
 - Realtime sync via Firestore listeners with optimistic UI for create/move/delete
 - UI locale stored per user in `users/{uid}` (ru/en)
 
@@ -34,13 +34,19 @@ Key features:
 
 ## Server routes (important)
 - /api/auth/session: session cookies
-- /api/boards/[boardId]: Admin SDK delete of board + subcollections
+- /api/boards: atomic board + owner-profile creation
+- /api/boards/[boardId]: access check, rename, and Admin SDK cascade delete
+- /api/boards/[boardId]/columns/[columnId]: safe empty-column delete
+- /api/boards/[boardId]/members/[memberId]: role update and atomic remove/leave
+- /api/boards/[boardId]/labels[/labelId]: validated label catalog writes
+- /api/invites/[inviteId]/accept: atomic invite acceptance
 
 ## Data model (Firestore) — invariants to keep
 - boards/{boardId}
 - boards/{boardId}/columns/{columnId}
 - boards/{boardId}/cards/{cardId}
   - cards store `columnId` + `order` (board-level cards; client groups by column)
+- boards/{boardId}/labels/{labelId}
 - boardInvites/{boardId__email}
 - boards/{boardId}/memberProfiles/{userId}
 - users/{uid} (preferredLocale, email)
@@ -78,6 +84,7 @@ The app must not search for or package service-account JSON from the project tre
 - Keep `firebase-admin` on the compatible 13.x line. Version 14.x currently fails in Vercel Functions with `ERR_REQUIRE_ESM` through `jwks-rsa@4 -> jose@6`.
 - Treat an upgrade to Firebase Admin 14.x as a preview-deployment migration and verify `/`, protected API routes, and runtime logs before promotion.
 - Do not assume Vercel Observability or Firebase Console monitoring is fully configured. Verify available runtime errors, latency, retention, usage/quota data, and alerts before deciding whether an external telemetry SDK is needed.
+- The 27 July 2026 review found Vercel Observability plus Firebase Console sufficient for the current scale; repeat the review before releases and add an external telemetry sink only for a demonstrated diagnostic gap.
 
 ### App Check (recommended)
 - NEXT_PUBLIC_FIREBASE_APP_CHECK_SITE_KEY
@@ -106,7 +113,9 @@ Lint / auto-fix:
 - npm run format   (auto-fix lint issues)
 
 Seed / smoke:
-- npm run smoke    (see `scripts/smoke-kanban.mjs`)
+- npm run smoke    (guarded cloud smoke; see `scripts/smoke-kanban.mjs`)
+- npm run migrate:stale-member-profiles
+- npm run migrate:card-labels
 
 Tests:
 - npm run test         (Vitest)

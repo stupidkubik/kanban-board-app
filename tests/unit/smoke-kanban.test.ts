@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 // @ts-expect-error The smoke helpers are an executable JavaScript module.
 import {
+  SMOKE_SUBCOLLECTIONS,
   createSmokeIdentity,
   isSafeSmokeUid,
 } from "../../scripts/smoke-kanban-logic.mjs"
@@ -19,5 +20,14 @@ describe("kanban smoke safeguards", () => {
     expect(isSafeSmokeUid("production-user")).toBe(false)
     expect(isSafeSmokeUid("smoke-user@example.com")).toBe(false)
     expect(isSafeSmokeUid("real.firebase.uid")).toBe(false)
+  })
+
+  it("tracks every board subcollection created by the smoke", () => {
+    expect(SMOKE_SUBCOLLECTIONS).toEqual([
+      "cards",
+      "columns",
+      "labels",
+      "memberProfiles",
+    ])
   })
 })

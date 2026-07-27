@@ -1,5 +1,12 @@
 const SAFE_SMOKE_UID_PATTERN = /^smoke-[a-z0-9][a-z0-9-]{2,63}$/
 
+export const SMOKE_SUBCOLLECTIONS = [
+  "cards",
+  "columns",
+  "labels",
+  "memberProfiles",
+]
+
 export const isSafeSmokeUid = (uid) => SAFE_SMOKE_UID_PATTERN.test(uid)
 
 export const createSmokeIdentity = (now, suffix) => {

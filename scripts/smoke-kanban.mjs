@@ -12,6 +12,7 @@ import {
 import { FieldValue, getFirestore } from "firebase-admin/firestore"
 
 import {
+  SMOKE_SUBCOLLECTIONS,
   createSmokeIdentity,
   isSafeSmokeUid,
 } from "./smoke-kanban-logic.mjs"
@@ -61,6 +62,7 @@ const run = async () => {
   const uid = process.env.SMOKE_TEST_UID ?? identity.uid
   const boardTitle = identity.boardTitle
   const columnTitles = ["Todo", "In Progress"]
+  const labelName = "Release smoke"
 
   if (!isSafeSmokeUid(uid)) {
     throw new Error(
@@ -90,11 +92,22 @@ const run = async () => {
       roles: {
         [uid]: "owner",
       },
+      labelIds: {},
+      labelNames: {},
       language: "en",
       createdAt: FieldValue.serverTimestamp(),
       updatedAt: FieldValue.serverTimestamp(),
     })
 
+    await boardRef.collection("memberProfiles").doc(uid).set({
+      email: `${uid}@example.invalid`,
+      displayName: "Release smoke",
+      photoURL: null,
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    })
+
+    const columnRefs = []
     for (const [index, title] of columnTitles.entries()) {
       const columnRef = await boardRef.collection("columns").add({
         title,
@@ -105,7 +118,39 @@ const run = async () => {
       if (!columnRef.id) {
         throw new Error(`Column creation failed: ${title}`)
       }
+      columnRefs.push(columnRef)
     }
+
+    const labelRef = boardRef.collection("labels").doc()
+    await db.runTransaction(async (transaction) => {
+      transaction.set(labelRef, {
+        name: labelName,
+        normalizedName: labelName.toLowerCase(),
+        color: "blue",
+        order: now,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      })
+      transaction.update(boardRef, {
+        [`labelIds.${labelRef.id}`]: true,
+        [`labelNames.${labelName.toLowerCase()}`]: labelRef.id,
+        updatedAt: FieldValue.serverTimestamp(),
+      })
+    })
+
+    const cardRef = await boardRef.collection("cards").add({
+      title: "Release smoke card",
+      description: null,
+      dueDate: null,
+      columnId: columnRefs[0].id,
+      order: now,
+      createdById: uid,
+      assigneeIds: [uid],
+      labelIds: [labelRef.id],
+      archived: false,
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    })
 
     const boardsSnapshot = await db
       .collection("boards")
@@ -129,29 +174,51 @@ const run = async () => {
       }
     }
 
+    const [profileSnapshot, labelSnapshot, cardSnapshot] = await Promise.all([
+      boardRef.collection("memberProfiles").doc(uid).get(),
+      labelRef.get(),
+      cardRef.get(),
+    ])
+    const card = cardSnapshot.data()
+    if (
+      !profileSnapshot.exists ||
+      labelSnapshot.data()?.name !== labelName ||
+      card?.columnId !== columnRefs[0].id ||
+      !card?.assigneeIds?.includes(uid) ||
+      !card?.labelIds?.includes(labelRef.id)
+    ) {
+      throw new Error("Card, assignee, label, or member profile verification failed.")
+    }
+
     process.stdout.write("Smoke assertions passed.\n")
   } catch (error) {
     runError = error
   } finally {
     try {
       if (boardRef) {
-        const columnsSnapshot = await boardRef.collection("columns").get()
-        const cleanupBatch = db.batch()
-        columnsSnapshot.docs.forEach((column) => cleanupBatch.delete(column.ref))
-        if (!columnsSnapshot.empty) {
-          await cleanupBatch.commit()
+        for (const collectionName of SMOKE_SUBCOLLECTIONS) {
+          const snapshot = await boardRef.collection(collectionName).get()
+          if (!snapshot.empty) {
+            const cleanupBatch = db.batch()
+            snapshot.docs.forEach((document) =>
+              cleanupBatch.delete(document.ref)
+            )
+            await cleanupBatch.commit()
+          }
         }
         await boardRef.delete()
 
-        const [boardAfterCleanup, columnsAfterCleanup, matchingBoards] =
+        const [boardAfterCleanup, matchingBoards, ...subcollectionsAfterCleanup] =
           await Promise.all([
             boardRef.get(),
-            boardRef.collection("columns").limit(1).get(),
             db.collection("boards").where("title", "==", boardTitle).limit(1).get(),
+            ...SMOKE_SUBCOLLECTIONS.map((collectionName) =>
+              boardRef.collection(collectionName).limit(1).get()
+            ),
           ])
         if (
           boardAfterCleanup.exists ||
-          !columnsAfterCleanup.empty ||
+          subcollectionsAfterCleanup.some((snapshot) => !snapshot.empty) ||
           !matchingBoards.empty
         ) {
           throw new Error("Smoke cleanup verification found leftover data.")
