@@ -578,6 +578,15 @@ Structural refactor может менять расположение файло�
 - Приоритет: P2
 - Оценка: 3–5 рабочих дней
 - Зависимости: фаза 3
+- Статус: закрыта 27 июля. Card query projection вынесена в pure function,
+  create/edit/delete — в отдельные controllers, а `useBoardCards` оставлен
+  тонким composition hook поверх существующего DnD. Sign-in разделён на
+  error mapping, email/reset/Google/session controllers и presentational form.
+  Типизированные ru/en словари разнесены по шести доменам при сохранении
+  `getCopy(locale)` и прежней формы `Copy`. Board CSS разделён между
+  card, participants, header/status и board layout modules. Финальный gate:
+  lint, 70 unit tests, production build/14 traces, Cypress 2/2 с DnD, Undo,
+  invite flow и подтверждённым cleanup
 
 ### 4.1 Разделить `use-board-cards.ts`
 
