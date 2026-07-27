@@ -6,7 +6,7 @@ import { useParams } from "next/navigation"
 
 import { useAuth } from "@/components/auth-provider"
 import { usePreferredLocale } from "@/lib/use-preferred-locale"
-import { useGetBoardQuery } from "@/lib/store/firestore-api"
+import { useGetBoardQuery } from "@/features/boards/data/boards-api"
 import { getCopy } from "@/lib/i18n"
 import { canEditBoard, canInviteMembers, getMemberRole } from "@/lib/permissions"
 import { BoardContent } from "@/features/board/ui/board-content"

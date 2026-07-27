@@ -11,7 +11,7 @@ import {
   authSignedIn,
   authSignedOut,
 } from "@/lib/store/auth-slice"
-import { firestoreApi } from "@/lib/store/firestore-api"
+import { firestoreBaseApi as firestoreApi } from "@/lib/store/firestore-base-api"
 import { useAppDispatch } from "@/lib/store/hooks"
 
 type AuthContextValue = {

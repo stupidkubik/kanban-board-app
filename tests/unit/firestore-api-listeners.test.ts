@@ -52,7 +52,12 @@ vi.mock("@/lib/firebase/app-check-fetch", () => ({
   fetchWithAppCheck: mocks.fetchWithAppCheck,
 }))
 
-import { firestoreApi } from "@/lib/store/firestore-api"
+import { boardsApi } from "@/features/boards/data/boards-api"
+import { cardsApi as firestoreApi } from "@/features/cards/data/cards-api"
+import { columnsApi } from "@/features/columns/data/columns-api"
+import { invitesApi } from "@/features/invites/data/invites-api"
+import { participantsApi } from "@/features/participants/data/participants-api"
+import { firestoreBaseApi } from "@/lib/store/firestore-base-api"
 
 const board: Board = {
   id: "board-1",
@@ -76,6 +81,15 @@ describe("Firestore RTK Query listeners", () => {
     mocks.fetchWithAppCheck.mockReset()
     mocks.subscribeToBoard.mockReset()
     mocks.unsubscribe.mockReset()
+  })
+
+  it("uses one API instance and reducer path across feature modules", () => {
+    expect(boardsApi).toBe(firestoreBaseApi)
+    expect(invitesApi).toBe(firestoreBaseApi)
+    expect(columnsApi).toBe(firestoreBaseApi)
+    expect(participantsApi).toBe(firestoreBaseApi)
+    expect(firestoreApi).toBe(firestoreBaseApi)
+    expect(firestoreApi.reducerPath).toBe("firestoreApi")
   })
 
   it("starts one listener per cache entry and keeps a synchronous initial snapshot", async () => {

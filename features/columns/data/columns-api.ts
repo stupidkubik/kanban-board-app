@@ -112,3 +112,10 @@ export const columnsApi = invitesApi.injectEndpoints({
     }),
   }),
 })
+
+export const {
+  useCreateColumnMutation,
+  useDeleteColumnMutation,
+  useGetColumnsQuery,
+  useUpdateColumnMutation,
+} = columnsApi

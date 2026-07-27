@@ -59,7 +59,7 @@
 
 | Файл | Размер | Основная ответственность |
 | --- | ---: | --- |
-| `lib/store/firestore-api.ts` | 697 строк | RTK Query subscriptions, mutations, optimistic cache |
+| Feature RTK Query APIs | до 228 строк на модуль | единый base API, feature endpoints и optimistic card cache |
 | `features/cards/model/use-board-cards.ts` | 452 строки | card query projection, forms, CRUD, dialogs, notifications |
 | `lib/i18n.ts` | 560 строк | типы и весь ru/en copy |
 | `app/(auth)/sign-in/page.tsx` | 403 строки | auth modes, providers, reset, session, UI |
@@ -513,12 +513,13 @@ Structural refactor может менять расположение файло�
 - Оценка: 2–3 рабочих дня
 - Риск: высокий из-за realtime cache и optimistic state
 - Зависимости: фаза 2
-- Статус: начата 27 июля; шаги 1–5 выполнены. Base API и типы вынесены в
-  `lib/store/`; board/invite, columns и member profile endpoints — в feature
-  data modules. Публичные hooks, reducer path, cache keys, tag names и
-  keepUnusedDataFor не изменены. Board mutations также перенесены до начала
-  наиболее рискованного card/optimistic шага; card query и mutations перенесены
-  единым блоком, compatibility barrel пока сохранён
+- Статус: закрыта 27 июля. Base API и типы находятся в `lib/store/`; board,
+  invite, columns, member profile и card endpoints — в feature data modules.
+  Старый compatibility barrel удалён после механической миграции imports.
+  Regression-test подтверждает один API object и reducer path; публичные hooks,
+  cache keys, tag names и keepUnusedDataFor не изменены. Финальный gate:
+  lint, 60 unit, 11 Rules, production build/14 traces и два последовательных
+  Cypress 2/2 с cleanup
 
 ### Цель
 

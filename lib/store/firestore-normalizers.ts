@@ -116,5 +116,5 @@ export const normalizeColumn = (boardId: string, id: string, data: ColumnRecord)
   return column
 }
 
-// Shared helper to avoid query recreation outside of firestore-api
+// Shared helper to avoid query recreation across feature API modules.
 export const memberFieldPath = (uid: string) => new FieldPath("members", uid)

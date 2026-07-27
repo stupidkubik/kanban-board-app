@@ -13,7 +13,7 @@ import { getErrorMessage } from "@/lib/errors"
 import {
   useDeleteBoardMutation,
   useUpdateBoardTitleMutation,
-} from "@/lib/store/firestore-api"
+} from "@/features/boards/data/boards-api"
 import { useBoardSummary } from "@/features/boards/model/use-board-summary"
 import {
   AlertDialog,

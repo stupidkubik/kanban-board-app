@@ -216,3 +216,12 @@ export const boardsApi = firestoreBaseApi.injectEndpoints({
     }),
   }),
 })
+
+export const {
+  useCreateBoardMutation,
+  useDeleteBoardMutation,
+  useGetBoardQuery,
+  useGetBoardsQuery,
+  useUpdateBoardLanguageMutation,
+  useUpdateBoardTitleMutation,
+} = boardsApi

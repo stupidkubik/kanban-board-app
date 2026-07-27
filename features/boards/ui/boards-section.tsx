@@ -13,7 +13,7 @@ import {
   type BoardsSortKey,
 } from "@/lib/browser-preferences"
 import { type Board, type BoardLanguage } from "@/lib/types/boards"
-import { useCreateBoardMutation } from "@/lib/store/firestore-api"
+import { useCreateBoardMutation } from "@/features/boards/data/boards-api"
 import { getErrorMessage } from "@/lib/errors"
 import { KanbanBoardCard } from "@/features/boards/ui/board-card"
 import {

@@ -46,7 +46,7 @@ vi.mock("@/lib/firebase/app-check-fetch", () => ({
   fetchWithAppCheck: vi.fn(),
 }))
 
-import { firestoreApi } from "@/lib/store/firestore-api"
+import { cardsApi as firestoreApi } from "@/features/cards/data/cards-api"
 
 const boardId = "board-1"
 const todoColumn: Column = {

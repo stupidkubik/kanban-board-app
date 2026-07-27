@@ -1,4 +1,4 @@
-import { firestoreApi } from "@/lib/store/firestore-api"
+import { cardQueriesApi as firestoreApi } from "@/features/cards/data/card-queries-api"
 import type { AppDispatch } from "@/lib/store"
 import type { Card } from "@/lib/types/boards"
 

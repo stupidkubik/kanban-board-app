@@ -15,10 +15,10 @@ import { hasReachedCardLimit } from "@/features/cards/model/card-cap"
 import {
   useCreateCardMutation,
   useDeleteCardMutation,
-  useGetCardsQuery,
-  BOARD_CARD_LIMIT,
   useUpdateCardMutation,
-} from "@/lib/store/firestore-api"
+} from "@/features/cards/data/cards-api"
+import { useGetCardsQuery } from "@/features/cards/data/card-queries-api"
+import { BOARD_CARD_LIMIT } from "@/lib/store/firestore-listeners"
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
 import {
   resetAddCardForm,

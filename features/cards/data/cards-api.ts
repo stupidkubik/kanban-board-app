@@ -6,6 +6,7 @@ import {
   type DeleteCardInput,
   type UpdateCardInput,
 } from "@/features/cards/data/card-operations"
+import { cardQueriesApi } from "@/features/cards/data/card-queries-api"
 import {
   ensureCardId,
   ensureCardOrder,
@@ -15,11 +16,9 @@ import {
   optimisticDeleteCard,
   optimisticMoveCard,
 } from "@/features/cards/model/optimistic-helpers"
-import { participantsApi } from "@/features/participants/data/participants-api"
 import { getErrorMessage } from "@/lib/errors"
 import type { RootState } from "@/lib/store"
 import type { MutationResult } from "@/lib/store/firestore-api-types"
-import { subscribeToCards } from "@/lib/store/firestore-listeners"
 import type { Card } from "@/lib/types/boards"
 
 const mutationOk: MutationResult = { ok: true }
@@ -38,60 +37,8 @@ const getCachedCards = (
   return result.data ?? []
 }
 
-export const cardsApi = participantsApi.injectEndpoints({
+export const cardsApi = cardQueriesApi.injectEndpoints({
   endpoints: (builder) => ({
-    getCards: builder.query<
-      Card[],
-      { boardId: string; columnId?: string | null } | null
-    >({
-      queryFn: async () => ({ data: [] }),
-      keepUnusedDataFor: 0,
-      providesTags: (result, _error, args) => {
-        if (!args?.boardId) {
-          return [{ type: "Card" as const, id: "LIST" }]
-        }
-        const suffix = args.columnId ? `-${args.columnId}` : ""
-        const listId = `LIST-${args.boardId}${suffix}`
-        return result
-          ? [
-              { type: "Card" as const, id: listId },
-              ...result.map((card) => ({
-                type: "Card" as const,
-                id: card.id,
-              })),
-            ]
-          : [{ type: "Card" as const, id: listId }]
-      },
-      async onCacheEntryAdded(
-        args,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
-      ) {
-        if (!args?.boardId) {
-          await cacheEntryRemoved
-          return
-        }
-
-        await cacheDataLoaded
-        const unsubscribe = subscribeToCards(
-          args,
-          (nextCards) => {
-            updateCachedData((draft) => {
-              draft.length = 0
-              draft.push(...nextCards)
-            })
-          },
-          (error) => {
-            console.error("Failed to load cards", error)
-            updateCachedData((draft) => {
-              draft.length = 0
-            })
-          }
-        )
-
-        await cacheEntryRemoved
-        unsubscribe()
-      },
-    }),
     createCard: builder.mutation<MutationResult, CreateCardInput>({
       async queryFn(args) {
         try {
@@ -273,3 +220,9 @@ export const cardsApi = participantsApi.injectEndpoints({
     }),
   }),
 })
+
+export const {
+  useCreateCardMutation,
+  useDeleteCardMutation,
+  useUpdateCardMutation,
+} = cardsApi

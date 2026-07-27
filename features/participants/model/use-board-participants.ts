@@ -4,7 +4,7 @@ import * as React from "react"
 import type { User } from "firebase/auth"
 import { useRouter } from "next/navigation"
 
-import { useGetBoardMembersQuery } from "@/lib/store/firestore-api"
+import { useGetBoardMembersQuery } from "@/features/participants/data/participants-api"
 import { deleteBoardMember } from "@/lib/store/firestore-operations"
 import { createBoardInvite } from "@/features/invites/data/invite-operations"
 import { getErrorMessage } from "@/lib/errors"

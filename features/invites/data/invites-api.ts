@@ -48,3 +48,5 @@ export const invitesApi = boardsApi.injectEndpoints({
     }),
   }),
 })
+
+export const { useGetInvitesQuery } = invitesApi

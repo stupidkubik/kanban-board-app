@@ -8,7 +8,7 @@ import {
   useDeleteColumnMutation,
   useGetColumnsQuery,
   useUpdateColumnMutation,
-} from "@/lib/store/firestore-api"
+} from "@/features/columns/data/columns-api"
 import { COLUMN_NOT_EMPTY, restoreColumn } from "@/lib/store/firestore-operations"
 import { getErrorMessage } from "@/lib/errors"
 import type { Column } from "@/lib/types/boards"

@@ -19,7 +19,7 @@ import { HeaderSection } from "@/features/columns/ui/header-section"
 import { CardsSection } from "@/features/cards/ui/cards-section"
 import { ParticipantsSection } from "@/features/participants/ui/participants-section"
 import { useNotifications } from "@/features/notifications/ui/notifications-provider"
-import { useUpdateBoardLanguageMutation } from "@/lib/store/firestore-api"
+import { useUpdateBoardLanguageMutation } from "@/features/boards/data/boards-api"
 import { getErrorMessage } from "@/lib/errors"
 
 type BoardContentProps = {

@@ -54,3 +54,5 @@ export const participantsApi = columnsApi.injectEndpoints({
     }),
   }),
 })
+
+export const { useGetBoardMembersQuery } = participantsApi
