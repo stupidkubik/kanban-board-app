@@ -1,19 +1,6 @@
 import { getErrorMessage } from "@/lib/errors"
 import { participantsApi } from "@/features/participants/data/participants-api"
-import type {
-  CreateBoardResult,
-  MutationResult,
-} from "@/lib/store/firestore-api-types"
-import {
-  createBoard as createBoardDocument,
-  deleteBoard as deleteBoardDocument,
-  updateBoardLanguage as updateBoardLanguageDocument,
-  updateBoardTitle as updateBoardTitleDocument,
-  type CreateBoardInput,
-  type DeleteBoardInput,
-  type UpdateBoardLanguageInput,
-  type UpdateBoardTitleInput,
-} from "@/lib/store/firestore-operations"
+import type { MutationResult } from "@/lib/store/firestore-api-types"
 import {
   createCard as createCardDocument,
   deleteCard as deleteCardDocument,
@@ -60,93 +47,6 @@ const getCachedCards = (
 
 export const firestoreApi = participantsApi.injectEndpoints({
   endpoints: (builder) => ({
-    createBoard: builder.mutation<CreateBoardResult, CreateBoardInput>({
-      async queryFn(args) {
-        try {
-          const boardId = await createBoardDocument(args)
-          return { data: { ...mutationOk, boardId } }
-        } catch (error) {
-          return {
-            error: new Error(getErrorMessage(error, "Create board failed")),
-          }
-        }
-      },
-      async onQueryStarted(args, { dispatch, queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled
-          const createdAt = Date.now()
-          dispatch(
-            firestoreApi.util.updateQueryData(
-              "getBoards",
-              args.ownerId,
-              (draft) => {
-                if (draft.some((board) => board.id === data.boardId)) {
-                  return
-                }
-                draft.push({
-                  id: data.boardId,
-                  title: args.title,
-                  ownerId: args.ownerId,
-                  members: { [args.ownerId]: true },
-                  roles: { [args.ownerId]: "owner" },
-                  language: args.language,
-                  createdAt,
-                  updatedAt: createdAt,
-                })
-              }
-            )
-          )
-        } catch {
-          // ignore cache update if mutation fails
-        }
-      },
-    }),
-    updateBoardLanguage: builder.mutation<MutationResult, UpdateBoardLanguageInput>({
-      async queryFn(args) {
-        try {
-          await updateBoardLanguageDocument(args)
-          return { data: mutationOk }
-        } catch (error) {
-          return {
-            error: new Error(getErrorMessage(error, "Update board language failed")),
-          }
-        }
-      },
-      invalidatesTags: (_result, _error, arg) => [
-        { type: "Board", id: arg.boardId },
-      ],
-    }),
-    updateBoardTitle: builder.mutation<MutationResult, UpdateBoardTitleInput>({
-      async queryFn(args) {
-        try {
-          await updateBoardTitleDocument(args)
-          return { data: mutationOk }
-        } catch (error) {
-          return {
-            error: new Error(getErrorMessage(error, "Update board title failed")),
-          }
-        }
-      },
-      invalidatesTags: (_result, _error, arg) => [
-        { type: "Board", id: arg.boardId },
-      ],
-    }),
-    deleteBoard: builder.mutation<MutationResult, DeleteBoardInput>({
-      async queryFn(args) {
-        try {
-          await deleteBoardDocument(args)
-          return { data: mutationOk }
-        } catch (error) {
-          return {
-            error: new Error(getErrorMessage(error, "Delete board failed")),
-          }
-        }
-      },
-      invalidatesTags: (_result, _error, arg) => [
-        { type: "Board", id: arg.boardId },
-        { type: "Board", id: "LIST" },
-      ],
-    }),
     getCards: builder.query<
       Card[],
       { boardId: string; columnId?: string | null } | null

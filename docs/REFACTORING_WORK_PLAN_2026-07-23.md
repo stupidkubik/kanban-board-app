@@ -516,7 +516,8 @@ Structural refactor может менять расположение файло�
 - Статус: начата 27 июля; шаги 1–4 выполнены. Base API и типы вынесены в
   `lib/store/`; board/invite, columns и member profile endpoints — в feature
   data modules. Публичные hooks, reducer path, cache keys, tag names и
-  keepUnusedDataFor не изменены
+  keepUnusedDataFor не изменены. Board mutations также перенесены до начала
+  наиболее рискованного card/optimistic шага
 
 ### Цель
 
