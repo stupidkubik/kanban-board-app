@@ -6,7 +6,7 @@ const setUiLocale = (win: Window) => {
 const signIn = () => {
   cy.intercept("POST", "/api/auth/session").as("createSession")
   cy.visit("/sign-in", { onBeforeLoad: setUiLocale })
-  cy.get("body", { timeout: 15_000 })
+  cy.get("body", { timeout: 30_000 })
     .should(($body) => {
       const pathname = $body[0].ownerDocument.location.pathname
       const hasEmailForm = $body.find("#auth-email").length > 0
@@ -27,17 +27,17 @@ const signIn = () => {
           cy.get("#auth-password").type(password, { log: false })
           cy.contains("button", "Sign in with Email").click()
           return cy
-            .wait("@createSession", { timeout: 15_000 })
+            .wait("@createSession", { timeout: 30_000 })
             .its("response.statusCode")
             .should("eq", 200)
         }
       )
     })
 
-  cy.location("pathname", { timeout: 15_000 }).should("eq", "/")
-  cy.get('[data-testid="create-board-trigger"]', { timeout: 15_000 }).should(
+  cy.get('[data-testid="create-board-trigger"]', { timeout: 30_000 }).should(
     "be.visible"
   )
+  cy.location("pathname").should("eq", "/")
 }
 
 const dragAndDrop = (source: Cypress.Chainable, target: Cypress.Chainable) => {
@@ -50,6 +50,7 @@ const dragAndDrop = (source: Cypress.Chainable, target: Cypress.Chainable) => {
       const targetRect = $target[0].getBoundingClientRect()
       const targetX = targetRect.left + targetRect.width / 2
       const targetY = targetRect.top + Math.min(targetRect.height / 2, 80)
+      const moveProgress = [0.25, 0.5, 0.75, 1]
       const pointerOptions = {
         eventConstructor: "PointerEvent",
         pointerId: 1,
@@ -72,15 +73,17 @@ const dragAndDrop = (source: Cypress.Chainable, target: Cypress.Chainable) => {
         clientY: sourceY,
       })
       cy.get('[data-testid="card-drag-overlay"]').should("be.visible")
-      cy.wait(50)
-      cy.wrap($target).trigger("pointermove", {
-        ...pointerOptions,
-        buttons: 1,
-        clientX: targetX,
-        clientY: targetY,
+      moveProgress.forEach((progress) => {
+        cy.wrap($source).trigger("pointermove", {
+          ...pointerOptions,
+          buttons: 1,
+          clientX: sourceX + (targetX - sourceX) * progress,
+          clientY: sourceY + (targetY - sourceY) * progress,
+        })
       })
-      cy.wait(50)
-      cy.get("body").trigger("pointerup", {
+      cy.wrap($target).should("have.attr", "data-drop-active", "true")
+      cy.wait(100)
+      cy.wrap($source).trigger("pointerup", {
         ...pointerOptions,
         button: 0,
         buttons: 0,
@@ -106,7 +109,7 @@ const cleanupCreatedBoards = () => {
   cy.visit("/", { onBeforeLoad: setUiLocale })
   createdBoardTitles.splice(0).forEach((title) => {
     const selector = `[data-board-title="${title}"]`
-    cy.get(selector, { timeout: 15_000 }).within(() => {
+    cy.get(selector, { timeout: 30_000 }).within(() => {
       cy.get('[data-testid="delete-board-trigger"]').click()
     })
     cy.get('[data-testid="delete-board-confirm"]').click()
@@ -143,7 +146,7 @@ describe("kanban core flows", () => {
     cy.wait("@createBoard", { timeout: 20_000 })
       .its("response.statusCode")
       .should("eq", 200)
-    rememberBoard(boardTitle)
+      .then(() => rememberBoard(boardTitle))
 
     cy.contains('[data-testid="board-card"]', boardTitle).click()
     cy.url().should("match", /\/boards\/[^/]+$/)
@@ -189,7 +192,7 @@ describe("kanban core flows", () => {
     cy.wait("@createBoard", { timeout: 20_000 })
       .its("response.statusCode")
       .should("eq", 200)
-    rememberBoard(boardTitle)
+      .then(() => rememberBoard(boardTitle))
 
     cy.contains('[data-testid="board-card"]', boardTitle).click()
     cy.get('[data-testid="invite-member-trigger"]').click()

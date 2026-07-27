@@ -58,6 +58,7 @@ const ColumnDropZone = ({ id, testId, children }: ColumnDropZoneProps) => {
         isOver ? `${styles.columnDropZone} ${styles.columnDropZoneOver}` : styles.columnDropZone
       }
       data-testid={testId}
+      data-drop-active={isOver ? "true" : "false"}
     >
       {children}
     </div>
