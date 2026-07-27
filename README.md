@@ -83,8 +83,8 @@ app/            Next.js routes
 See `schema.md` for more details.
 
 ## Getting Started
-Requires Node.js 22.12 or newer, as declared by the project engine constraint and
-required by the current toolchain.
+Requires Node.js 24.x. The major version is pinned so local development and
+Vercel builds do not move to a new Node.js major automatically.
 
 Install dependencies:
 ```bash
