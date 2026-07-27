@@ -19,6 +19,19 @@ export const normalizeLegacyLabelName = (value) =>
 export const legacyLabelId = (normalizedName) =>
   `legacy_${createHash("sha256").update(normalizedName).digest("hex").slice(0, 20)}`
 
+export const catalogMapsEqual = (currentIds, currentNames, nextIds, nextNames) => {
+  const normalizeMap = (value) =>
+    value && typeof value === "object" && !Array.isArray(value) ? value : {}
+  const firstIds = normalizeMap(currentIds)
+  const firstNames = normalizeMap(currentNames)
+  return (
+    JSON.stringify(Object.entries(firstIds).sort()) ===
+      JSON.stringify(Object.entries(nextIds).sort()) &&
+    JSON.stringify(Object.entries(firstNames).sort()) ===
+      JSON.stringify(Object.entries(nextNames).sort())
+  )
+}
+
 const legacyLabelColor = (normalizedName) => {
   const byte = Number.parseInt(
     createHash("sha256").update(normalizedName).digest("hex").slice(0, 2),

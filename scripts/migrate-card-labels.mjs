@@ -4,7 +4,10 @@ import nextEnv from "@next/env"
 import { applicationDefault, cert, deleteApp, initializeApp } from "firebase-admin/app"
 import { FieldPath, FieldValue, getFirestore } from "firebase-admin/firestore"
 
-import { buildCardLabelsMigrationPlan } from "./migrate-card-labels-logic.mjs"
+import {
+  buildCardLabelsMigrationPlan,
+  catalogMapsEqual,
+} from "./migrate-card-labels-logic.mjs"
 
 nextEnv.loadEnvConfig(process.cwd())
 
@@ -57,6 +60,13 @@ const scanBoard = async (boardSnapshot) => {
     })),
     cards: cardsSnapshot.docs.map((card) => ({ id: card.id, ...card.data() })),
   })
+  const boardData = boardSnapshot.data()
+  const catalogIndexChanged = !catalogMapsEqual(
+    boardData.labelIds,
+    boardData.labelNames,
+    plan.labelIds,
+    plan.labelNames
+  )
 
   if (applyChanges) {
     const timestamp = FieldValue.serverTimestamp()
@@ -78,12 +88,16 @@ const scanBoard = async (boardSnapshot) => {
           updatedAt: timestamp,
         })
       ),
-      (batch) =>
-        batch.update(boardRef, {
-          labelIds: plan.labelIds,
-          labelNames: plan.labelNames,
-          updatedAt: timestamp,
-        }),
+      ...(catalogIndexChanged
+        ? [
+            (batch) =>
+              batch.update(boardRef, {
+                labelIds: plan.labelIds,
+                labelNames: plan.labelNames,
+                updatedAt: timestamp,
+              }),
+          ]
+        : []),
     ]
     await commitWrites(writes)
   }
@@ -93,6 +107,7 @@ const scanBoard = async (boardSnapshot) => {
       boardId: boardSnapshot.id,
       legacyCards: plan.cardUpdates.length,
       labelsCreated: plan.createdLabels.length,
+      catalogIndexChanged,
       mode: applyChanges ? "apply" : "dry-run",
     })}\n`
   )

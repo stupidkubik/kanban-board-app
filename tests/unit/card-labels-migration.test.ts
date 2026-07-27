@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest"
 // @ts-expect-error The migration helpers are an executable JavaScript module.
 import {
   buildCardLabelsMigrationPlan,
+  catalogMapsEqual,
   legacyLabelId,
 } from "../../scripts/migrate-card-labels-logic.mjs"
 
@@ -75,5 +76,18 @@ describe("card labels migration", () => {
     expect(plan.createdLabels).toHaveLength(1)
     expect(plan.cardUpdates[0].labelIds).toHaveLength(1)
     expect(Object.keys(plan.labelIds)).toHaveLength(50)
+  })
+
+  it("treats absent and empty catalog indexes as the same no-op state", () => {
+    expect(catalogMapsEqual(undefined, undefined, {}, {})).toBe(true)
+    expect(
+      catalogMapsEqual(
+        { "label-1": true },
+        { bug: "label-1" },
+        { "label-1": true },
+        { bug: "label-1" }
+      )
+    ).toBe(true)
+    expect(catalogMapsEqual({}, {}, { "label-1": true }, {})).toBe(false)
   })
 })
