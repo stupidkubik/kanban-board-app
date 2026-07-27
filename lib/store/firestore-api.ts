@@ -1,9 +1,6 @@
-import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
 import { getErrorMessage } from "@/lib/errors"
-import { firestoreBaseApi } from "@/lib/store/firestore-base-api"
+import { invitesApi } from "@/features/invites/data/invites-api"
 import type {
-  BoardQueryInput,
-  BoardQueryState,
   CreateBoardResult,
   MutationResult,
 } from "@/lib/store/firestore-api-types"
@@ -37,10 +34,7 @@ import {
   optimisticMoveCard,
 } from "@/features/cards/model/optimistic-helpers"
 import type { RootState } from "@/lib/store"
-import type { Board, BoardMemberProfile, Card, Column } from "@/lib/types/boards"
-import {
-  type Invite,
-} from "@/lib/store/firestore-normalizers"
+import type { BoardMemberProfile, Card, Column } from "@/lib/types/boards"
 import {
   ensureCardId,
   ensureCardOrder,
@@ -49,12 +43,9 @@ import {
   BOARD_CARD_LIMIT,
   BOARD_COLUMN_LIMIT,
   BOARD_MEMBER_LIMIT,
-  subscribeToBoard,
   subscribeToBoardMembers,
-  subscribeToBoards,
   subscribeToCards,
   subscribeToColumns,
-  subscribeToInvites,
 } from "@/lib/store/firestore-listeners"
 
 export type { Invite } from "@/lib/store/firestore-normalizers"
@@ -75,139 +66,8 @@ const getCachedCards = (
   return result.data ?? []
 }
 
-export const firestoreApi = firestoreBaseApi.injectEndpoints({
+export const firestoreApi = invitesApi.injectEndpoints({
   endpoints: (builder) => ({
-    // Firestore listeners drive the cache; queryFn is a stub and onCacheEntryAdded updates it.
-    getBoards: builder.query<Board[], string | null>({
-      queryFn: async () => ({ data: [] }),
-      keepUnusedDataFor: 60,
-      providesTags: (result) =>
-        result
-          ? [
-              { type: "Board" as const, id: "LIST" },
-              ...result.map((board) => ({ type: "Board" as const, id: board.id })),
-            ]
-          : [{ type: "Board" as const, id: "LIST" }],
-      async onCacheEntryAdded(
-        uid,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
-      ) {
-        if (!uid) {
-          await cacheEntryRemoved
-          return
-        }
-
-        await cacheDataLoaded
-        const unsubscribe = subscribeToBoards(
-          uid,
-          (nextBoards) => {
-            updateCachedData((draft) => {
-              draft.length = 0
-              draft.push(...nextBoards)
-            })
-          },
-          (error) => {
-            console.error("Failed to load boards", error)
-            updateCachedData((draft) => {
-              draft.length = 0
-            })
-          }
-        )
-
-        await cacheEntryRemoved
-        unsubscribe()
-      },
-    }),
-    getBoard: builder.query<BoardQueryState, BoardQueryInput>({
-      queryFn: async () => ({ data: { status: "loading", board: null } }),
-      keepUnusedDataFor: 60,
-      providesTags: (_result, _error, args) =>
-        args.boardId
-          ? [{ type: "Board" as const, id: args.boardId }]
-          : [{ type: "Board" as const, id: "DETAIL" }],
-      async onCacheEntryAdded(
-        args,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
-      ) {
-        if (!args.boardId) {
-          await cacheEntryRemoved
-          return
-        }
-
-        await cacheDataLoaded
-        const boardId = args.boardId
-        const unsubscribe = subscribeToBoard(
-          boardId,
-          (board) => {
-            updateCachedData(() => {
-              if (!board) {
-                return { status: "not-found", board: null }
-              }
-              return { status: "ready", board }
-            })
-          },
-          async () => {
-            let status: BoardQueryState["status"] = "error"
-            try {
-              const response = await fetchWithAppCheck(
-                `/api/boards/${encodeURIComponent(boardId)}`,
-                { credentials: "same-origin" }
-              )
-              if (response.status === 404) {
-                status = "not-found"
-              } else if (response.status === 401 || response.status === 403) {
-                status = "forbidden"
-              }
-            } catch {
-              status = "error"
-            }
-            updateCachedData(() => ({ status, board: null }))
-          }
-        )
-
-        await cacheEntryRemoved
-        unsubscribe()
-      },
-    }),
-    getInvites: builder.query<Invite[], string | null>({
-      queryFn: async () => ({ data: [] }),
-      keepUnusedDataFor: 0,
-      providesTags: (result) =>
-        result
-          ? [
-              { type: "Invite" as const, id: "LIST" },
-              ...result.map((invite) => ({ type: "Invite" as const, id: invite.id })),
-            ]
-          : [{ type: "Invite" as const, id: "LIST" }],
-      async onCacheEntryAdded(
-        email,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
-      ) {
-        if (!email) {
-          await cacheEntryRemoved
-          return
-        }
-
-        await cacheDataLoaded
-        const unsubscribe = subscribeToInvites(
-          email,
-          (nextInvites) => {
-            updateCachedData((draft) => {
-              draft.length = 0
-              draft.push(...nextInvites)
-            })
-          },
-          () => {
-            updateCachedData((draft) => {
-              draft.length = 0
-            })
-          }
-        )
-
-        await cacheEntryRemoved
-        unsubscribe()
-      },
-    }),
     createBoard: builder.mutation<CreateBoardResult, CreateBoardInput>({
       async queryFn(args) {
         try {
