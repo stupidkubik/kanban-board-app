@@ -513,11 +513,12 @@ Structural refactor может менять расположение файло�
 - Оценка: 2–3 рабочих дня
 - Риск: высокий из-за realtime cache и optimistic state
 - Зависимости: фаза 2
-- Статус: начата 27 июля; шаги 1–4 выполнены. Base API и типы вынесены в
+- Статус: начата 27 июля; шаги 1–5 выполнены. Base API и типы вынесены в
   `lib/store/`; board/invite, columns и member profile endpoints — в feature
   data modules. Публичные hooks, reducer path, cache keys, tag names и
   keepUnusedDataFor не изменены. Board mutations также перенесены до начала
-  наиболее рискованного card/optimistic шага
+  наиболее рискованного card/optimistic шага; card query и mutations перенесены
+  единым блоком, compatibility barrel пока сохранён
 
 ### Цель
 
