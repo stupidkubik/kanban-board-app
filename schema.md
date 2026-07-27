@@ -20,6 +20,9 @@ Fields:
   - keys are `uid`, value `true`
 - `roles` (map<string, "owner" | "editor" | "viewer">)
   - keys are `uid`
+- `labelIds` (map<labelId, true>, optional)
+- `labelNames` (map<normalizedName, labelId>, optional)
+  - server-maintained catalog indexes, maximum 50 entries
 - `language` ("ru" | "en")
 - `createdAt` (Timestamp)
 - `updatedAt` (Timestamp, optional)
@@ -36,6 +39,12 @@ Example:
   "roles": {
     "uid_123": "owner",
     "uid_456": "editor"
+  },
+  "labelIds": {
+    "label_bug": true
+  },
+  "labelNames": {
+    "bug": "label_bug"
   },
   "language": "en",
   "createdAt": "<timestamp>",
@@ -81,6 +90,23 @@ Example:
 }
 ```
 
+### boards/{boardId}/labels/{labelId}
+
+Board-level label catalog. Name/color changes update one catalog document and
+are reflected on every card through the realtime listener.
+
+Fields:
+- `name` (string, 1–50 characters)
+- `normalizedName` (case-insensitive, whitespace-normalized string)
+- `color` ("gray" | "red" | "orange" | "yellow" | "green" | "blue" | "purple" | "pink")
+- `order` (number)
+- `createdAt` (Timestamp)
+- `updatedAt` (Timestamp)
+
+Names are unique by `normalizedName`; a board contains at most 50 labels.
+Catalog writes use authenticated server routes. Members may read the
+subcollection, while direct client writes are denied.
+
 ### boards/{boardId}/cards/{cardId}
 Cards are stored in a board-level subcollection so we can query the entire board
 once and group by `columnId` on the client. This scales better for large boards
@@ -93,7 +119,8 @@ Fields:
 - `order` (number)
 - `createdById` (string)
 - `assigneeIds` (array<string>, optional)
-- `labels` (array<string>, optional)
+- `labelIds` (array<string>, optional)
+- `labels` (legacy array<string>, read-only until migration)
 - `dueAt` (Timestamp, optional)
 - `createdAt` (Timestamp)
 - `updatedAt` (Timestamp, optional)
@@ -101,8 +128,11 @@ Fields:
 
 `assigneeIds` powers the card assignee picker and assignee chips. Values are
 limited to 20 current board member UIDs; cards do not duplicate member profile
-data. `labels` remains a reserved data-layer field. `archived` is also reserved,
-and archived cards are excluded from the active kanban view.
+data. `labelIds` powers the card multi-select and color chips, is limited to 10
+unique IDs, and must reference the board catalog. Legacy `labels` names are read
+only and migrated with `npm run migrate:card-labels`; run without
+`MIGRATION_APPLY=true` for a dry run. `archived` remains reserved, and archived
+cards are excluded from the active kanban view.
 
 Ordering notes:
 - `order` is a numeric sort key. It is not required to be sequential.
@@ -121,7 +151,7 @@ Example:
   "order": 10,
   "createdById": "uid_123",
   "assigneeIds": ["uid_456"],
-  "labels": ["bug", "auth"],
+  "labelIds": ["label_bug", "label_auth"],
   "createdAt": "<timestamp>"
 }
 ```
@@ -198,15 +228,18 @@ The current `firestore.rules` enforce these contracts:
 - Deny direct client role changes. The owner switches an accepted non-owner member
   between `editor` and `viewer` through the server API; `members`, `ownerId`, and
   `memberProfiles` remain unchanged.
+- Allow members to read the label catalog; deny direct catalog writes so server
+  routes can enforce case-insensitive uniqueness, the 50-label cap, and cleanup.
 
 For cards:
 - Allow read if user is a board member.
 - Allow create/update if user is owner/editor.
 - Allow delete if user is owner.
 - Card `columnId` must reference an existing column; `createdById` must match the
-  authenticated creator on create; assignees must be board members.
+  authenticated creator on create; assignees must be board members and
+  `labelIds` must exist in the server-maintained board catalog index.
 - Current limits: board/column titles 120 chars, card title 200, description 5000,
-  up to 20 assignees, up to 10 labels of 50 chars, and up to 100 board members.
+  up to 20 assignees, 10 labels per card, 50 labels per board, and 100 members.
 
 Implemented rule helpers include:
 - `isBoardMember(boardId)` that loads `boards/{boardId}` and checks `members[uid]`.

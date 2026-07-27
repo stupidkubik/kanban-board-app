@@ -788,6 +788,15 @@ Structural refactor может менять расположение файло�
 - Оценка: 4–6 рабочих дней
 - Риск: изменение data model
 - Зависимости: фазы 2–4
+- Статус: закрыта 27 июля. Реализован realtime board-level catalog из максимум
+  50 labels и card `labelIds` до 10 значений. Server routes атомарно
+  синхронизируют case-insensitive name/ID indexes на board, разрешают управление
+  owner/editor, а delete batch-очищает максимум 500 cards. Create/edit card,
+  chips, viewer read-only, optimistic rollback и RU/EN palette включены.
+  Legacy `labels` остаётся только read-path; dry-run/apply/idempotent migration
+  переводит строки в catalog IDs. Финальный gate: lint, 104 unit/component
+  tests, 12 Rules scenarios, production build/16 traces и Cypress 3/3 с
+  create/assign/rename/recolor/delete cleanup и подтверждённым emulator cleanup.
 
 ### 13.1 Уточнить технический контракт
 
@@ -812,6 +821,16 @@ Structural refactor может менять расположение файло�
 - палитру colors;
 - кто управляет каталогом: рекомендуется owner/editor;
 - что происходит при удалении используемой label.
+
+Принятый контракт:
+
+- uniqueness — по `trim + collapse whitespace + lowercase`;
+- максимум 50 labels на board и 10 на card;
+- палитра: gray/red/orange/yellow/green/blue/purple/pink;
+- owner/editor управляют через server API, viewer читает;
+- delete снимает ID со всех cards и затем удаляет catalog entry;
+- board хранит server-managed `labelIds`/`labelNames` maps для Rules, cap и
+  атомарной uniqueness без composite index.
 
 ### 13.2 Schema, Rules и migration
 

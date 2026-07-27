@@ -16,8 +16,8 @@ Realtime kanban with Firebase Auth + Firestore, optimistic UI, and drag-and-drop
 - Create/rename/delete boards and configure board language (ru/en).
 - Invite members by email, switch accepted members between editor/viewer, and
   keep viewers read-only.
-- Manage columns and cards (title, description, due date, multiple assignees)
-  and drag cards between columns.
+- Manage a shared label catalog and cards (title, description, due date,
+  multiple assignees and labels), and drag cards between columns.
 - Realtime sync via Firestore listeners with optimistic UI for create/move/delete.
 - UI language stored per user in `users/{uid}` (ru/en).
 
@@ -47,6 +47,7 @@ Server (Next.js API routes)
   ├─ /api/boards/[boardId] (access check, rename, cascade delete)
   ├─ /api/boards/[boardId]/columns/[columnId] (safe empty-column delete)
   ├─ /api/boards/[boardId]/members/[memberId] (role update, atomic remove/leave)
+  ├─ /api/boards/[boardId]/labels (validated label catalog writes)
   └─ /api/invites/[inviteId]/accept (atomic invite acceptance)
 ```
 

@@ -279,7 +279,22 @@ Owner дополнительно может удалить пустую коло
 
 Прямое удаление column client SDK запрещено Firestore Rules, поэтому обойти серверную проверку и создать карточки-сироты штатным клиентом нельзя.
 
-### 7.4 Карточки
+### 7.4 Каталог labels
+
+Board имеет realtime-каталог `boards/{boardId}/labels`. Owner/editor может
+создать, переименовать, перекрасить и удалить label; viewer видит каталог без
+write controls. Имя содержит 1–50 символов и уникально без учёта регистра и
+повторяющихся пробелов. Цвет выбирается из восьми значений палитры. Лимит —
+50 labels на board.
+
+Create/update/delete проходят через server API. Board document хранит
+server-maintained maps `labelIds` и `labelNames`, чтобы transaction атомарно
+проверяла лимит/уникальность, а Firestore Rules проверяли card references без
+дополнительных document reads. Rename/recolor меняет только catalog document.
+Delete снимает ID максимум с 500 cards batch-операцией, удаляет catalog document
+и его board indexes; повтор delete безопасен.
+
+### 7.5 Карточки
 
 Cards загружаются одной realtime-подпиской на board-level subcollection с пределом 500 и группируются по `columnId` в client state. Внутри колонок cards сортируются по numeric `order`. Columns и memberProfiles ограничены 100 документами.
 
@@ -293,26 +308,27 @@ Owner/editor открывает форму внутри конкретной к�
 - optional description;
 - optional due date через HTML date input.
 - до 20 исполнителей из актуальных участников доски.
+- до 10 labels из актуального каталога доски.
 
 Client заранее генерирует Firestore card id и `order = Date.now()`. Создание оптимистично добавляет card в board-level RTK cache и возможный per-column cache; при ошибке patch откатывается.
 
 #### Просмотр
 
 Card показывает title, description при наличии, due date в формате `DD.MM.YY`
-и chips назначенных участников с avatar/name/email fallback. Для editor/owner
-card кликабельна и keyboard-focusable; viewer видит card и исполнителей без edit
-behavior.
+и chips назначенных участников с avatar/name/email fallback, а также цветные
+label chips. Для editor/owner card кликабельна и keyboard-focusable; viewer
+видит card, исполнителей и labels без edit behavior.
 
 #### Редактирование
 
-Owner/editor открывает dialog и изменяет title, description, due date и
-нескольких исполнителей. Пустое description сохраняется как `null`; пустой due
-date снимает срок. Дубликаты UID удаляются, а отсутствующие в актуальном
-membership UID не предлагаются и не сохраняются клиентом.
+Owner/editor открывает dialog и изменяет title, description, due date,
+нескольких исполнителей и labels. Пустое description сохраняется как `null`;
+пустой due date снимает срок. Дубликаты UID/label ID удаляются, а отсутствующие
+в актуальном membership/catalog значения не предлагаются и не сохраняются.
 
 Изменение title/description/due date ожидает Firestore listener. Изменение
-исполнителей оптимистично обновляет board-level и per-column RTK caches и
-откатывается при ошибке записи.
+исполнителей или labels оптимистично обновляет board-level и per-column RTK
+caches и откатывается при ошибке записи.
 
 #### Перемещение
 
@@ -339,7 +355,7 @@ Mutation меняет `columnId` и `order`; RTK Query сразу патчит �
 
 Только owner видит delete action. После подтверждения документ удаляется немедленно и оптимистично исчезает из cache. Toast Undo пересоздаёт card с тем же id, columnId, order и business fields; createdAt/updatedAt становятся новыми server timestamps.
 
-### 7.5 Loading, empty и error states
+### 7.6 Loading, empty и error states
 
 - При загрузке columns может показываться skeleton.
 - При отсутствии columns показывается empty state.
@@ -424,6 +440,8 @@ Redux `boardUiSlice` хранит по board:
 | `ownerId` | UID string | неизменяемый owner id |
 | `members` | map UID -> true | membership lookup/query |
 | `roles` | map UID -> owner/editor/viewer | role lookup |
+| `labelIds` | map labelId -> true | server-managed Rules/index lookup |
+| `labelNames` | map normalized name -> labelId | server-managed uniqueness index |
 | `language` | ru/en | metadata языка доски |
 | `createdAt` | Timestamp | создание |
 | `updatedAt` | Timestamp | последнее изменение |
@@ -451,14 +469,26 @@ Redux `boardUiSlice` хранит по board:
 | `createdById` | UID string | записывается, не показывается |
 | `dueAt` | Timestamp/null | используется |
 | `assigneeIds` | string[] | несколько исполнителей, максимум 20 current members |
-| `labels` | string[] | data-layer only |
+| `labelIds` | string[] | до 10 IDs из board catalog |
+| `labels` | string[] | legacy read-only; удаляется migration |
 | `archived` | boolean | reserved data-layer field; `true` скрывается из active kanban |
 | `createdAt` | Timestamp | используется для данных |
 | `updatedAt` | Timestamp | используется для данных |
 
 Legacy reads поддерживают `createdBy -> createdById`.
 
-### 10.4 `boards/{boardId}/memberProfiles/{uid}`
+### 10.4 `boards/{boardId}/labels/{labelId}`
+
+| Поле | Тип |
+| --- | --- |
+| `name` | string 1–50 |
+| `normalizedName` | lowercase normalized string |
+| `color` | gray/red/orange/yellow/green/blue/purple/pink |
+| `order` | number |
+| `createdAt` | Timestamp |
+| `updatedAt` | Timestamp |
+
+### 10.5 `boards/{boardId}/memberProfiles/{uid}`
 
 | Поле | Тип |
 | --- | --- |
@@ -469,7 +499,7 @@ Legacy reads поддерживают `createdBy -> createdById`.
 
 Профиль является board-local snapshot. Прямой client delete запрещён; server remove/leave transaction удаляет профиль вместе с membership.
 
-### 10.5 `boardInvites/{boardId__email}`
+### 10.6 `boardInvites/{boardId__email}`
 
 | Поле | Тип |
 | --- | --- |
@@ -482,7 +512,7 @@ Legacy reads поддерживают `createdBy -> createdById`.
 
 Legacy reads поддерживают `invitedBy -> invitedById`.
 
-### 10.6 `users/{uid}`
+### 10.7 `users/{uid}`
 
 | Поле | Тип |
 | --- | --- |
@@ -491,7 +521,7 @@ Legacy reads поддерживают `invitedBy -> invitedById`.
 | `createdAt` | Timestamp |
 | `updatedAt` | Timestamp |
 
-### 10.7 Индексы
+### 10.8 Индексы
 
 В `firestore.indexes.json` явно задан collection index для cards:
 
@@ -515,7 +545,7 @@ Legacy reads поддерживают `invitedBy -> invitedById`.
 2. Проверяет server session cookie.
 3. Загружает board через Admin SDK.
 4. Сравнивает `ownerId` с session UID.
-5. Batch-циклами по 500 удаляет columns, cards, memberProfiles.
+5. Batch-циклами по 500 удаляет columns, cards, memberProfiles и labels.
 6. Удаляет все `boardInvites` по `boardId`.
 7. Удаляет board document.
 
@@ -543,6 +573,20 @@ Legacy reads поддерживают `invitedBy -> invitedById`.
    `memberProfiles/{uid}`. UI дополнительно скрывает stale UID, которого уже нет
    среди актуальных members.
 
+`POST/PATCH /api/boards/[boardId]/labels[/labelId]`:
+
+1. Проверяет App Check, session и актуальную роль owner/editor.
+2. Нормализует имя, проверяет палитру, case-insensitive uniqueness и cap 50.
+3. Transaction записывает catalog document и синхронные board maps
+   `labelIds`/`labelNames`.
+
+`DELETE /api/boards/[boardId]/labels/[labelId]`:
+
+1. Проверяет owner/editor и product cap 500 cards.
+2. Batch-удаляет label ID из всех использующих его cards.
+3. Transaction удаляет catalog document и оба board index entry; повтор запроса
+   не создаёт dangling references.
+
 `PATCH /api/boards/[boardId]/members/[memberId]`:
 
 1. Проверяет App Check, server session и актуального owner в transaction.
@@ -566,8 +610,14 @@ Client checks:
 - due date парсится из локального `YYYY-MM-DD`.
 - assignee IDs дедуплицируются, ограничиваются 20 значениями и фильтруются по
   актуальным board members.
+- label IDs дедуплицируются, ограничиваются 10 значениями и фильтруются по
+  актуальному board catalog.
 
-Firestore Rules дополнительно проверяют allowed keys, roles, timestamps, максимальные длины и размеры maps/lists. Карточка обязана ссылаться на существующую колонку; при создании `createdById` совпадает с UID автора; assignees входят в members; labels — строки ограниченной длины и количества.
+Firestore Rules дополнительно проверяют allowed keys, roles, timestamps,
+максимальные длины и размеры maps/lists. Карточка обязана ссылаться на
+существующую колонку; при создании `createdById` совпадает с UID автора;
+assignees входят в members, а `labelIds` — в server-maintained catalog index.
+Прямые catalog writes запрещены.
 
 Ошибки Firebase Auth переводятся на ru/en для известных кодов. Firestore/server errors часто показывают исходный `Error.message`, иначе используется локализованный fallback.
 
@@ -650,7 +700,10 @@ Firestore emulators для `demo-kanban-e2e`, создаёт локальног�
 
 Принятое решение описывает целевой продуктовый контракт. Если UI или data model ещё не реализованы, это отмечено отдельно.
 
-1. **Assignments, labels, archive — решено.** Карточка поддерживает нескольких исполнителей через существующий `assigneeIds`. Для labels нужен общий каталог названий и цветов на уровне доски и новая сущность в schema. Archive не развивается и не получает отдельный UI.
+1. **Assignments, labels, archive — реализовано/решено.** Карточка поддерживает
+   нескольких исполнителей через `assigneeIds` и до 10 меток через `labelIds`.
+   Общий catalog хранит name/color на уровне доски; rename/recolor не
+   переписывает cards. Archive не развивается и не получает отдельный UI.
 2. **Удаление профиля участника — решено.** Используется немедленное окончательное удаление без soft delete, retention window и Undo.
 3. **Board stats — решено.** Остаются Firestore aggregation queries; denormalized counters и server projection не вводятся без измеримой необходимости.
 4. **Размер доски — решено.** Pagination/virtualization не входят в поддерживаемую модель. Жёсткое правило продукта: максимум 500 cards, 100 columns и 100 member profiles; при card cap content editing блокируется, большую доску следует разделить.
