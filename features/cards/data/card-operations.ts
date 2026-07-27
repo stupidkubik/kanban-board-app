@@ -9,6 +9,7 @@ import {
 } from "firebase/firestore"
 
 import { clientDb } from "@/lib/firebase/client"
+import { retryFirebaseWrite } from "@/lib/firebase/retry-write"
 import { normalizeAssigneeIds } from "@/features/cards/model/card-assignees"
 import { normalizeLabelIds } from "@/features/labels/model/label-normalizers"
 
@@ -122,19 +123,23 @@ export const createCard = async ({
 
   const cardsCollection = collection(clientDb, "boards", boardId, "cards")
   const cardRef = cardId ? doc(cardsCollection, cardId) : doc(cardsCollection)
-  await setDoc(cardRef, payload)
+  await retryFirebaseWrite(() => setDoc(cardRef, payload))
   return cardRef.id
 }
 
 export const updateCard = async (input: UpdateCardInput) => {
-  await updateDoc(
-    doc(clientDb, "boards", input.boardId, "cards", input.cardId),
-    buildCardUpdates(input)
+  await retryFirebaseWrite(() =>
+    updateDoc(
+      doc(clientDb, "boards", input.boardId, "cards", input.cardId),
+      buildCardUpdates(input)
+    )
   )
 }
 
 export const deleteCard = async ({ boardId, cardId }: DeleteCardInput) => {
-  await deleteDoc(doc(clientDb, "boards", boardId, "cards", cardId))
+  await retryFirebaseWrite(() =>
+    deleteDoc(doc(clientDb, "boards", boardId, "cards", cardId))
+  )
 }
 
 export const rebalanceCardOrders = async ({
@@ -152,5 +157,5 @@ export const rebalanceCardOrders = async ({
       updatedAt: serverTimestamp(),
     })
   })
-  await batch.commit()
+  await retryFirebaseWrite(() => batch.commit())
 }

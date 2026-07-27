@@ -8,6 +8,7 @@ type CreateCardOptimisticArgs = {
   dispatch: AppDispatch
   boardId: string
   card: Card
+  patchColumnCache?: boolean
 }
 
 type MoveCardOptimisticArgs = {
@@ -165,6 +166,7 @@ export const optimisticCreateCard = ({
   dispatch,
   boardId,
   card,
+  patchColumnCache = false,
 }: CreateCardOptimisticArgs): PatchResult => {
   const patches: PatchResult[] = []
 
@@ -182,17 +184,19 @@ export const optimisticCreateCard = ({
     )
   )
 
-  patches.push(
-    dispatch(
-      firestoreApi.util.updateQueryData(
-        "getCards",
-        { boardId, columnId: card.columnId },
-        (draft) => {
-          addCardToList(draft, card.id, card.columnId, card.order, card, true)
-        }
+  if (patchColumnCache) {
+    patches.push(
+      dispatch(
+        firestoreApi.util.updateQueryData(
+          "getCards",
+          { boardId, columnId: card.columnId },
+          (draft) => {
+            addCardToList(draft, card.id, card.columnId, card.order, card, true)
+          }
+        )
       )
     )
-  )
+  }
 
   return combinePatches(patches)
 }

@@ -1,5 +1,4 @@
 import {
-  addDoc,
   collection,
   doc,
   serverTimestamp,
@@ -9,6 +8,7 @@ import {
 
 import { clientDb } from "@/lib/firebase/client"
 import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
+import { retryFirebaseWrite } from "@/lib/firebase/retry-write"
 import type { BoardLanguage } from "@/lib/types/boards"
 
 export type CreateBoardInput = {
@@ -156,10 +156,12 @@ export const updateBoardLanguage = async ({
   boardId,
   language,
 }: UpdateBoardLanguageInput) => {
-  await updateDoc(doc(clientDb, "boards", boardId), {
-    language,
-    updatedAt: serverTimestamp(),
-  })
+  await retryFirebaseWrite(() =>
+    updateDoc(doc(clientDb, "boards", boardId), {
+      language,
+      updatedAt: serverTimestamp(),
+    })
+  )
 }
 
 export const updateBoardTitle = async ({ boardId, title }: UpdateBoardTitleInput) => {
@@ -194,12 +196,15 @@ export const deleteBoard = async ({ boardId }: DeleteBoardInput) => {
 }
 
 export const createColumn = async ({ boardId, title }: CreateColumnInput) => {
-  await addDoc(collection(clientDb, "boards", boardId, "columns"), {
-    title,
-    order: Date.now(),
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  })
+  const columnRef = doc(collection(clientDb, "boards", boardId, "columns"))
+  await retryFirebaseWrite(() =>
+    setDoc(columnRef, {
+      title,
+      order: Date.now(),
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    })
+  )
 }
 
 export const updateColumn = async ({
@@ -207,10 +212,12 @@ export const updateColumn = async ({
   columnId,
   title,
 }: UpdateColumnInput) => {
-  await updateDoc(doc(clientDb, "boards", boardId, "columns", columnId), {
-    title,
-    updatedAt: serverTimestamp(),
-  })
+  await retryFirebaseWrite(() =>
+    updateDoc(doc(clientDb, "boards", boardId, "columns", columnId), {
+      title,
+      updatedAt: serverTimestamp(),
+    })
+  )
 }
 
 export const restoreColumn = async ({
@@ -219,12 +226,14 @@ export const restoreColumn = async ({
   title,
   order,
 }: RestoreColumnInput) => {
-  await setDoc(doc(clientDb, "boards", boardId, "columns", columnId), {
-    title,
-    order,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  })
+  await retryFirebaseWrite(() =>
+    setDoc(doc(clientDb, "boards", boardId, "columns", columnId), {
+      title,
+      order,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    })
+  )
 }
 
 export const deleteColumn = async ({ boardId, columnId }: DeleteColumnInput) => {

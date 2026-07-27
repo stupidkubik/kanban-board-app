@@ -41,6 +41,11 @@ const getCachedCards = (
   return result.data ?? []
 }
 
+const hasCachedCards = (
+  state: RootState,
+  args: { boardId: string; columnId?: string | null }
+) => cardsApi.endpoints.getCards.select(args)(state).status !== "uninitialized"
+
 export const cardsApi = cardQueriesApi.injectEndpoints({
   endpoints: (builder) => ({
     createCard: builder.mutation<MutationResult, CreateCardInput>({
@@ -62,7 +67,7 @@ export const cardsApi = cardQueriesApi.injectEndpoints({
           }
         }
       },
-      async onQueryStarted(args, { dispatch, queryFulfilled }) {
+      async onQueryStarted(args, { dispatch, getState, queryFulfilled }) {
         const cardId = ensureCardId(args.boardId, args.cardId)
         const order = ensureCardOrder(args.order)
         const optimisticCard: Card = {
@@ -96,6 +101,10 @@ export const cardsApi = cardQueriesApi.injectEndpoints({
           dispatch,
           boardId: args.boardId,
           card: optimisticCard,
+          patchColumnCache: hasCachedCards(getState() as RootState, {
+            boardId: args.boardId,
+            columnId: args.columnId,
+          }),
         })
 
         try {
@@ -125,7 +134,11 @@ export const cardsApi = cardQueriesApi.injectEndpoints({
       async onQueryStarted(args, { dispatch, getState, queryFulfilled }) {
         const state = getState() as RootState
         const columns = getCachedColumns(state, args.boardId)
-        const columnIds = columns.map((column) => column.id)
+        const columnIds = columns
+          .map((column) => column.id)
+          .filter((columnId) =>
+            hasCachedCards(state, { boardId: args.boardId, columnId })
+          )
         const boardCards = getCachedCards(state, { boardId: args.boardId })
         let currentCard = boardCards.find((card) => card.id === args.cardId)
 
@@ -215,7 +228,11 @@ export const cardsApi = cardQueriesApi.injectEndpoints({
       async onQueryStarted(args, { dispatch, getState, queryFulfilled }) {
         const state = getState() as RootState
         const columns = getCachedColumns(state, args.boardId)
-        const columnIds = columns.map((column) => column.id)
+        const columnIds = columns
+          .map((column) => column.id)
+          .filter((columnId) =>
+            hasCachedCards(state, { boardId: args.boardId, columnId })
+          )
         const boardCards = getCachedCards(state, { boardId: args.boardId })
         let currentCard = boardCards.find((card) => card.id === args.cardId)
 

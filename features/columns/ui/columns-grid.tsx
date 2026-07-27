@@ -72,6 +72,7 @@ const ColumnDropZone = ({ id, testId, children }: ColumnDropZoneProps) => {
 }
 
 type ColumnsGridProps = {
+  boardId: string | null
   columns: Column[]
   cardsByColumn: Map<string, BoardCard[]>
   canEdit: boolean
@@ -96,17 +97,11 @@ type ColumnsGridProps = {
   deletePendingId: string | null
   onDeleteColumn: (columnId: string) => void
   creatingCard: boolean
-  showAddCardByColumn: Record<string, boolean>
   onToggleAddCard: (columnId: string, open: boolean) => void
-  newCardTitleByColumn: Record<string, string>
   onChangeCardTitle: (columnId: string, value: string) => void
-  newCardDescriptionByColumn: Record<string, string>
   onChangeCardDescription: (columnId: string, value: string) => void
-  newCardDueByColumn: Record<string, string>
-  newCardAssigneeIdsByColumn: Record<string, string[]>
   assignees: CardAssignee[]
   assigneesById: Map<string, CardAssignee>
-  newCardLabelIdsByColumn: Record<string, string[]>
   labels: BoardLabel[]
   labelsById: Map<string, BoardLabel>
   onChangeCardDue: (columnId: string, value: string) => void
@@ -121,6 +116,7 @@ type ColumnsGridProps = {
 }
 
 export const ColumnsGrid = React.memo(function ColumnsGrid({
+  boardId,
   columns,
   cardsByColumn,
   canEdit,
@@ -145,17 +141,11 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
   deletePendingId,
   onDeleteColumn,
   creatingCard,
-  showAddCardByColumn,
   onToggleAddCard,
-  newCardTitleByColumn,
   onChangeCardTitle,
-  newCardDescriptionByColumn,
   onChangeCardDescription,
-  newCardDueByColumn,
-  newCardAssigneeIdsByColumn,
   assignees,
   assigneesById,
-  newCardLabelIdsByColumn,
   labels,
   labelsById,
   onChangeCardDue,
@@ -197,8 +187,6 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
             const isEditing = editingId === column.id
             const isDeleting = deletePendingId === column.id
             const cardsInColumn = cardsByColumn.get(column.id) ?? []
-            const showAddCard =
-              canEdit && (showAddCardByColumn[column.id] ?? false)
             const isDropTarget = hoveredColumnId === column.id
 
             return (
@@ -297,6 +285,7 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
                 >
                   <CardContent className={styles.columnBody}>
                     <CardsColumnBody
+                      boardId={boardId}
                       columnId={column.id}
                       cards={cardsInColumn}
                       canEdit={canEdit}
@@ -307,33 +296,19 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
                       activeCardColumnId={activeCardColumnId}
                       hoveredColumnId={hoveredColumnId}
                       overCardId={overCardId}
-                      showAddCard={showAddCard}
                       creatingCard={creatingCard}
-                      newCardTitle={newCardTitleByColumn[column.id] ?? ""}
-                      newCardDescription={newCardDescriptionByColumn[column.id] ?? ""}
-                      newCardDue={newCardDueByColumn[column.id] ?? ""}
-              newCardAssigneeIds={
-                newCardAssigneeIdsByColumn[column.id] ?? []
-              }
-              newCardLabelIds={newCardLabelIdsByColumn[column.id] ?? []}
-              assignees={assignees}
-              assigneesById={assigneesById}
-              labels={labels}
-              labelsById={labelsById}
-                      onChangeCardTitle={(value) => onChangeCardTitle(column.id, value)}
-                      onChangeCardDescription={(value) =>
-                        onChangeCardDescription(column.id, value)
-                      }
-                      onChangeCardDue={(value) => onChangeCardDue(column.id, value)}
-              onToggleCardAssignee={(assigneeId) =>
-                onToggleCardAssignee(column.id, assigneeId)
-              }
-              onToggleCardLabel={(labelId) =>
-                onToggleCardLabel(column.id, labelId)
-              }
-                      onCreateCard={(event) => onCreateCard(event, column.id)}
-                      onCancelCreateCard={() => onCancelCreateCard(column.id)}
-                      onToggleAddCard={(open) => onToggleAddCard(column.id, open)}
+                      assignees={assignees}
+                      assigneesById={assigneesById}
+                      labels={labels}
+                      labelsById={labelsById}
+                      onChangeCardTitle={onChangeCardTitle}
+                      onChangeCardDescription={onChangeCardDescription}
+                      onChangeCardDue={onChangeCardDue}
+                      onToggleCardAssignee={onToggleCardAssignee}
+                      onToggleCardLabel={onToggleCardLabel}
+                      onCreateCard={onCreateCard}
+                      onCancelCreateCard={onCancelCreateCard}
+                      onToggleAddCard={onToggleAddCard}
                       onStartEditingCard={onStartEditingCard}
                       onStartDeletingCard={onStartDeletingCard}
                       formatDueDate={formatDueDate}

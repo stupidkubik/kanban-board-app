@@ -22,54 +22,122 @@ type BoardSummary = {
   visibleMembers: BoardMemberProfile[]
 }
 
+type RemoteBoardSummary = {
+  boardId: string
+  columnCount: number | null
+  cardCount: number | null
+  profiles: BoardMemberProfile[]
+}
+
+type SummaryTask = {
+  run: () => Promise<void>
+}
+
+const summaryCache = new Map<
+  string,
+  { expiresAt: number; value: RemoteBoardSummary }
+>()
+const pendingSummaries = new Map<string, Promise<RemoteBoardSummary>>()
+const summaryQueue: SummaryTask[] = []
+let summaryQueueActive = false
+
+const drainSummaryQueue = () => {
+  if (summaryQueueActive) return
+  const task = summaryQueue.shift()
+  if (!task) return
+
+  summaryQueueActive = true
+  void task.run().finally(() => {
+    summaryQueueActive = false
+    drainSummaryQueue()
+  })
+}
+
+const enqueueSummary = <Result,>(load: () => Promise<Result>) =>
+  new Promise<Result>((resolve, reject) => {
+    summaryQueue.push({
+      run: async () => {
+        try {
+          resolve(await load())
+        } catch (error) {
+          reject(error)
+        }
+      },
+    })
+    drainSummaryQueue()
+  })
+
+const loadRemoteSummary = (boardId: string, memberKey: string) => {
+  const cacheKey = `${boardId}\u0000${memberKey}`
+  const cached = summaryCache.get(cacheKey)
+  if (cached && cached.expiresAt > Date.now()) {
+    return Promise.resolve(cached.value)
+  }
+
+  const pending = pendingSummaries.get(cacheKey)
+  if (pending) {
+    return pending
+  }
+
+  const request = enqueueSummary(async () => {
+    const boardRef = doc(clientDb, "boards", boardId)
+    const [columns, cards, profiles] = await Promise.allSettled([
+      getCountFromServer(collection(boardRef, "columns")),
+      getCountFromServer(collection(boardRef, "cards")),
+      getDocs(query(collection(boardRef, "memberProfiles"), limit(8))),
+    ])
+    const value: RemoteBoardSummary = {
+      boardId,
+      columnCount:
+        columns.status === "fulfilled" ? columns.value.data().count : null,
+      cardCount: cards.status === "fulfilled" ? cards.value.data().count : null,
+      profiles:
+        profiles.status === "fulfilled"
+          ? profiles.value.docs.map((snapshot) =>
+              normalizeMemberProfile(snapshot.id, snapshot.data())
+            )
+          : [],
+    }
+    const fullyLoaded =
+      columns.status === "fulfilled" &&
+      cards.status === "fulfilled" &&
+      profiles.status === "fulfilled"
+    summaryCache.set(cacheKey, {
+      expiresAt: Date.now() + (fullyLoaded ? 10_000 : 2_000),
+      value,
+    })
+    return value
+  }).finally(() => {
+    pendingSummaries.delete(cacheKey)
+  })
+
+  pendingSummaries.set(cacheKey, request)
+  return request
+}
+
 export const useBoardSummary = (board: Board, user: User): BoardSummary => {
   const memberIds = React.useMemo(
     () => Object.entries(board.members).filter(([, active]) => active).map(([id]) => id),
     [board.members]
   )
   const memberKey = memberIds.join("\u0000")
-  const [remoteSummary, setRemoteSummary] = React.useState<{
-    boardId: string
-    columnCount: number | null
-    cardCount: number | null
-    profiles: BoardMemberProfile[]
-  } | null>(null)
+  const [remoteSummary, setRemoteSummary] =
+    React.useState<RemoteBoardSummary | null>(null)
 
   React.useEffect(() => {
     let active = true
-    const boardRef = doc(clientDb, "boards", board.id)
 
-    Promise.all([
-      getCountFromServer(collection(boardRef, "columns")),
-      getCountFromServer(collection(boardRef, "cards")),
-      getDocs(query(collection(boardRef, "memberProfiles"), limit(8))),
-    ])
-      .then(([columns, cards, profiles]) => {
-        if (!active) {
-          return
-        }
-        setRemoteSummary({
-          boardId: board.id,
-          columnCount: columns.data().count,
-          cardCount: cards.data().count,
-          profiles: profiles.docs.map((snapshot) =>
-            normalizeMemberProfile(snapshot.id, snapshot.data())
-          ),
-        })
-      })
-      .catch(() => {
+    const timeoutId = window.setTimeout(() => {
+      void loadRemoteSummary(board.id, memberKey).then((summary) => {
         if (active) {
-          setRemoteSummary({
-            boardId: board.id,
-            columnCount: null,
-            cardCount: null,
-            profiles: [],
-          })
+          setRemoteSummary(summary)
         }
       })
+    }, 500)
 
     return () => {
       active = false
+      window.clearTimeout(timeoutId)
     }
   }, [board.id, memberKey])
 

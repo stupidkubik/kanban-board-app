@@ -8,7 +8,7 @@ import { parseDateInput } from "@/lib/board-order"
 import { getErrorMessage } from "@/lib/errors"
 import { clientDb } from "@/lib/firebase/client"
 import { useCreateCardMutation } from "@/features/cards/data/cards-api"
-import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
+import { useAppDispatch, useAppStore } from "@/lib/store/hooks"
 import {
   resetAddCardForm,
   selectBoardUi,
@@ -40,37 +40,8 @@ export const useCardCreateController = ({
   availableLabelIds,
 }: UseCardCreateControllerArgs) => {
   const dispatch = useAppDispatch()
-  const addCardDrafts = useAppSelector(
-    (state) => selectBoardUi(state, boardId).addCardByColumn
-  )
+  const store = useAppStore()
   const [createCard, { isLoading: creatingCard }] = useCreateCardMutation()
-
-  const draftFields = React.useMemo(() => {
-    const showAddCardByColumn: Record<string, boolean> = {}
-    const newCardTitleByColumn: Record<string, string> = {}
-    const newCardDescriptionByColumn: Record<string, string> = {}
-    const newCardDueByColumn: Record<string, string> = {}
-    const newCardAssigneeIdsByColumn: Record<string, string[]> = {}
-    const newCardLabelIdsByColumn: Record<string, string[]> = {}
-
-    Object.entries(addCardDrafts).forEach(([columnId, draft]) => {
-      showAddCardByColumn[columnId] = draft.open
-      newCardTitleByColumn[columnId] = draft.title
-      newCardDescriptionByColumn[columnId] = draft.description
-      newCardDueByColumn[columnId] = draft.due
-      newCardAssigneeIdsByColumn[columnId] = draft.assigneeIds
-      newCardLabelIdsByColumn[columnId] = draft.labelIds
-    })
-
-    return {
-      showAddCardByColumn,
-      newCardTitleByColumn,
-      newCardDescriptionByColumn,
-      newCardDueByColumn,
-      newCardAssigneeIdsByColumn,
-      newCardLabelIdsByColumn,
-    }
-  }, [addCardDrafts])
 
   const toggleAddCard = React.useCallback(
     (columnId: string, open: boolean) => {
@@ -106,7 +77,9 @@ export const useCardCreateController = ({
         return
       }
 
-      const draft = addCardDrafts[columnId]
+      const draft = selectBoardUi(store.getState(), boardId).addCardByColumn[
+        columnId
+      ]
       const title = (draft?.title ?? "").trim()
       if (!isNonEmpty(title)) {
         setError(uiCopy.board.errors.cardTitleRequired)
@@ -141,13 +114,13 @@ export const useCardCreateController = ({
       }
     },
     [
-      addCardDrafts,
       availableAssigneeIds,
       availableLabelIds,
       boardId,
       createCard,
       dispatch,
       setError,
+      store,
       uiCopy,
       user,
     ]
@@ -156,7 +129,6 @@ export const useCardCreateController = ({
   return {
     createCard,
     creatingCard,
-    ...draftFields,
     toggleAddCard,
     handleCardTitleChange: React.useCallback(
       (columnId: string, value: string) =>

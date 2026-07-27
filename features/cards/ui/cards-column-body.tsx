@@ -20,6 +20,8 @@ import { CardAssigneeList } from "@/features/cards/ui/card-assignee-list"
 import { CardLabelPicker } from "@/features/labels/ui/card-label-picker"
 import { CardLabelList } from "@/features/labels/ui/card-label-list"
 import type { BoardLabel } from "@/lib/types/boards"
+import { selectBoardUi } from "@/lib/store/board-ui-slice"
+import { useAppSelector } from "@/lib/store/hooks"
 
 type DragCardData = { columnId?: string }
 
@@ -47,7 +49,7 @@ type SortableCardItemProps = {
   labelsLabel: string
 }
 
-const SortableCardItem = ({
+const SortableCardItem = React.memo(function SortableCardItem({
   card,
   canEdit,
   canDelete,
@@ -60,7 +62,7 @@ const SortableCardItem = ({
   assigneesLabel,
   labelsById,
   labelsLabel,
-}: SortableCardItemProps) => {
+}: SortableCardItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
     useSortable({
       id: card.id,
@@ -152,9 +154,10 @@ const SortableCardItem = ({
       <CardLabelList labels={cardLabels} ariaLabel={labelsLabel} />
     </li>
   )
-}
+})
 
 type CardsColumnBodyProps = {
+  boardId: string | null
   columnId: string
   cards: BoardCard[]
   canEdit: boolean
@@ -165,31 +168,29 @@ type CardsColumnBodyProps = {
   activeCardColumnId: string | null
   hoveredColumnId: string | null
   overCardId: string | null
-  showAddCard: boolean
   creatingCard: boolean
-  newCardTitle: string
-  newCardDescription: string
-  newCardDue: string
-  newCardAssigneeIds: string[]
   assignees: CardAssignee[]
   assigneesById: Map<string, CardAssignee>
-  newCardLabelIds: string[]
   labels: BoardLabel[]
   labelsById: Map<string, BoardLabel>
-  onChangeCardTitle: (value: string) => void
-  onChangeCardDescription: (value: string) => void
-  onChangeCardDue: (value: string) => void
-  onToggleCardAssignee: (assigneeId: string) => void
-  onToggleCardLabel: (labelId: string) => void
-  onCreateCard: (event: React.FormEvent<HTMLFormElement>) => void
-  onCancelCreateCard: () => void
-  onToggleAddCard: (open: boolean) => void
+  onChangeCardTitle: (columnId: string, value: string) => void
+  onChangeCardDescription: (columnId: string, value: string) => void
+  onChangeCardDue: (columnId: string, value: string) => void
+  onToggleCardAssignee: (columnId: string, assigneeId: string) => void
+  onToggleCardLabel: (columnId: string, labelId: string) => void
+  onCreateCard: (
+    event: React.FormEvent<HTMLFormElement>,
+    columnId: string
+  ) => void
+  onCancelCreateCard: (columnId: string) => void
+  onToggleAddCard: (columnId: string, open: boolean) => void
   onStartEditingCard: (card: BoardCard) => void
   onStartDeletingCard: (card: BoardCard) => void
   formatDueDate: (value?: number) => string | null
 }
 
 export const CardsColumnBody = React.memo(function CardsColumnBody({
+  boardId,
   columnId,
   cards,
   canEdit,
@@ -200,15 +201,9 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
   activeCardColumnId,
   hoveredColumnId,
   overCardId,
-  showAddCard,
   creatingCard,
-  newCardTitle,
-  newCardDescription,
-  newCardDue,
-  newCardAssigneeIds,
   assignees,
   assigneesById,
-  newCardLabelIds,
   labels,
   labelsById,
   onChangeCardTitle,
@@ -223,6 +218,15 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
   onStartDeletingCard,
   formatDueDate,
 }: CardsColumnBodyProps) {
+  const draft = useAppSelector(
+    (state) => selectBoardUi(state, boardId).addCardByColumn[columnId]
+  )
+  const showAddCard = canEdit && Boolean(draft?.open)
+  const newCardTitle = draft?.title ?? ""
+  const newCardDescription = draft?.description ?? ""
+  const newCardDue = draft?.due ?? ""
+  const newCardAssigneeIds = draft?.assigneeIds ?? []
+  const newCardLabelIds = draft?.labelIds ?? []
   const dueLabel = uiCopy.board.cardDueDateLabel
   const isDropTarget = hoveredColumnId === columnId
   const showPlaceholder = !!activeCardId && !!activeCardColumnId && isDropTarget
@@ -293,7 +297,10 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
         <p className={styles.cardsEmpty}>{uiCopy.board.noCards}</p>
       ) : null}
       {showAddCard ? (
-        <form className={styles.cardForm} onSubmit={onCreateCard}>
+        <form
+          className={styles.cardForm}
+          onSubmit={(event) => onCreateCard(event, columnId)}
+        >
           <Field>
             <FieldLabel className="srOnly" htmlFor={`new-card-title-${columnId}`}>
               {uiCopy.board.cardTitlePlaceholder}
@@ -303,7 +310,9 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
                 id={`new-card-title-${columnId}`}
                 className={styles.cardFormInput}
                 value={newCardTitle}
-                onChange={(event) => onChangeCardTitle(event.target.value)}
+                onChange={(event) =>
+                  onChangeCardTitle(columnId, event.target.value)
+                }
                 placeholder={uiCopy.board.cardTitlePlaceholder}
                 aria-label={uiCopy.board.cardTitlePlaceholder}
                 disabled={!canEdit || creatingCard}
@@ -323,7 +332,9 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
                 id={`new-card-description-${columnId}`}
                 className={styles.cardFormTextarea}
                 value={newCardDescription}
-                onChange={(event) => onChangeCardDescription(event.target.value)}
+                onChange={(event) =>
+                  onChangeCardDescription(columnId, event.target.value)
+                }
                 placeholder={uiCopy.board.cardDescriptionPlaceholder}
                 aria-label={uiCopy.board.cardDescriptionPlaceholder}
                 rows={3}
@@ -340,7 +351,9 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
               id={`new-card-due-${columnId}`}
               className={`${styles.cardDateInput} ${styles.cardFormInput}`}
               value={newCardDue}
-              onChange={(event) => onChangeCardDue(event.target.value)}
+              onChange={(event) =>
+                onChangeCardDue(columnId, event.target.value)
+              }
               type="date"
               aria-label={uiCopy.board.cardDueDateLabel}
               disabled={!canEdit || creatingCard}
@@ -363,7 +376,7 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
               type="button"
               variant="ghost"
               size="sm"
-              onClick={onCancelCreateCard}
+              onClick={() => onCancelCreateCard(columnId)}
               data-testid={`cancel-card-${columnId}`}
             >
               {uiCopy.common.cancel}
@@ -376,7 +389,9 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
             emptyLabel={uiCopy.board.cardAssigneesEmpty}
             disabled={!canEdit || creatingCard}
             testId={`new-card-assignees-${columnId}`}
-            onToggle={onToggleCardAssignee}
+            onToggle={(assigneeId) =>
+              onToggleCardAssignee(columnId, assigneeId)
+            }
           />
           <CardLabelPicker
             labels={labels}
@@ -385,7 +400,7 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
             emptyLabel={uiCopy.board.cardLabelsEmpty}
             disabled={!canEdit || creatingCard}
             testId={`new-card-labels-${columnId}`}
-            onToggle={onToggleCardLabel}
+            onToggle={(labelId) => onToggleCardLabel(columnId, labelId)}
           />
         </form>
       ) : canEdit ? (
@@ -393,7 +408,7 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
           type="button"
           variant="ghost"
           className={styles.addCardButton}
-          onClick={() => onToggleAddCard(true)}
+          onClick={() => onToggleAddCard(columnId, true)}
           data-testid={`add-card-${columnId}`}
         >
           <Plus weight="bold" />

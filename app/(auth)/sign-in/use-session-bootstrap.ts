@@ -1,10 +1,11 @@
 "use client"
 
 import * as React from "react"
+import { FirebaseError } from "firebase/app"
 import type { User } from "firebase/auth"
 
 import { getFriendlyAuthError } from "./auth-error"
-import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
+import { refreshServerSession } from "@/lib/firebase/app-check-fetch"
 import type { getCopy } from "@/lib/i18n"
 
 type UseSessionBootstrapArgs = {
@@ -42,23 +43,18 @@ export const useSessionBootstrap = ({
     const syncSession = async () => {
       setSessionPending(true)
       try {
-        const idToken = await user.getIdToken(true)
-        const response = await fetchWithAppCheck("/api/auth/session", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ idToken }),
+        await refreshServerSession({
+          forceRefresh: true,
+          forceSession: true,
         })
-
-        if (!response.ok) {
-          throw new Error(errors.sessionError)
-        }
-
         router.replace("/")
       } catch (error) {
         syncedUserIdRef.current = null
-        setError(getFriendlyAuthError(error, errors))
+        setError(
+          error instanceof FirebaseError
+            ? getFriendlyAuthError(error, errors)
+            : errors.sessionError
+        )
       } finally {
         setSessionPending(false)
       }

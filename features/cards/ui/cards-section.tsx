@@ -67,12 +67,6 @@ export const CardsSection = React.memo(function CardsSection({
     creatingCard,
     updatingCard,
     deletingCard,
-    showAddCardByColumn,
-    newCardTitleByColumn,
-    newCardDescriptionByColumn,
-    newCardDueByColumn,
-    newCardAssigneeIdsByColumn,
-    newCardLabelIdsByColumn,
     toggleAddCard,
     handleCardTitleChange,
     handleCardDescriptionChange,
@@ -151,6 +145,7 @@ export const CardsSection = React.memo(function CardsSection({
         <ColumnsSkeleton ariaLabel={uiCopy.common.loading} />
       ) : (
         <ColumnsGrid
+          boardId={boardId}
           columns={columns}
           cardsByColumn={cardsByColumn}
           canEdit={contentEditingEnabled}
@@ -175,19 +170,13 @@ export const CardsSection = React.memo(function CardsSection({
           deletePendingId={deletePendingId}
           onDeleteColumn={onDeleteColumn}
           creatingCard={creatingCard}
-          showAddCardByColumn={showAddCardByColumn}
           onToggleAddCard={toggleAddCard}
-          newCardTitleByColumn={newCardTitleByColumn}
           onChangeCardTitle={handleCardTitleChange}
-          newCardDescriptionByColumn={newCardDescriptionByColumn}
           onChangeCardDescription={handleCardDescriptionChange}
-          newCardDueByColumn={newCardDueByColumn}
-          newCardAssigneeIdsByColumn={newCardAssigneeIdsByColumn}
           assignees={assignees}
           assigneesById={assigneesById}
           labels={labels}
           labelsById={labelsById}
-          newCardLabelIdsByColumn={newCardLabelIdsByColumn}
           onChangeCardDue={handleCardDueChange}
           onToggleCardAssignee={toggleCardAssignee}
           onToggleCardLabel={toggleCardLabel}

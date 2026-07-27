@@ -52,7 +52,7 @@ describe("useBoardSummary", () => {
     mocks.getDocs.mockResolvedValue({ docs: [] })
   })
 
-  it("loads one-shot counts without creating realtime listeners", async () => {
+  it("loads queued one-shot counts without creating realtime listeners", async () => {
     const { result } = renderHook(() =>
       useBoardSummary(board, user as never)
     )
@@ -60,7 +60,7 @@ describe("useBoardSummary", () => {
     await waitFor(() => {
       expect(result.current.columnCount).toBe(2)
       expect(result.current.cardCount).toBe(7)
-    })
+    }, { timeout: 2_000 })
 
     expect(mocks.getCountFromServer).toHaveBeenCalledTimes(2)
     expect(mocks.getDocs).toHaveBeenCalledOnce()

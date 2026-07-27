@@ -2,9 +2,10 @@
 
 import * as React from "react"
 import type { User } from "firebase/auth"
-import { onAuthStateChanged } from "firebase/auth"
+import { onIdTokenChanged } from "firebase/auth"
 
 import { clientAuth } from "@/lib/firebase/client"
+import { refreshServerSession } from "@/lib/firebase/app-check-fetch"
 import {
   authError,
   authLoading,
@@ -28,13 +29,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     dispatch(authLoading())
-    const unsubscribe = onAuthStateChanged(
+    const unsubscribe = onIdTokenChanged(
       clientAuth,
       (currentUser) => {
         setUser(currentUser)
         setLoading(false)
 
         if (currentUser) {
+          void refreshServerSession().catch(() => {
+            // API requests retry a failed or expired server session on demand.
+          })
           dispatch(
             authSignedIn({
               uid: currentUser.uid,

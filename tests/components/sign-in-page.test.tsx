@@ -17,8 +17,8 @@ const mocks = vi.hoisted(() => ({
   },
   locale: "en" as "ru" | "en",
   createUser: vi.fn(),
-  fetchWithAppCheck: vi.fn(),
   getIdToken: vi.fn(),
+  refreshServerSession: vi.fn(),
   replace: vi.fn(),
   resetPassword: vi.fn(),
   setLocale: vi.fn(),
@@ -49,7 +49,7 @@ vi.mock("@/lib/firebase/client", () => ({
 }))
 
 vi.mock("@/lib/firebase/app-check-fetch", () => ({
-  fetchWithAppCheck: mocks.fetchWithAppCheck,
+  refreshServerSession: mocks.refreshServerSession,
 }))
 
 vi.mock("@/lib/use-preferred-locale", () => ({
@@ -77,9 +77,7 @@ describe("SignInPage", () => {
     mocks.locale = "en"
     vi.clearAllMocks()
     mocks.createUser.mockResolvedValue({})
-    mocks.fetchWithAppCheck.mockResolvedValue(
-      new Response(JSON.stringify({ status: "ok" }), { status: 200 })
-    )
+    mocks.refreshServerSession.mockResolvedValue(undefined)
     mocks.getIdToken.mockResolvedValue("firebase-id-token")
     mocks.resetPassword.mockResolvedValue(undefined)
     mocks.signInEmail.mockResolvedValue({})
@@ -179,8 +177,8 @@ describe("SignInPage", () => {
       await new Promise((resolve) => setTimeout(resolve, 25))
     })
 
-    expect(mocks.getIdToken).toHaveBeenCalledOnce()
-    expect(mocks.fetchWithAppCheck).toHaveBeenCalledOnce()
+    expect(mocks.getIdToken).not.toHaveBeenCalled()
+    expect(mocks.refreshServerSession).toHaveBeenCalledOnce()
   })
 
   it("shows a session API error after auth state returns to signed out", async () => {
@@ -188,13 +186,13 @@ describe("SignInPage", () => {
       uid: "user-1",
       getIdToken: mocks.getIdToken,
     }
-    mocks.fetchWithAppCheck.mockResolvedValue(
-      new Response(JSON.stringify({ error: "failed" }), { status: 500 })
+    mocks.refreshServerSession.mockRejectedValue(
+      new Error("Failed to refresh server session")
     )
     const view = render(<SignInPage />)
 
     await waitFor(() => {
-      expect(mocks.fetchWithAppCheck).toHaveBeenCalled()
+      expect(mocks.refreshServerSession).toHaveBeenCalled()
     })
     mocks.authState.user = null
     view.rerender(<SignInPage />)
