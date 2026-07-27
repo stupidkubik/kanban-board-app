@@ -166,6 +166,10 @@ describe("Firestore RTK Query optimistic card mutations", () => {
     firstWrite.resolve()
     secondWrite.resolve()
     await Promise.all([firstMutation, secondMutation])
+    expect(selectCards(store, { boardId })).toHaveLength(1)
+    expect(
+      selectCards(store, { boardId, columnId: todoColumn.id })
+    ).toHaveLength(1)
     store.dispatch(firestoreApi.util.resetApiState())
   })
 

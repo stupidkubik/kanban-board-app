@@ -541,13 +541,6 @@ export const firestoreApi = createApi({
           patchResult.undo()
         }
       },
-      invalidatesTags: (_result, error, arg) =>
-        error
-          ? []
-          : [
-              { type: "Card", id: `LIST-${arg.boardId}` },
-              { type: "Card", id: `LIST-${arg.boardId}-${arg.columnId}` },
-            ],
     }),
     updateCard: builder.mutation<MutationResult, UpdateCardInput>({
       async queryFn(args) {
@@ -624,21 +617,6 @@ export const firestoreApi = createApi({
           patchResult.undo()
         }
       },
-      invalidatesTags: (_result, error, arg) =>
-        error
-          ? []
-          : [
-              { type: "Card", id: arg.cardId },
-              { type: "Card", id: `LIST-${arg.boardId}` },
-              ...(arg.columnId
-                ? [
-                    {
-                      type: "Card" as const,
-                      id: `LIST-${arg.boardId}-${arg.columnId}`,
-                    },
-                  ]
-                : []),
-            ],
     }),
     deleteCard: builder.mutation<MutationResult, DeleteCardInput>({
       async queryFn(args) {
@@ -686,13 +664,6 @@ export const firestoreApi = createApi({
           patchResult.undo()
         }
       },
-      invalidatesTags: (_result, error, arg) =>
-        error
-          ? []
-          : [
-              { type: "Card", id: arg.cardId },
-              { type: "Card", id: `LIST-${arg.boardId}` },
-            ],
     }),
   }),
 })

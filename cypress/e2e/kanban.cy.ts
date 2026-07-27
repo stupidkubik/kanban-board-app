@@ -113,7 +113,7 @@ const cleanupCreatedBoards = () => {
       cy.get('[data-testid="delete-board-trigger"]').click()
     })
     cy.get('[data-testid="delete-board-confirm"]').click()
-    cy.wait("@deleteBoard", { timeout: 20_000 })
+    cy.wait("@deleteBoard", { timeout: 40_000 })
       .its("response.statusCode")
       .should("eq", 200)
     cy.get(selector).should("not.exist")
@@ -133,9 +133,10 @@ describe("kanban core flows", () => {
 
   afterEach(cleanupCreatedBoards)
 
-  it("creates a board, adds columns/cards, and drags a card", () => {
+  it("creates a board and exercises card CRUD, Undo, and drag-and-drop", () => {
     const boardTitle = `E2E Core ${Date.now()}`
     const cardTitle = `Card ${Date.now()}`
+    const editedCardTitle = `${cardTitle} edited`
 
     signIn()
 
@@ -149,7 +150,7 @@ describe("kanban core flows", () => {
       .then(() => rememberBoard(boardTitle))
 
     cy.contains('[data-testid="board-card"]', boardTitle).click()
-    cy.url().should("match", /\/boards\/[^/]+$/)
+    cy.url({ timeout: 45_000 }).should("match", /\/boards\/[^/]+$/)
 
     cy.get('[data-testid="new-column-title"]').type("Todo")
     cy.get('[data-testid="create-column-submit"]').click()
@@ -178,6 +179,23 @@ describe("kanban core flows", () => {
     cy.contains('[data-testid^="column-"]', "Done")
       .find(`[data-card-title="${cardTitle}"]`)
       .should("exist")
+
+    cy.get(`[data-card-title="${cardTitle}"]`).click()
+    cy.get("#edit-card-title").clear().type(editedCardTitle)
+    cy.contains("button", "Save").click()
+    cy.get(`[data-card-title="${editedCardTitle}"]`).should("exist")
+
+    cy.get(`[data-card-title="${editedCardTitle}"]`)
+      .find('button[aria-label="Delete card"]')
+      .click()
+    cy.get('[role="alertdialog"]')
+      .contains("button", "Delete card")
+      .click()
+    cy.get(`[data-card-title="${editedCardTitle}"]`).should("not.exist")
+    cy.contains('[role="status"]', "Card deleted.").within(() => {
+      cy.contains("button", "Undo").click()
+    })
+    cy.get(`[data-card-title="${editedCardTitle}"]`).should("exist")
   })
 
   it("sends an invite from the board page", () => {

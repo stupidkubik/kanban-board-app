@@ -430,6 +430,8 @@ baseline обновлён до Next.js 16.2.12, `eslint-config-next` 16.2.12 и 
 - Приоритет: P1
 - Оценка: 2–4 рабочих дня
 - Зависимости: фаза 0
+- Статус: закрыта 27 июля; полный gate и evidence зафиксированы в
+  `docs/REGRESSION_COVERAGE_MATRIX.md`
 
 ### Цель
 
@@ -467,6 +469,10 @@ member removal. Component coverage подтверждает owner-only participa
 
 Приоритетные сценарии:
 
+Статус на 27 июля: выполнено. Listener lifecycle, error/retry, optimistic
+create/move/delete rollback, stable entity id и one-shot board summary закреплены
+unit/integration tests.
+
 - listener стартует один раз на cache entry;
 - `unsubscribe()` вызывается после `cacheEntryRemoved`;
 - listener error переводится в ожидаемое state;
@@ -481,6 +487,11 @@ member removal. Component coverage подтверждает owner-only participa
 ### 2.3 Расширить E2E только критичными сценариями
 
 До feature work добавить:
+
+Статус на 27 июля: выполнено в изолированных Auth/Firestore emulators. Core flow
+покрывает sign-in/session redirect, board, две columns, card create/edit/delete/
+Undo, cross-column DnD и cleanup; отдельный flow покрывает invite create и
+cleanup. Два последовательных прогона прошли.
 
 - вход и session redirect;
 - create board;
