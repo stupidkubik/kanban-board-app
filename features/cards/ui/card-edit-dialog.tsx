@@ -19,6 +19,8 @@ import { Field, FieldContent, FieldLabel } from "@/components/ui/field"
 import { Label } from "@/components/ui/label"
 import { Spinner } from "@/components/ui/spinner"
 import styles from "@/features/cards/ui/cards.module.css"
+import type { CardAssignee } from "@/lib/types/board-ui"
+import { CardAssigneePicker } from "@/features/cards/ui/card-assignee-picker"
 
 type CardEditDialogProps = {
   open: boolean
@@ -26,8 +28,10 @@ type CardEditDialogProps = {
   updatingCard: boolean
   uiCopy: BoardCopy
   editingCard: EditingCardDraft
+  assignees: CardAssignee[]
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void
   onFieldChange: (field: "title" | "description" | "due", value: string) => void
+  onToggleAssignee: (assigneeId: string) => void
   onClose: () => void
 }
 
@@ -37,8 +41,10 @@ export function CardEditDialog({
   updatingCard,
   uiCopy,
   editingCard,
+  assignees,
   onSubmit,
   onFieldChange,
+  onToggleAssignee,
   onClose,
 }: CardEditDialogProps) {
   return (
@@ -106,6 +112,15 @@ export function CardEditDialog({
               disabled={!canEdit || updatingCard}
             />
           </div>
+          <CardAssigneePicker
+            assignees={assignees}
+            selectedIds={editingCard.assigneeIds}
+            label={uiCopy.board.cardAssigneesLabel}
+            emptyLabel={uiCopy.board.cardAssigneesEmpty}
+            disabled={!canEdit || updatingCard}
+            testId="edit-card-assignees"
+            onToggle={onToggleAssignee}
+          />
           <AlertDialogFooter>
             <AlertDialogCancel type="button" size="sm">
               {uiCopy.common.cancel}

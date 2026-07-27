@@ -126,6 +126,98 @@
   gap: 4px;
 }
 
+.cardAssignees {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.cardAssigneeChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 140px;
+  padding: 2px 6px 2px 3px;
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-size: 10px;
+  color: var(--color-muted);
+}
+
+.cardAssigneeChip > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cardAssigneeAvatar {
+  display: inline-flex;
+  width: 18px;
+  height: 18px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-accent-muted);
+  color: var(--color-text);
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.cardAssigneeOverflow {
+  font-size: 10px;
+  color: var(--color-muted);
+}
+
+.assigneePicker {
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.assigneePickerLabel {
+  padding: 0 4px;
+  font-size: 11px;
+  color: var(--color-muted);
+}
+
+.assigneeOptions {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  max-height: 132px;
+  overflow-y: auto;
+}
+
+.assigneeOption {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.assigneeOption span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.assigneeOption strong,
+.assigneeOption small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.assigneeOption small,
+.assigneeEmpty {
+  color: var(--color-muted);
+  font-size: 10px;
+}
+
 .cardsEmpty {
   margin: 0;
   font-size: 12px;

@@ -15,7 +15,9 @@ import {
   optimisticCreateCard,
   optimisticDeleteCard,
   optimisticMoveCard,
+  optimisticUpdateCardAssignees,
 } from "@/features/cards/model/optimistic-helpers"
+import { normalizeAssigneeIds } from "@/features/cards/model/card-assignees"
 import { getErrorMessage } from "@/lib/errors"
 import type { RootState } from "@/lib/store"
 import type { MutationResult } from "@/lib/store/firestore-api-types"
@@ -42,6 +44,9 @@ export const cardsApi = cardQueriesApi.injectEndpoints({
     createCard: builder.mutation<MutationResult, CreateCardInput>({
       async queryFn(args) {
         try {
+          if (Array.isArray(args.assigneeIds)) {
+            args.assigneeIds = normalizeAssigneeIds(args.assigneeIds)
+          }
           args.cardId = ensureCardId(args.boardId, args.cardId)
           args.order = ensureCardOrder(args.order)
           await createCardDocument(args)
@@ -70,7 +75,7 @@ export const cardsApi = cardQueriesApi.injectEndpoints({
           optimisticCard.description = args.description
         }
         if (Array.isArray(args.assigneeIds)) {
-          optimisticCard.assigneeIds = args.assigneeIds
+          optimisticCard.assigneeIds = normalizeAssigneeIds(args.assigneeIds)
         }
         if (Array.isArray(args.labels)) {
           optimisticCard.labels = args.labels
@@ -98,6 +103,9 @@ export const cardsApi = cardQueriesApi.injectEndpoints({
     updateCard: builder.mutation<MutationResult, UpdateCardInput>({
       async queryFn(args) {
         try {
+          if (Array.isArray(args.assigneeIds)) {
+            args.assigneeIds = normalizeAssigneeIds(args.assigneeIds)
+          }
           await updateCardDocument(args)
           return { data: mutationOk }
         } catch (error) {
@@ -127,47 +135,50 @@ export const cardsApi = cardQueriesApi.injectEndpoints({
           }
         }
 
+        const patches: Array<{ undo: () => void }> = []
+        if (Array.isArray(args.assigneeIds)) {
+          patches.push(
+            optimisticUpdateCardAssignees({
+              dispatch,
+              boardId: args.boardId,
+              cardId: args.cardId,
+              assigneeIds: normalizeAssigneeIds(args.assigneeIds),
+              columnIds,
+            })
+          )
+        }
+
         const nextColumnId = args.columnId ?? currentCard?.columnId
         const nextOrder =
           typeof args.order === "number" ? args.order : currentCard?.order
 
         if (!nextColumnId || typeof nextOrder !== "number") {
-          try {
-            await queryFulfilled
-          } catch {
-            // ignore optimistic updates if missing cache data
-          }
-          return
-        }
-
-        if (
+          // Assignment patches can still apply without movement cache data.
+        } else if (
           currentCard &&
           nextColumnId === currentCard.columnId &&
           nextOrder === currentCard.order
         ) {
-          try {
-            await queryFulfilled
-          } catch {
-            // ignore optimistic updates if no change
-          }
-          return
+          // No position patch is needed.
+        } else {
+          patches.push(
+            optimisticMoveCard({
+              dispatch,
+              boardId: args.boardId,
+              cardId: args.cardId,
+              card: currentCard,
+              fromColumnId: currentCard?.columnId,
+              toColumnId: nextColumnId,
+              order: nextOrder,
+              columnIds,
+            })
+          )
         }
-
-        const patchResult = optimisticMoveCard({
-          dispatch,
-          boardId: args.boardId,
-          cardId: args.cardId,
-          card: currentCard,
-          fromColumnId: currentCard?.columnId,
-          toColumnId: nextColumnId,
-          order: nextOrder,
-          columnIds,
-        })
 
         try {
           await queryFulfilled
         } catch {
-          patchResult.undo()
+          patches.reverse().forEach((patch) => patch.undo())
         }
       },
     }),

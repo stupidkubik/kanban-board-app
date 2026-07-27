@@ -232,6 +232,7 @@ describe("kanban core flows", () => {
 
   it("changes an accepted member from editor to viewer in realtime", () => {
     const boardTitle = `E2E Roles ${Date.now()}`
+    const assignedCardTitle = `Assigned card ${Date.now()}`
 
     signIn()
 
@@ -266,6 +267,20 @@ describe("kanban core flows", () => {
       timeout: 30_000,
     }).click()
     cy.get('[data-testid="new-column-title"]').should("be.visible")
+    cy.get('[data-testid="new-column-title"]').type("Assigned")
+    cy.get('[data-testid="create-column-submit"]').click()
+    cy.contains('[data-testid^="column-"]', "Assigned").within(() => {
+      cy.get('[data-testid^="add-card-"]').click()
+      cy.get('[data-testid^="new-card-title-"]').type(assignedCardTitle)
+      cy.get('[data-testid^="new-card-assignees-"] input[type="checkbox"]')
+        .should("have.length", 2)
+        .check()
+      cy.get('[data-testid^="create-card-"]').click()
+      cy.get(`[data-card-title="${assignedCardTitle}"]`)
+        .find('[data-testid="card-assignees"]')
+        .children()
+        .should("have.length", 2)
+    })
 
     signOut()
     signIn()
@@ -284,6 +299,12 @@ describe("kanban core flows", () => {
     cy.contains('[data-testid="board-card"]', boardTitle).click()
     cy.contains("Read-only mode: editing is disabled.").should("be.visible")
     cy.get('[data-testid="new-column-title"]').should("not.exist")
+    cy.get(`[data-card-title="${assignedCardTitle}"]`)
+      .find('[data-testid="card-assignees"]')
+      .children()
+      .should("have.length", 2)
+    cy.get(`[data-card-title="${assignedCardTitle}"]`).click()
+    cy.get("#edit-card-title").should("not.exist")
 
     signOut()
     signIn()

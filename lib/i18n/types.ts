@@ -87,6 +87,8 @@ export type BoardCopy = {
     cardTitlePlaceholder: string;
     cardDescriptionPlaceholder: string;
     cardDueDateLabel: string;
+    cardAssigneesLabel: string;
+    cardAssigneesEmpty: string;
     createCard: string;
     creatingCard: string;
     editCardTitle: string;

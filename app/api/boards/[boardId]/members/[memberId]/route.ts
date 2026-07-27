@@ -41,6 +41,43 @@ export async function DELETE(
   try {
     const boardRef = adminDb.collection("boards").doc(boardId)
     const profileRef = boardRef.collection("memberProfiles").doc(memberId)
+    const boardSnapshot = await boardRef.get()
+    if (!boardSnapshot.exists) {
+      throw new MemberRouteError(404, "Board not found")
+    }
+    const currentBoard = boardSnapshot.data() as {
+      ownerId?: string
+      members?: Record<string, boolean>
+    }
+    const isLeaving = session.uid === memberId
+    if (!isLeaving && currentBoard.ownerId !== session.uid) {
+      throw new MemberRouteError(403, "Forbidden")
+    }
+    if (currentBoard.ownerId === memberId) {
+      throw new MemberRouteError(409, "Board owner cannot leave or be removed")
+    }
+    if (currentBoard.members?.[memberId] !== true) {
+      throw new MemberRouteError(404, "Board member not found")
+    }
+
+    const assignedCards = await boardRef
+      .collection("cards")
+      .where("assigneeIds", "array-contains", memberId)
+      .limit(501)
+      .get()
+    if (assignedCards.size > 500) {
+      throw new MemberRouteError(409, "Assignment cleanup exceeds card limit")
+    }
+    if (!assignedCards.empty) {
+      const batch = adminDb.batch()
+      assignedCards.docs.forEach((cardSnapshot) => {
+        batch.update(cardSnapshot.ref, {
+          assigneeIds: FieldValue.arrayRemove(memberId),
+          updatedAt: FieldValue.serverTimestamp(),
+        })
+      })
+      await batch.commit()
+    }
 
     await adminDb.runTransaction(async (transaction) => {
       const boardSnapshot = await transaction.get(boardRef)

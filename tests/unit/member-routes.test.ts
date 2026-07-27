@@ -5,6 +5,16 @@ const mocks = vi.hoisted(() => {
   const boardRef = {
     kind: "board",
     collection: vi.fn(),
+    get: vi.fn(),
+  }
+  const assignedCardsQuery = {
+    get: vi.fn(),
+    limit: vi.fn(),
+    where: vi.fn(),
+  }
+  const batch = {
+    commit: vi.fn(),
+    update: vi.fn(),
   }
   const inviteRef = { kind: "invite" }
   const profileRef = { kind: "profile" }
@@ -17,6 +27,8 @@ const mocks = vi.hoisted(() => {
 
   return {
     boardRef,
+    assignedCardsQuery,
+    batch,
     getSession: vi.fn(),
     inviteRef,
     profileRef,
@@ -33,6 +45,7 @@ vi.mock("@/lib/firebase/admin", () => ({
         name === "boardInvites" ? mocks.inviteRef : mocks.boardRef
       ),
     })),
+    batch: vi.fn(() => mocks.batch),
     runTransaction: mocks.runTransaction,
   },
 }))
@@ -79,11 +92,28 @@ describe("member server routes", () => {
     mocks.transaction.update.mockReset()
     mocks.verifyAppCheckToken.mockReset()
     mocks.boardRef.collection.mockReset()
+    mocks.boardRef.get.mockReset()
+    mocks.assignedCardsQuery.get.mockReset()
+    mocks.assignedCardsQuery.limit.mockReset()
+    mocks.assignedCardsQuery.where.mockReset()
+    mocks.batch.commit.mockReset()
+    mocks.batch.update.mockReset()
 
     mocks.verifyAppCheckToken.mockResolvedValue({ ok: true })
-    mocks.boardRef.collection.mockReturnValue({
-      doc: vi.fn(() => mocks.profileRef),
+    mocks.boardRef.get.mockResolvedValue(boardSnapshot)
+    mocks.assignedCardsQuery.get.mockResolvedValue({
+      docs: [],
+      empty: true,
+      size: 0,
     })
+    mocks.assignedCardsQuery.limit.mockReturnValue(mocks.assignedCardsQuery)
+    mocks.assignedCardsQuery.where.mockReturnValue(mocks.assignedCardsQuery)
+    mocks.batch.commit.mockResolvedValue(undefined)
+    mocks.boardRef.collection.mockImplementation((name: string) =>
+      name === "cards"
+        ? mocks.assignedCardsQuery
+        : { doc: vi.fn(() => mocks.profileRef) }
+    )
     mocks.runTransaction.mockImplementation(
       async (callback: (transaction: typeof mocks.transaction) => Promise<void>) =>
         callback(mocks.transaction)
@@ -146,6 +176,64 @@ describe("member server routes", () => {
       })
     )
     expect(mocks.transaction.delete).toHaveBeenCalledWith(mocks.profileRef)
+  })
+
+  it("removes the member from assigned cards before deleting membership", async () => {
+    const firstCardRef = { kind: "card", id: "card-1" }
+    const secondCardRef = { kind: "card", id: "card-2" }
+    mocks.getSession.mockResolvedValue({
+      uid: "owner",
+      email: "owner@example.com",
+    })
+    mocks.transaction.get.mockResolvedValue(boardSnapshot)
+    mocks.assignedCardsQuery.get.mockResolvedValue({
+      docs: [{ ref: firstCardRef }, { ref: secondCardRef }],
+      empty: false,
+      size: 2,
+    })
+
+    const response = await deleteMember(
+      new Request("https://example.test/api/boards/board-1/members/editor", {
+        method: "DELETE",
+      }),
+      { params: Promise.resolve({ boardId, memberId }) }
+    )
+
+    expect(response.status).toBe(200)
+    expect(mocks.assignedCardsQuery.where).toHaveBeenCalledWith(
+      "assigneeIds",
+      "array-contains",
+      memberId
+    )
+    expect(mocks.batch.update).toHaveBeenCalledTimes(2)
+    expect(mocks.batch.update).toHaveBeenCalledWith(
+      firstCardRef,
+      expect.objectContaining({ assigneeIds: expect.anything() })
+    )
+    expect(mocks.batch.commit).toHaveBeenCalledOnce()
+  })
+
+  it("rejects member removal when assignment cleanup exceeds the batch limit", async () => {
+    mocks.getSession.mockResolvedValue({
+      uid: "owner",
+      email: "owner@example.com",
+    })
+    mocks.assignedCardsQuery.get.mockResolvedValue({
+      docs: [],
+      empty: false,
+      size: 501,
+    })
+
+    const response = await deleteMember(
+      new Request("https://example.test/api/boards/board-1/members/editor", {
+        method: "DELETE",
+      }),
+      { params: Promise.resolve({ boardId, memberId }) }
+    )
+
+    expect(response.status).toBe(409)
+    expect(mocks.batch.commit).not.toHaveBeenCalled()
+    expect(mocks.runTransaction).not.toHaveBeenCalled()
   })
 
   it.each([

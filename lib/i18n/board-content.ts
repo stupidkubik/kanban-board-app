@@ -20,6 +20,8 @@ export const boardContentCopy = {
     cardTitlePlaceholder: "Название карточки",
     cardDescriptionPlaceholder: "Описание",
     cardDueDateLabel: "Дедлайн",
+    cardAssigneesLabel: "Исполнители",
+    cardAssigneesEmpty: "Нет доступных участников",
     createCard: "Создать карточку",
     creatingCard: "Создание...",
     editCardTitle: "Редактировать карточку?",
@@ -57,6 +59,8 @@ export const boardContentCopy = {
     cardTitlePlaceholder: "Card title",
     cardDescriptionPlaceholder: "Description",
     cardDueDateLabel: "Due date",
+    cardAssigneesLabel: "Assignees",
+    cardAssigneesEmpty: "No available members",
     createCard: "Create card",
     creatingCard: "Creating...",
     editCardTitle: "Edit card?",
@@ -75,4 +79,4 @@ export const boardContentCopy = {
     deleteColumnDescription: "Only an empty column can be deleted. This cannot be undone.",
     readOnlyNotice: "Read-only mode: editing is disabled."
 },
-} satisfies Record<Locale, Pick<BoardCopy, "backToBoards" | "boardLoading" | "boardNotFoundTitle" | "boardNotFoundDescription" | "boardForbiddenTitle" | "boardForbiddenDescription" | "boardLoadFailedTitle" | "boardLoadFailedDescription" | "retry" | "columnsTitle" | "addColumn" | "columnNamePlaceholder" | "createColumn" | "creatingColumn" | "addCard" | "cardTitlePlaceholder" | "cardDescriptionPlaceholder" | "cardDueDateLabel" | "createCard" | "creatingCard" | "editCardTitle" | "editCardDescription" | "saveCard" | "savingCard" | "deleteCard" | "deleteCardTitle" | "deleteCardDescription" | "cardsLabel" | "noCards" | "noColumns" | "cardLimitReached" | "deleteColumn" | "deleteColumnTitle" | "deleteColumnDescription" | "readOnlyNotice">>
+} satisfies Record<Locale, Pick<BoardCopy, "backToBoards" | "boardLoading" | "boardNotFoundTitle" | "boardNotFoundDescription" | "boardForbiddenTitle" | "boardForbiddenDescription" | "boardLoadFailedTitle" | "boardLoadFailedDescription" | "retry" | "columnsTitle" | "addColumn" | "columnNamePlaceholder" | "createColumn" | "creatingColumn" | "addCard" | "cardTitlePlaceholder" | "cardDescriptionPlaceholder" | "cardDueDateLabel" | "cardAssigneesLabel" | "cardAssigneesEmpty" | "createCard" | "creatingCard" | "editCardTitle" | "editCardDescription" | "saveCard" | "savingCard" | "deleteCard" | "deleteCardTitle" | "deleteCardDescription" | "cardsLabel" | "noCards" | "noColumns" | "cardLimitReached" | "deleteColumn" | "deleteColumnTitle" | "deleteColumnDescription" | "readOnlyNotice">>

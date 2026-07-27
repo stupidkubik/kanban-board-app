@@ -15,7 +15,7 @@ describe("normalizeCard", () => {
       description: "Details",
       order: 5,
       createdById: "user-1",
-      assigneeIds: ["user-2", 123],
+      assigneeIds: ["user-2", "user-2", 123],
       labels: ["bug", null],
       dueAt: timestamp,
       createdAt: timestamp,

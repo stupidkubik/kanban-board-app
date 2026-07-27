@@ -9,6 +9,7 @@ import {
 } from "firebase/firestore"
 
 import { clientDb } from "@/lib/firebase/client"
+import { normalizeAssigneeIds } from "@/features/cards/model/card-assignees"
 
 export type CreateCardInput = {
   boardId: string
@@ -65,7 +66,7 @@ const buildCardUpdates = (input: UpdateCardInput) => {
     updates.order = input.order
   }
   if (Array.isArray(input.assigneeIds)) {
-    updates.assigneeIds = input.assigneeIds
+    updates.assigneeIds = normalizeAssigneeIds(input.assigneeIds)
   }
   if (Array.isArray(input.labels)) {
     updates.labels = input.labels
@@ -106,7 +107,7 @@ export const createCard = async ({
     payload.description = description
   }
   if (assigneeIds !== undefined) {
-    payload.assigneeIds = assigneeIds
+    payload.assigneeIds = normalizeAssigneeIds(assigneeIds)
   }
   if (labels !== undefined) {
     payload.labels = labels

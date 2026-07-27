@@ -14,7 +14,9 @@ import {
   selectBoardUi,
   setAddCardField,
   toggleAddCardForm,
+  toggleAddCardAssignee,
 } from "@/lib/store/board-ui-slice"
+import { normalizeAssigneeIds } from "@/features/cards/model/card-assignees"
 import type { BoardCopy } from "@/lib/types/board-ui"
 import { isNonEmpty } from "@/lib/validation"
 
@@ -23,6 +25,7 @@ type UseCardCreateControllerArgs = {
   user: User | null
   uiCopy: BoardCopy
   setError: (message: string | null) => void
+  availableAssigneeIds: ReadonlySet<string>
 }
 
 export const useCardCreateController = ({
@@ -30,6 +33,7 @@ export const useCardCreateController = ({
   user,
   uiCopy,
   setError,
+  availableAssigneeIds,
 }: UseCardCreateControllerArgs) => {
   const dispatch = useAppDispatch()
   const addCardDrafts = useAppSelector(
@@ -42,12 +46,14 @@ export const useCardCreateController = ({
     const newCardTitleByColumn: Record<string, string> = {}
     const newCardDescriptionByColumn: Record<string, string> = {}
     const newCardDueByColumn: Record<string, string> = {}
+    const newCardAssigneeIdsByColumn: Record<string, string[]> = {}
 
     Object.entries(addCardDrafts).forEach(([columnId, draft]) => {
       showAddCardByColumn[columnId] = draft.open
       newCardTitleByColumn[columnId] = draft.title
       newCardDescriptionByColumn[columnId] = draft.description
       newCardDueByColumn[columnId] = draft.due
+      newCardAssigneeIdsByColumn[columnId] = draft.assigneeIds
     })
 
     return {
@@ -55,6 +61,7 @@ export const useCardCreateController = ({
       newCardTitleByColumn,
       newCardDescriptionByColumn,
       newCardDueByColumn,
+      newCardAssigneeIdsByColumn,
     }
   }, [addCardDrafts])
 
@@ -115,13 +122,26 @@ export const useCardCreateController = ({
           dueAt: dueAt ?? undefined,
           createdById: user.uid,
           order: Date.now(),
+          assigneeIds: normalizeAssigneeIds(
+            draft.assigneeIds,
+            availableAssigneeIds
+          ),
         }).unwrap()
         dispatch(resetAddCardForm({ boardId, columnId }))
       } catch (error) {
         setError(getErrorMessage(error, uiCopy.board.errors.createCardFailed))
       }
     },
-    [addCardDrafts, boardId, createCard, dispatch, setError, uiCopy, user]
+    [
+      addCardDrafts,
+      availableAssigneeIds,
+      boardId,
+      createCard,
+      dispatch,
+      setError,
+      uiCopy,
+      user,
+    ]
   )
 
   return {
@@ -143,6 +163,14 @@ export const useCardCreateController = ({
       (columnId: string, value: string) =>
         changeDraftField(columnId, "due", value),
       [changeDraftField]
+    ),
+    toggleCardAssignee: React.useCallback(
+      (columnId: string, assigneeId: string) => {
+        if (boardId && availableAssigneeIds.has(assigneeId)) {
+          dispatch(toggleAddCardAssignee({ boardId, columnId, assigneeId }))
+        }
+      },
+      [availableAssigneeIds, boardId, dispatch]
     ),
     cancelCreateCard,
     handleCreateCard,

@@ -29,6 +29,14 @@ type DeleteCardOptimisticArgs = {
   columnIds?: string[]
 }
 
+type UpdateCardAssigneesOptimisticArgs = {
+  dispatch: AppDispatch
+  boardId: string
+  cardId: string
+  assigneeIds: string[]
+  columnIds?: string[]
+}
+
 const buildCardSorter = () => (first: Card, second: Card) => {
   return first.order - second.order
 }
@@ -212,6 +220,41 @@ export const optimisticDeleteCard = ({
           (draft) => {
             removeCardFromList(draft, cardId)
           }
+        )
+      )
+    )
+  })
+
+  return combinePatches(patches)
+}
+
+export const optimisticUpdateCardAssignees = ({
+  dispatch,
+  boardId,
+  cardId,
+  assigneeIds,
+  columnIds,
+}: UpdateCardAssigneesOptimisticArgs): PatchResult => {
+  const patches: PatchResult[] = []
+  const patchList = (draft: Card[]) => {
+    const card = draft.find((item) => item.id === cardId)
+    if (card) {
+      card.assigneeIds = [...assigneeIds]
+    }
+  }
+
+  patches.push(
+    dispatch(
+      firestoreApi.util.updateQueryData("getCards", { boardId }, patchList)
+    )
+  )
+  new Set(columnIds ?? []).forEach((columnId) => {
+    patches.push(
+      dispatch(
+        firestoreApi.util.updateQueryData(
+          "getCards",
+          { boardId, columnId },
+          patchList
         )
       )
     )

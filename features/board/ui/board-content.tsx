@@ -136,6 +136,7 @@ export const BoardContent = React.memo(function BoardContent({
       />
       <CardsSection
         boardId={boardId}
+        board={board}
         user={user}
         canEdit={canEdit}
         isOwner={isOwner}

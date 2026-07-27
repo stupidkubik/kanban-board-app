@@ -19,6 +19,7 @@ type UseBoardCardsArgs = {
   isOwner: boolean
   uiCopy: BoardCopy
   setError: (message: string | null) => void
+  availableAssigneeIds: ReadonlySet<string>
 }
 
 export const useBoardCards = (args: UseBoardCardsArgs) => {

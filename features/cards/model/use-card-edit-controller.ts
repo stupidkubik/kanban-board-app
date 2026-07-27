@@ -11,7 +11,9 @@ import {
   startEditingCard as startEditingCardAction,
   stopEditingCard,
   updateEditingCardField,
+  toggleEditingCardAssignee,
 } from "@/lib/store/board-ui-slice"
+import { normalizeAssigneeIds } from "@/features/cards/model/card-assignees"
 import type { BoardCopy } from "@/lib/types/board-ui"
 import type { Card } from "@/lib/types/boards"
 import { isNonEmpty } from "@/lib/validation"
@@ -21,6 +23,7 @@ type UseCardEditControllerArgs = {
   canEdit: boolean
   uiCopy: BoardCopy
   setError: (message: string | null) => void
+  availableAssigneeIds: ReadonlySet<string>
 }
 
 export const useCardEditController = ({
@@ -28,6 +31,7 @@ export const useCardEditController = ({
   canEdit,
   uiCopy,
   setError,
+  availableAssigneeIds,
 }: UseCardEditControllerArgs) => {
   const dispatch = useAppDispatch()
   const editingCard = useAppSelector(
@@ -62,10 +66,14 @@ export const useCardEditController = ({
           title: card.title,
           description: card.description ?? "",
           due: formatDateInput(card.dueAt) ?? "",
+          assigneeIds: normalizeAssigneeIds(
+            card.assigneeIds,
+            availableAssigneeIds
+          ),
         })
       )
     },
-    [boardId, canEdit, dispatch]
+    [availableAssigneeIds, boardId, canEdit, dispatch]
   )
 
   const handleUpdateCard = React.useCallback(
@@ -92,13 +100,25 @@ export const useCardEditController = ({
           title,
           description: description.length ? description : null,
           dueAt,
+          assigneeIds: normalizeAssigneeIds(
+            editingCard.assigneeIds,
+            availableAssigneeIds
+          ),
         }).unwrap()
         resetEditCard()
       } catch (error) {
         setError(getErrorMessage(error, uiCopy.board.errors.updateCardFailed))
       }
     },
-    [boardId, editingCard, resetEditCard, setError, uiCopy, updateCard]
+    [
+      availableAssigneeIds,
+      boardId,
+      editingCard,
+      resetEditCard,
+      setError,
+      uiCopy,
+      updateCard,
+    ]
   )
 
   return {
@@ -110,5 +130,13 @@ export const useCardEditController = ({
     startEditingCard,
     resetEditCard,
     handleUpdateCard,
+    toggleEditingAssignee: React.useCallback(
+      (assigneeId: string) => {
+        if (boardId && availableAssigneeIds.has(assigneeId)) {
+          dispatch(toggleEditingCardAssignee({ boardId, assigneeId }))
+        }
+      },
+      [availableAssigneeIds, boardId, dispatch]
+    ),
   }
 }

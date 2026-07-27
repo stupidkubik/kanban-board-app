@@ -3,6 +3,7 @@ import { collection, doc } from "firebase/firestore"
 import { clientDb } from "@/lib/firebase/client"
 import { toMillis } from "@/lib/firestore-values"
 import type { Card } from "@/lib/types/boards"
+import { normalizeAssigneeIds } from "@/features/cards/model/card-assignees"
 
 export type CardRecord = {
   columnId?: string
@@ -41,9 +42,7 @@ export const normalizeCard = (boardId: string, id: string, data: CardRecord): Ca
   }
 
   if (Array.isArray(data.assigneeIds)) {
-    const assignees = data.assigneeIds.filter(
-      (assignee): assignee is string => typeof assignee === "string"
-    )
+    const assignees = normalizeAssigneeIds(data.assigneeIds)
     if (assignees.length) {
       card.assigneeIds = assignees
     }

@@ -246,6 +246,40 @@ describe("Firestore RTK Query optimistic card mutations", () => {
     store.dispatch(firestoreApi.util.resetApiState())
   })
 
+  it("rolls back assignees in board and column caches after a rejected write", async () => {
+    const write = deferred()
+    mocks.updateCard.mockReturnValue(write.promise)
+    const store = makeStore()
+    await seedCards(store, [card])
+
+    const mutation = store.dispatch(
+      firestoreApi.endpoints.updateCard.initiate({
+        boardId,
+        cardId: card.id,
+        assigneeIds: ["member-1", "member-2"],
+      })
+    )
+    await vi.waitFor(() => {
+      expect(selectCards(store, { boardId })[0]).toMatchObject({
+        assigneeIds: ["member-1", "member-2"],
+      })
+      expect(
+        selectCards(store, { boardId, columnId: todoColumn.id })[0]
+      ).toMatchObject({
+        assigneeIds: ["member-1", "member-2"],
+      })
+    })
+
+    write.reject(new Error("assignment failed"))
+    await mutation
+
+    expect(selectCards(store, { boardId })[0].assigneeIds).toBeUndefined()
+    expect(
+      selectCards(store, { boardId, columnId: todoColumn.id })[0].assigneeIds
+    ).toBeUndefined()
+    store.dispatch(firestoreApi.util.resetApiState())
+  })
+
   it("restores the same entity after a rejected optimistic delete", async () => {
     const write = deferred()
     mocks.deleteCard.mockReturnValue(write.promise)
