@@ -4,11 +4,9 @@ Realtime kanban with Firebase Auth + Firestore, optimistic UI, and drag-and-drop
 
 ## Project documentation
 
-- [`docs/FUNCTIONAL_SPEC.md`](docs/FUNCTIONAL_SPEC.md) — complete as-is functional description and refactoring invariants.
-- [`docs/PROJECT_AUDIT_2026-07-22.md`](docs/PROJECT_AUDIT_2026-07-22.md) — current-state audit, risks, optimization findings, and recommended work order.
-- [`docs/DEPENDENCY_POLICY.md`](docs/DEPENDENCY_POLICY.md) — release dependency checklist and compatibility constraints.
-- [`docs/OBSERVABILITY_AUDIT_2026-07-27.md`](docs/OBSERVABILITY_AUDIT_2026-07-27.md) — authenticated Vercel/Firebase review and monitoring decision.
-- [`docs/RELEASE_2026-07-27.md`](docs/RELEASE_2026-07-27.md) — phase 8 gate results, deployment evidence, and rollback procedure.
+- [`docs/FUNCTIONAL_SPEC.md`](docs/FUNCTIONAL_SPEC.md) — current product behavior and refactoring invariants.
+- [`docs/OPERATIONS.md`](docs/OPERATIONS.md) — release, migration, security, observability, and rollback runbook.
+- [`docs/DEVELOPMENT_HISTORY.md`](docs/DEVELOPMENT_HISTORY.md) — historical audit and phases 0–8.
 - [`schema.md`](schema.md) — Firestore schema reference.
 - [`BACKLOG.md`](BACKLOG.md) — earlier improvement ideas.
 
@@ -126,7 +124,7 @@ Production deployment:
 - Store `FIREBASE_SERVICE_ACCOUNT` only as a protected Vercel environment variable; never commit or bundle a credential file.
 - Production builds explicitly use Webpack. `firebase-admin` stays on the compatible 13.x line because 14.x currently produces a Vercel runtime `ERR_REQUIRE_ESM` through `jwks-rsa@4 -> jose@6`.
 - Treat upgrading Firebase Admin to 14.x as a separate compatibility migration: deploy a preview, verify `/` and protected API routes, and inspect runtime logs before promoting it.
-- The authenticated review in `docs/OBSERVABILITY_AUDIT_2026-07-27.md` confirms Vercel plus Firebase Console as the current monitoring baseline; do not add an external telemetry SDK without a concrete client-side diagnostic gap.
+- The operational review in `docs/OPERATIONS.md` confirms Vercel plus Firebase Console as the current monitoring baseline; do not add an external telemetry SDK without a concrete client-side diagnostic gap.
 
 App Check (recommended):
 ```
@@ -156,7 +154,7 @@ FIREBASE_APPCHECK_ENFORCE=true
 `npm run cypress:run` is self-contained: Firebase CLI starts Auth and Firestore
 emulators under the non-routable demo project `demo-kanban-e2e`, the launcher starts
 Next.js on port 3100, seeds a local Auth user, runs Cypress, and verifies that no
-boards, invites, columns, cards, or member profiles remain. It does not read
+boards, invites, columns, cards, labels, or member profiles remain. It does not read
 Cypress credentials from `.env.local` and cannot write to the cloud Firebase
 project.
 
