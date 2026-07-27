@@ -6,6 +6,8 @@ Realtime kanban with Firebase Auth + Firestore, optimistic UI, and drag-and-drop
 
 - [`docs/FUNCTIONAL_SPEC.md`](docs/FUNCTIONAL_SPEC.md) — complete as-is functional description and refactoring invariants.
 - [`docs/PROJECT_AUDIT_2026-07-22.md`](docs/PROJECT_AUDIT_2026-07-22.md) — current-state audit, risks, optimization findings, and recommended work order.
+- [`docs/DEPENDENCY_POLICY.md`](docs/DEPENDENCY_POLICY.md) — release dependency checklist and compatibility constraints.
+- [`docs/OBSERVABILITY_AUDIT_2026-07-27.md`](docs/OBSERVABILITY_AUDIT_2026-07-27.md) — collected production evidence and the remaining authenticated console review.
 - [`schema.md`](schema.md) — Firestore schema reference.
 - [`BACKLOG.md`](BACKLOG.md) — earlier improvement ideas.
 
@@ -119,7 +121,7 @@ Production deployment:
 - Store `FIREBASE_SERVICE_ACCOUNT` only as a protected Vercel environment variable; never commit or bundle a credential file.
 - Production builds explicitly use Webpack. `firebase-admin` stays on the compatible 13.x line because 14.x currently produces a Vercel runtime `ERR_REQUIRE_ESM` through `jwks-rsa@4 -> jose@6`.
 - Treat upgrading Firebase Admin to 14.x as a separate compatibility migration: deploy a preview, verify `/` and protected API routes, and inspect runtime logs before promoting it.
-- Observability decision is pending verification: confirm available runtime errors, latency, retention, and alerts in Vercel, plus Firestore usage/quota and billing alerts in Firebase Console, before adding or rejecting an external telemetry SDK.
+- Observability decision is pending the authenticated console review documented in `docs/OBSERVABILITY_AUDIT_2026-07-27.md`; do not add an external telemetry SDK before that evidence is collected.
 
 App Check (recommended):
 ```

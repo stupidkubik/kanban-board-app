@@ -46,7 +46,7 @@
 | AUD-02 | Закрыт 27 июля: production dry-run проверил 7 boards/7 profiles, stale profiles — 0 | закрыт | одноразовая data migration |
 | AUD-03 | Фактически запустить изолированный Cypress E2E и проверить cleanup | закрыт 27 июля | release validation |
 | AUD-04 | Закрыт 27 июля: два production smoke и HTTP redirect/sign-in verification прошли с cleanup | закрыт | release validation |
-| AUD-05 | Проверить реальную настройку Vercel Observability и Firebase Console | средний | открытое решение №8 |
+| AUD-05 | Read-only runbook готов; authenticated Vercel/Firebase review ожидает авторизованную сессию | средний | открытое решение №8 |
 | AUD-06 | Сопровождать 3 high и 8 moderate production advisories без `npm audit fix --force` | средний, постоянный | dependency maintenance |
 | AUD-07 | Не обновлять `firebase-admin` до 14.x без preview/runtime проверки | высокий, постоянный | deployment compatibility |
 | AUD-08 | Проверить реальные данные, usage/billing, production logs и лимиты, не покрытые исходным аудитом | средний | внешняя инфраструктура |
@@ -322,6 +322,12 @@ page также отвечают без 500.
 
 ### 1.4 Проверить observability — открытый вопрос №8
 
+Статус на 27 июля: public HTTP checks и production smoke завершены, а
+authenticated console review описан в
+`docs/OBSERVABILITY_AUDIT_2026-07-27.md`. Доступная browser session не
+авторизована в Vercel/Firebase, поэтому retention, alerts, billing, quota и App
+Check enforcement остаются непроверенными и не считаются настроенными.
+
 Нельзя считать Vercel Observability и Firebase Console настроенными только потому, что проекты существуют.
 
 Проверить Vercel:
@@ -356,7 +362,11 @@ Decision gate:
 
 ### 1.5 Зафиксировать dependency policy
 
-Текущее состояние: 2 high и 9 moderate production advisories, совместимого автоматического исправления нет.
+Статус на 27 июля: checklist добавлен в `docs/DEPENDENCY_POLICY.md`. Проверенный
+baseline обновлён до Next.js 16.2.12, `eslint-config-next` 16.2.12 и `radix-ui`
+1.6.7; `firebase-admin` остаётся на 13.x.
+
+Текущее состояние: 3 high и 8 moderate production advisories, совместимого автоматического исправления нет.
 
 Работы:
 
