@@ -10,10 +10,15 @@ import {
 } from "@firebase/rules-unit-testing"
 import {
   Timestamp,
+  collection,
   deleteDoc,
   deleteField,
   doc,
   getDoc,
+  getDocs,
+  limit,
+  orderBy,
+  query,
   setDoc,
   updateDoc,
 } from "firebase/firestore"
@@ -248,7 +253,9 @@ describeRules("firestore rules", () => {
 
   it("allows members to read labels and reserves catalog writes for server routes", async () => {
     const boardId = `board-${Math.random().toString(36).slice(2)}`
+    const emptyBoardId = `${boardId}-empty`
     await seedBoard(env!, boardId)
+    await seedBoard(env!, emptyBoardId)
     await seedLabel(env!, boardId)
 
     const viewerDb = env!.authenticatedContext("viewer").firestore()
@@ -259,8 +266,29 @@ describeRules("firestore rules", () => {
     await assertSucceeds(
       getDoc(doc(viewerDb, "boards", boardId, "labels", "label-1"))
     )
+    await assertSucceeds(
+      getDocs(
+        query(
+          collection(viewerDb, "boards", boardId, "labels"),
+          orderBy("order", "asc"),
+          limit(50)
+        )
+      )
+    )
+    await assertSucceeds(
+      getDocs(
+        query(
+          collection(viewerDb, "boards", emptyBoardId, "labels"),
+          orderBy("order", "asc"),
+          limit(50)
+        )
+      )
+    )
     await assertFails(
       getDoc(doc(outsiderDb, "boards", boardId, "labels", "label-1"))
+    )
+    await assertFails(
+      getDocs(collection(outsiderDb, "boards", boardId, "labels"))
     )
     await assertFails(
       setDoc(doc(editorDb, "boards", boardId, "labels", "label-2"), {
