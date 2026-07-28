@@ -12,7 +12,15 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Spinner } from "@/components/ui/spinner"
 import { Field, FieldContent, FieldLabel } from "@/components/ui/field"
-import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogBody,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import styles from "@/features/cards/ui/cards.module.css"
 import type { CardAssignee } from "@/lib/types/board-ui"
 import { CardAssigneePicker } from "@/features/cards/ui/card-assignee-picker"
@@ -42,6 +50,7 @@ type SortableCardItemProps = {
   onDelete: (card: BoardCard) => void
   deleteLabel: string
   dueLabel: string
+  overdueLabel: string
   formatDueDate: (value?: number) => string | null
   assigneesById: Map<string, CardAssignee>
   assigneesLabel: string
@@ -57,6 +66,7 @@ const SortableCardItem = React.memo(function SortableCardItem({
   onDelete,
   deleteLabel,
   dueLabel,
+  overdueLabel,
   formatDueDate,
   assigneesById,
   assigneesLabel,
@@ -146,7 +156,8 @@ const SortableCardItem = React.memo(function SortableCardItem({
         <div className={styles.cardDescription}>{card.description}</div>
       ) : null}
       {card.dueAt ? (
-        <div className={styles.cardMeta}>
+        <div className={styles.cardMeta} data-overdue={isOverdue ? "true" : undefined}>
+          {isOverdue ? <span className={styles.overdueLabel}>{overdueLabel}</span> : null}
           {dueLabel}: {formatDueDate(card.dueAt)}
         </div>
       ) : null}
@@ -278,6 +289,7 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
                   onDelete={onStartDeletingCard}
                   deleteLabel={uiCopy.board.deleteCard}
                   dueLabel={dueLabel}
+                  overdueLabel={uiCopy.board.cardOverdue}
                   formatDueDate={formatDueDate}
                   assigneesById={assigneesById}
                   assigneesLabel={uiCopy.board.cardAssigneesLabel}
@@ -296,114 +308,119 @@ export const CardsColumnBody = React.memo(function CardsColumnBody({
       {!cards.length && !showCardsSkeleton ? (
         <p className={styles.cardsEmpty}>{uiCopy.board.noCards}</p>
       ) : null}
-      {showAddCard ? (
-        <form
-          className={styles.cardForm}
-          onSubmit={(event) => onCreateCard(event, columnId)}
+      {canEdit ? (
+        <Dialog
+          open={showAddCard}
+          onOpenChange={(open) => onToggleAddCard(columnId, open)}
         >
-          <Field>
-            <FieldLabel className="srOnly" htmlFor={`new-card-title-${columnId}`}>
-              {uiCopy.board.cardTitlePlaceholder}
-            </FieldLabel>
-            <FieldContent>
-              <Input
-                id={`new-card-title-${columnId}`}
-                className={styles.cardFormInput}
-                value={newCardTitle}
-                onChange={(event) =>
-                  onChangeCardTitle(columnId, event.target.value)
-                }
-                placeholder={uiCopy.board.cardTitlePlaceholder}
-                aria-label={uiCopy.board.cardTitlePlaceholder}
-                disabled={!canEdit || creatingCard}
-                data-testid={`new-card-title-${columnId}`}
-              />
-            </FieldContent>
-          </Field>
-          <Field>
-            <FieldLabel
-              className="srOnly"
-              htmlFor={`new-card-description-${columnId}`}
-            >
-              {uiCopy.board.cardDescriptionPlaceholder}
-            </FieldLabel>
-            <FieldContent>
-              <Textarea
-                id={`new-card-description-${columnId}`}
-                className={styles.cardFormTextarea}
-                value={newCardDescription}
-                onChange={(event) =>
-                  onChangeCardDescription(columnId, event.target.value)
-                }
-                placeholder={uiCopy.board.cardDescriptionPlaceholder}
-                aria-label={uiCopy.board.cardDescriptionPlaceholder}
-                rows={3}
-                disabled={!canEdit || creatingCard}
-                data-testid={`new-card-description-${columnId}`}
-              />
-            </FieldContent>
-          </Field>
-          <div className={styles.cardFormRow}>
-            <Label className="srOnly" htmlFor={`new-card-due-${columnId}`}>
-              {uiCopy.board.cardDueDateLabel}
-            </Label>
-            <Input
-              id={`new-card-due-${columnId}`}
-              className={`${styles.cardDateInput} ${styles.cardFormInput}`}
-              value={newCardDue}
-              onChange={(event) =>
-                onChangeCardDue(columnId, event.target.value)
-              }
-              type="date"
-              aria-label={uiCopy.board.cardDueDateLabel}
-              disabled={!canEdit || creatingCard}
-              data-testid={`new-card-due-${columnId}`}
-            />
-            <Button
-              type="submit"
-              size="sm"
-              disabled={!canEdit || creatingCard}
-              data-testid={`create-card-${columnId}`}
-            >
-              {creatingCard ? (
-                <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
-              ) : null}
-              {creatingCard
-                ? uiCopy.board.creatingCard
-                : uiCopy.board.createCard}
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => onCancelCreateCard(columnId)}
-              data-testid={`cancel-card-${columnId}`}
-            >
-              {uiCopy.common.cancel}
-            </Button>
-          </div>
-          <CardAssigneePicker
-            assignees={assignees}
-            selectedIds={newCardAssigneeIds}
-            label={uiCopy.board.cardAssigneesLabel}
-            emptyLabel={uiCopy.board.cardAssigneesEmpty}
-            disabled={!canEdit || creatingCard}
-            testId={`new-card-assignees-${columnId}`}
-            onToggle={(assigneeId) =>
-              onToggleCardAssignee(columnId, assigneeId)
-            }
-          />
-          <CardLabelPicker
-            labels={labels}
-            selectedIds={newCardLabelIds}
-            label={uiCopy.board.cardLabelsLabel}
-            emptyLabel={uiCopy.board.cardLabelsEmpty}
-            disabled={!canEdit || creatingCard}
-            testId={`new-card-labels-${columnId}`}
-            onToggle={(labelId) => onToggleCardLabel(columnId, labelId)}
-          />
-        </form>
-      ) : canEdit ? (
+          <DialogContent size="lg" className={styles.cardDialog}>
+            <DialogHeader>
+              <DialogTitle>{uiCopy.board.createCard}</DialogTitle>
+              <DialogDescription>{uiCopy.board.cardTitlePlaceholder}</DialogDescription>
+            </DialogHeader>
+            <form className={styles.cardDialogForm} onSubmit={(event) => onCreateCard(event, columnId)}>
+              <DialogBody>
+              <div className={styles.cardForm}>
+                <Field>
+                  <FieldLabel htmlFor={`new-card-title-${columnId}`}>
+                    {uiCopy.board.cardTitlePlaceholder}
+                  </FieldLabel>
+                  <FieldContent>
+                    <Input
+                      id={`new-card-title-${columnId}`}
+                      className={styles.cardFormInput}
+                      value={newCardTitle}
+                      onChange={(event) =>
+                        onChangeCardTitle(columnId, event.target.value)
+                      }
+                      placeholder={uiCopy.board.cardTitlePlaceholder}
+                      disabled={creatingCard}
+                      data-testid={`new-card-title-${columnId}`}
+                      autoFocus
+                    />
+                  </FieldContent>
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor={`new-card-description-${columnId}`}>
+                    {uiCopy.board.cardDescriptionPlaceholder}
+                  </FieldLabel>
+                  <FieldContent>
+                    <Textarea
+                      id={`new-card-description-${columnId}`}
+                      className={styles.cardFormTextarea}
+                      value={newCardDescription}
+                      onChange={(event) =>
+                        onChangeCardDescription(columnId, event.target.value)
+                      }
+                      placeholder={uiCopy.board.cardDescriptionPlaceholder}
+                      rows={4}
+                      disabled={creatingCard}
+                      data-testid={`new-card-description-${columnId}`}
+                    />
+                  </FieldContent>
+                </Field>
+                <Field>
+                  <FieldLabel htmlFor={`new-card-due-${columnId}`}>
+                    {uiCopy.board.cardDueDateLabel}
+                  </FieldLabel>
+                  <FieldContent>
+                    <Input
+                      id={`new-card-due-${columnId}`}
+                      className={`${styles.cardDateInput} ${styles.cardFormInput}`}
+                      value={newCardDue}
+                      onChange={(event) => onChangeCardDue(columnId, event.target.value)}
+                      type="date"
+                      disabled={creatingCard}
+                      data-testid={`new-card-due-${columnId}`}
+                    />
+                  </FieldContent>
+                </Field>
+                <CardAssigneePicker
+                  assignees={assignees}
+                  selectedIds={newCardAssigneeIds}
+                  label={uiCopy.board.cardAssigneesLabel}
+                  emptyLabel={uiCopy.board.cardAssigneesEmpty}
+                  disabled={creatingCard}
+                  testId={`new-card-assignees-${columnId}`}
+                  onToggle={(assigneeId) => onToggleCardAssignee(columnId, assigneeId)}
+                />
+                <CardLabelPicker
+                  labels={labels}
+                  selectedIds={newCardLabelIds}
+                  label={uiCopy.board.cardLabelsLabel}
+                  emptyLabel={uiCopy.board.cardLabelsEmpty}
+                  disabled={creatingCard}
+                  testId={`new-card-labels-${columnId}`}
+                  onToggle={(labelId) => onToggleCardLabel(columnId, labelId)}
+                />
+              </div>
+              </DialogBody>
+              <DialogFooter>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => onCancelCreateCard(columnId)}
+                disabled={creatingCard}
+                data-testid={`cancel-card-${columnId}`}
+              >
+                {uiCopy.common.cancel}
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={creatingCard}
+                data-testid={`create-card-${columnId}`}
+              >
+                {creatingCard ? <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" /> : null}
+                {creatingCard ? uiCopy.board.creatingCard : uiCopy.board.createCard}
+              </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      ) : null}
+      {canEdit ? (
         <Button
           type="button"
           variant="ghost"

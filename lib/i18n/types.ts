@@ -92,6 +92,7 @@ export type BoardCopy = {
     cardTitlePlaceholder: string;
     cardDescriptionPlaceholder: string;
     cardDueDateLabel: string;
+    cardOverdue: string;
     cardAssigneesLabel: string;
     cardAssigneesEmpty: string;
     cardLabelsLabel: string;

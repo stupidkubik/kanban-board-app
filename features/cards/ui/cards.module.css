@@ -126,6 +126,22 @@
   gap: 4px;
 }
 
+.cardMeta[data-overdue="true"] {
+  color: var(--color-danger);
+  font-weight: 600;
+}
+
+.overdueLabel {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 5px;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 .cardAssignees {
   display: flex;
   flex-wrap: wrap;
@@ -291,6 +307,18 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+
+.cardDialog {
+  max-width: min(680px, calc(100vw - 24px));
+}
+
+.cardDialog [data-slot="dialog-body"] {
+  padding-right: 2px;
+}
+
+.cardDialogForm {
+  display: contents;
 }
 
 .cardFormInput {
