@@ -231,6 +231,7 @@ describe("kanban core flows", () => {
     cy.get('[role="dialog"]').contains("button", "Save").click()
     cy.get(`[data-card-title="${editedCardTitle}"]`).should("exist")
 
+    cy.intercept("PATCH", "/api/boards/*/labels/*").as("updateLabel")
     cy.get('[data-testid="labels-manager-trigger"]').click()
     cy.get('[data-testid^="label-row-"]').within(() => {
       cy.get('button[aria-label^="Edit label:"]').click()
@@ -238,6 +239,8 @@ describe("kanban core flows", () => {
       cy.get('[data-testid^="label-color-"][data-testid$="-purple"]').click()
       cy.contains("button", "Save").click()
     })
+    cy.wait("@updateLabel").its("response.statusCode").should("eq", 200)
+    cy.get('[data-testid^="label-row-"]').should("contain.text", "Critical")
     cy.get(`[data-card-title="${editedCardTitle}"]`)
       .find('[data-testid="card-labels"]')
       .should("contain.text", "Critical")
