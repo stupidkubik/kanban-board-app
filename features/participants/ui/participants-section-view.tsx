@@ -115,7 +115,7 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
   const [inviteOpen, setInviteOpen] = React.useState(false)
 
   return (
-    <div className={styles.manager}>
+    <div className={styles.manager} data-testid="participants-section">
       <div className={styles.managerActions}>
         {isOwner ? (
           <Button
@@ -225,14 +225,14 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
                 {isOwner && !participant.isYou && participant.role !== "owner" ? (
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button type="button" variant="ghost" size="icon-xs" className={styles.participantRemoveButton} disabled={removePendingId === participant.id} aria-label={uiCopy.board.removeMember}>
+                      <Button type="button" variant="ghost" size="icon-xs" className={styles.participantRemoveButton} disabled={removePendingId === participant.id} aria-label={`${uiCopy.board.removeMember}: ${participant.name}`}>
                         {removePendingId === participant.id ? <Spinner size="xs" aria-hidden="true" /> : <TrashSimple weight="bold" />}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
                         <AlertDialogTitle>{uiCopy.board.removeMemberTitle}</AlertDialogTitle>
-                        <AlertDialogDescription>{uiCopy.board.removeMemberDescription}</AlertDialogDescription>
+                        <AlertDialogDescription>{uiCopy.board.removeMemberDescription} {participant.name}</AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel type="button">{uiCopy.common.cancel}</AlertDialogCancel>

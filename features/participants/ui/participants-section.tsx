@@ -55,7 +55,7 @@ export const ParticipantsSection = React.memo(function ParticipantsSection(props
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button type="button" variant="outline" size="sm" className={styles.managerTrigger} data-testid="participants-manager-trigger">
+        <Button type="button" variant="outline" size="sm" className={styles.managerTrigger} aria-label={props.uiCopy.board.participantsManager} data-testid="participants-manager-trigger">
           <UsersThree weight="bold" aria-hidden="true" />
           <span>{props.uiCopy.board.participantsManager}</span>
           <ParticipantsSummary participants={participants} emptyLabel={props.uiCopy.board.onlyYou} />

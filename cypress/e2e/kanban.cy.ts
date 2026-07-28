@@ -282,11 +282,27 @@ describe("kanban core flows", () => {
       .then(() => rememberBoard(boardTitle))
 
     cy.contains('[data-testid="board-card"]', boardTitle).click()
+    cy.viewport(375, 873)
     cy.get('[data-testid="participants-manager-trigger"]').click()
+    cy.get('[role="dialog"]')
+      .should("be.visible")
+      .then(($dialog) => {
+        const bounds = $dialog[0].getBoundingClientRect()
+        expect(bounds.left).to.be.at.least(0)
+        expect(bounds.right).to.be.at.most(375)
+        expect(bounds.top).to.be.at.least(0)
+        expect(bounds.bottom).to.be.at.most(873)
+      })
+    cy.get('[data-testid="participants-section"]').should(
+      "have.css",
+      "overflow-y",
+      "auto"
+    )
     cy.get('[data-testid="invite-member-trigger"]').click()
     cy.get('[data-testid="invite-email"]').type("invitee@example.com")
     cy.get('[data-testid="invite-submit"]').click()
     cy.get('[data-testid="invite-email"]').should("have.value", "")
+    cy.viewport(1000, 660)
   })
 
   it("changes an accepted member from editor to viewer in realtime", () => {

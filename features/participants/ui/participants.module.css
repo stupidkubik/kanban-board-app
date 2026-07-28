@@ -79,6 +79,8 @@
 
 .manager {
   display: grid;
+  min-height: 0;
+  overflow: auto;
   gap: 16px;
 }
 

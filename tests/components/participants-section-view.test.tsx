@@ -28,19 +28,24 @@ const participants: Participant[] = [
 
 const renderView = (
   isOwner: boolean,
-  onUpdateParticipantRole = vi.fn()
+  onUpdateParticipantRole = vi.fn(),
+  overrides: {
+    participants?: Participant[]
+    removePendingId?: string | null
+    rolePendingId?: string | null
+  } = {}
 ) => {
   const view = render(
     <ParticipantsSectionView
       uiCopy={uiCopy}
       uiLocale="en"
-      participants={participants}
+      participants={overrides.participants ?? participants}
       isOwner={isOwner}
       inviteEmail=""
       inviteRole="viewer"
       invitePending={false}
-      removePendingId={null}
-      rolePendingId={null}
+      removePendingId={overrides.removePendingId ?? null}
+      rolePendingId={overrides.rolePendingId ?? null}
       leavePending={false}
       onInviteEmailChange={vi.fn()}
       onInviteRoleChange={vi.fn()}
@@ -63,12 +68,17 @@ describe("ParticipantsSectionView role controls", () => {
       screen.queryByTestId("invite-member-trigger")
     ).not.toBeInTheDocument()
     expect(
-      screen.queryByRole("button", { name: uiCopy.board.removeMember })
+      screen.queryByRole("button", {
+        name: `${uiCopy.board.removeMember}: Editor`,
+      })
     ).not.toBeInTheDocument()
     expect(
       screen.queryByTestId("participant-role-editor")
     ).not.toBeInTheDocument()
     expect(screen.getAllByText(roleLabels.en.editor)).toHaveLength(2)
+    expect(
+      screen.getByRole("button", { name: uiCopy.board.leaveBoard })
+    ).toBeVisible()
   })
 
   it("shows invite and member removal controls to owners", async () => {
@@ -79,10 +89,42 @@ describe("ParticipantsSectionView role controls", () => {
 
     expect(screen.getByTestId("invite-email")).toBeInTheDocument()
     expect(
-      screen.getByRole("button", { name: uiCopy.board.removeMember })
+      screen.getByRole("button", {
+        name: `${uiCopy.board.removeMember}: Editor`,
+      })
     ).toBeInTheDocument()
     const roleSelect = screen.getByTestId("participant-role-editor")
     expect(roleSelect).toBeInTheDocument()
     expect(roleSelect).toHaveTextContent(roleLabels.en.editor)
+  })
+
+  it("keeps pending state scoped to the affected participant", () => {
+    const viewer: Participant = {
+      id: "viewer",
+      name: "Viewer",
+      secondaryLabel: "viewer@example.com",
+      photoURL: null,
+      role: "viewer",
+      isYou: false,
+    }
+
+    renderView(true, vi.fn(), {
+      participants: [...participants, viewer],
+      rolePendingId: "editor",
+      removePendingId: "viewer",
+    })
+
+    expect(screen.getByTestId("participant-role-editor")).toBeDisabled()
+    expect(screen.getByTestId("participant-role-viewer")).toBeEnabled()
+    expect(
+      screen.getByRole("button", {
+        name: `${uiCopy.board.removeMember}: Editor`,
+      })
+    ).toBeEnabled()
+    expect(
+      screen.getByRole("button", {
+        name: `${uiCopy.board.removeMember}: Viewer`,
+      })
+    ).toBeDisabled()
   })
 })

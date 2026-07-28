@@ -131,6 +131,7 @@ export type BoardCopy = {
     labelColorPink: string;
     createLabel: string;
     creatingLabel: string;
+    editLabel: string;
     saveLabel: string;
     deleteLabel: string;
     deleteLabelTitle: string;
