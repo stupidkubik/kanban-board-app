@@ -1,114 +1,99 @@
-.participantsCard {
-  width: 100%;
-}
-
-.participantsCard[data-slot="card"] {
-  padding: 0;
-  gap: 12px;
-}
-
-.participantsCard [data-slot="card-header"] {
-  padding: 14px 16px;
-}
-
-.participantsCard [data-slot="card-header"].participantsHeader {
-  display: flex;
-}
-
-.participantsCard [data-slot="card-content"] {
-  padding: 12px 16px 16px;
-  border-top: 1px solid var(--color-border);
-}
-
-.participantsHeader {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 16px;
-  flex-wrap: nowrap;
-}
-
-.participantsHeaderLeft {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+.managerTrigger {
   min-width: 0;
-  flex: 1 1 0;
-}
-
-.participantsHeaderMain {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-
-.participantsSummary {
-  display: flex;
-  align-items: center;
   gap: 8px;
 }
 
-.participantsSummaryEmpty {
-  font-size: 12px;
-  color: var(--color-muted);
+.managerDialog {
+  max-width: min(760px, calc(100vw - 24px));
 }
 
-.participantsHeaderActions {
-  display: flex;
+.managerHeader {
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-  justify-content: flex-start;
 }
 
-.participantsHeaderColumn {
-  display: flex;
-  align-items: center;
+.managerHeader [data-slot="dialog-close"] {
   margin-left: auto;
-  flex: 0 0 auto;
-  justify-content: flex-end;
 }
 
-.participantAvatarStack {
+.summaryEmpty {
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.avatarStack {
   display: inline-flex;
   align-items: center;
-  padding: 2px 6px;
-  border-radius: 999px;
+  padding: 2px 4px 2px 6px;
   border: 1px solid var(--color-border);
+  border-radius: 999px;
   background: var(--color-surface);
 }
 
-.participantAvatarCompact {
-  width: 24px;
-  height: 24px;
-  font-size: 11px;
-  border-width: 2px;
-  border-color: var(--color-surface);
-  box-shadow: var(--shadow-soft);
-}
-
-.participantAvatarStack .participantAvatarCompact {
+.avatarStack .avatarCompact {
   margin-left: -8px;
 }
 
-.participantAvatarStack .participantAvatarCompact:first-child {
+.avatarStack .avatarCompact:first-child {
   margin-left: 0;
 }
 
-.participantAvatarOverflow {
+.avatar {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: var(--color-surface);
+  color: var(--color-muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.avatarCompact {
+  width: 24px;
+  height: 24px;
+  border-width: 2px;
+  border-color: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+  font-size: 11px;
+}
+
+.avatarOverflow {
   background: var(--color-surface-strong);
   color: var(--color-text);
 }
 
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatarFallback {
+  text-transform: uppercase;
+}
+
+.manager {
+  display: grid;
+  gap: 16px;
+}
+
+.managerActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .participantsList {
-  list-style: none;
+  display: grid;
+  width: 100%;
   margin: 0;
   padding: 0;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  list-style: none;
   gap: 10px;
-  width: min(760px, 100%);
 }
 
 .participantRow {
@@ -117,136 +102,72 @@
   align-items: center;
   gap: 12px;
   padding: 10px 12px;
-  border-radius: 12px;
   border: 1px solid var(--color-border);
+  border-radius: 12px;
   background: var(--color-surface);
+}
+
+.participantIdentity,
+.participantActions,
+.participantNameRow,
+.inviteRow {
+  display: flex;
+  align-items: center;
 }
 
 .participantIdentity {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   min-width: 0;
-}
-
-.participantAvatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  overflow: hidden;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-muted);
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.participantAvatarImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.participantAvatarFallback {
-  text-transform: uppercase;
+  gap: 10px;
 }
 
 .participantInfo {
   display: flex;
+  min-width: 0;
   flex-direction: column;
   gap: 2px;
-  min-width: 0;
 }
 
 .participantNameRow {
-  display: flex;
   flex-wrap: wrap;
-  align-items: center;
   gap: 8px;
+}
+
+.participantName,
+.participantSecondary {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .participantName {
   font-size: 14px;
   font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+.participantSecondary,
+.participantsEmpty {
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.participantBadge,
+.participantRole {
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--color-muted);
 }
 
 .participantBadge {
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
   padding: 2px 8px;
   font-size: 11px;
-  text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: var(--color-muted);
-  background: transparent;
+  text-transform: uppercase;
 }
-
-.participantSecondary {
-  font-size: 12px;
-  color: var(--color-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-@media (max-width: 720px) {
-.participantsList {
-    grid-template-columns: 1fr;
-    width: 100%;
-  }
-
-.participantsHeader {
-    flex-wrap: wrap;
-  }
-
-.participantsHeader {
-    align-items: flex-start;
-  }
-
-.participantsHeaderMain {
-    flex-wrap: wrap;
-  }
-
-.participantsHeaderActions {
-    flex-wrap: wrap;
-    justify-content: flex-start;
-  }
-
-.participantRow {
-    grid-template-columns: 1fr;
-    justify-items: start;
-  }
-
-.participantRole {
-    justify-self: start;
-  }
 
 .participantActions {
-    justify-self: start;
-  }
-
-.participantName,
-  .participantSecondary {
-    white-space: normal;
-  }
-
-.participantsHeaderColumn {
-    margin-left: 0;
-    width: 100%;
-    justify-content: flex-start;
-  }
-
-.participantsColumnForm {
-    flex-wrap: wrap;
-    margin-left: 0;
-    width: 100%;
-  }
+  justify-content: flex-end;
+  gap: 6px;
 }
 
 .participantRoleSelect {
@@ -256,127 +177,99 @@
 }
 
 .participantRole {
+  padding: 3px 8px;
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-muted);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  padding: 3px 8px;
-  background: transparent;
-}
-
-.participantActions {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  justify-content: flex-end;
 }
 
 .participantRemoveButton {
-  color: var(--color-muted);
   border: 1px solid var(--color-border);
+  color: var(--color-muted);
 }
 
-.participantRemoveButton:hover {
-  color: var(--color-danger);
-  background: var(--color-danger-soft);
-  border-color: rgba(220, 38, 38, 0.35);
-}
-
-.leaveBoardButton {
-  color: var(--color-danger);
-  border: 1px solid rgba(220, 38, 38, 0.2);
-}
-
+.participantRemoveButton:hover,
 .leaveBoardButton:hover {
   color: var(--color-danger);
   background: var(--color-danger-soft);
 }
 
+.participantRemoveButton:hover {
+  border-color: rgba(220, 38, 38, 0.35);
+}
+
+.leaveBoardButton {
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  color: var(--color-danger);
+}
+
 .participantsEmpty {
   margin: 0;
-  font-size: 13px;
-  color: var(--color-muted);
-}
-
-.participantsColumnForm {
-  display: flex;
-  flex-wrap: nowrap;
-  gap: 8px;
-  align-items: center;
-}
-
-.participantsColumnForm button {
-  white-space: nowrap;
 }
 
 .inviteForm {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   gap: 10px;
-  margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--color-border);
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: var(--color-surface-strong);
 }
 
 .inviteLabel {
+  color: var(--color-muted);
   font-size: 11px;
+  font-weight: 400;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--color-muted);
-  font-weight: 400;
 }
 
 .inviteRow {
-  display: flex;
-  flex-wrap: nowrap;
+  flex-wrap: wrap;
   gap: 10px;
-  align-items: center;
-  justify-content: flex-start;
 }
 
-.inviteRow .inviteInput {
-  flex: 0 0 260px;
-  width: 260px;
+.inviteInput {
+  min-width: 0;
+  flex: 1 1 240px;
   height: 32px;
 }
 
-.inviteRow .inviteSelect {
-  min-width: 140px;
+.inviteSelect {
+  min-width: 130px;
   height: 32px;
 }
 
 .inviteRow button {
   height: 32px;
-  flex: 0 0 auto;
-}
-
-@media (max-width: 720px) {
-.inviteRow {
-    flex-wrap: wrap;
-  }
-
-.inviteRow .inviteInput {
-    flex: 1 1 220px;
-    width: 100%;
-    max-width: 100%;
-  }
-}
-
-
-.headerColumnInput {
-  flex: 1 1 180px;
-  min-width: 160px;
-  max-width: 220px;
-  height: 32px;
-  font-size: 13px;
-}
-
-.columnTitleInput {
-  width: 100%;
 }
 
 .buttonSpinner {
   margin-right: 6px;
+}
+
+@media (max-width: 520px) {
+  .managerTrigger > span:not(.avatarStack):not(.summaryEmpty) {
+    display: none;
+  }
+
+  .participantRow {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+
+  .participantActions {
+    justify-content: flex-start;
+  }
+
+  .participantName,
+  .participantSecondary {
+    white-space: normal;
+  }
+
+  .inviteInput,
+  .inviteSelect,
+  .inviteRow button {
+    width: 100%;
+  }
 }

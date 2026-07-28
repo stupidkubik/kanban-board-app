@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Gear, Plus, Tag, UsersThree } from "@phosphor-icons/react"
+import { Gear, Plus, Tag } from "@phosphor-icons/react"
 import type { User } from "firebase/auth"
 
 import { Button } from "@/components/ui/button"
@@ -86,36 +86,15 @@ export function BoardToolbar({
   return (
     <section className={styles.toolbar} aria-label={uiCopy.board.columnsTitle}>
       <div className={styles.managementActions}>
-        <Dialog>
-          <DialogTrigger asChild>
-            <Button type="button" variant="outline" size="sm" data-testid="participants-manager-trigger">
-              <UsersThree weight="bold" aria-hidden="true" />
-              {uiCopy.board.participantsManager}
-            </Button>
-          </DialogTrigger>
-          <DialogContent size="lg" className={styles.managerDialog}>
-            <DialogHeader className={styles.managerHeader}>
-              <DialogTitle>{uiCopy.board.participantsManager}</DialogTitle>
-              <DialogDescription className="srOnly">
-                {uiCopy.board.participantsTitle}
-              </DialogDescription>
-              <DialogClose asChild>
-                <Button type="button" variant="ghost" size="sm" data-testid="close-participants-manager">
-                  {uiCopy.common.cancel}
-                </Button>
-              </DialogClose>
-            </DialogHeader>
-            <ParticipantsSection
-              boardId={boardId}
-              board={board}
-              user={user}
-              isOwner={isOwner}
-              uiCopy={uiCopy}
-              uiLocale={uiLocale}
-              setError={setError}
-            />
-          </DialogContent>
-        </Dialog>
+        <ParticipantsSection
+          boardId={boardId}
+          board={board}
+          user={user}
+          isOwner={isOwner}
+          uiCopy={uiCopy}
+          uiLocale={uiLocale}
+          setError={setError}
+        />
         <Dialog>
           <DialogTrigger asChild>
             <Button type="button" variant="outline" size="sm" data-testid="labels-manager-trigger">

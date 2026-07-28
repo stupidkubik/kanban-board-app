@@ -9,7 +9,11 @@ import type { Board } from "@/lib/types/boards"
 
 vi.mock("@/features/participants/ui/participants-section", () => ({
   ParticipantsSection: ({ isOwner }: { isOwner: boolean }) => (
-    <div data-testid="participants-section" data-owner={String(isOwner)} />
+    <button
+      type="button"
+      data-testid="participants-manager-trigger"
+      data-owner={String(isOwner)}
+    />
   ),
 }))
 
@@ -77,18 +81,10 @@ describe("BoardToolbar", () => {
     const { onCreateColumn, onNewColumnTitleChange } = renderToolbar()
 
     const participantsTrigger = screen.getByTestId("participants-manager-trigger")
-    await user.click(participantsTrigger)
-
-    expect(
-      screen.getByRole("dialog", { name: uiCopy.board.participantsManager })
-    ).toBeVisible()
-    expect(screen.getByTestId("participants-section")).toHaveAttribute(
+    expect(participantsTrigger).toHaveAttribute(
       "data-owner",
       "true"
     )
-
-    await user.keyboard("{Escape}")
-    expect(participantsTrigger).toHaveFocus()
 
     const labelsTrigger = screen.getByTestId("labels-manager-trigger")
     await user.click(labelsTrigger)
@@ -113,12 +109,10 @@ describe("BoardToolbar", () => {
     expect(screen.queryByTestId("new-column-title")).not.toBeInTheDocument()
     expect(screen.queryByTestId("create-column-submit")).not.toBeInTheDocument()
 
-    await user.click(screen.getByTestId("participants-manager-trigger"))
-    expect(screen.getByTestId("participants-section")).toHaveAttribute(
+    expect(screen.getByTestId("participants-manager-trigger")).toHaveAttribute(
       "data-owner",
       "false"
     )
-    await user.keyboard("{Escape}")
 
     await user.click(screen.getByTestId("labels-manager-trigger"))
     expect(screen.getByTestId("labels-section")).toHaveAttribute(
