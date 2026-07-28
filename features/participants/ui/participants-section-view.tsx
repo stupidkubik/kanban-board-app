@@ -39,11 +39,6 @@ type ParticipantsSectionViewProps = {
   uiLocale: Locale
   participants: Participant[]
   isOwner: boolean
-  canEdit: boolean
-  creatingColumn: boolean
-  newColumnTitle: string
-  onNewColumnTitleChange: (value: string) => void
-  onCreateColumn: (event: React.FormEvent<HTMLFormElement>) => void
   inviteEmail: string
   inviteRole: BoardRole
   invitePending: boolean
@@ -66,11 +61,6 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
   uiLocale,
   participants,
   isOwner,
-  canEdit,
-  creatingColumn,
-  newColumnTitle,
-  onNewColumnTitleChange,
-  onCreateColumn,
   inviteEmail,
   inviteRole,
   invitePending,
@@ -84,7 +74,7 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
   onUpdateParticipantRole,
   onLeaveBoard,
 }: ParticipantsSectionViewProps) {
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = React.useState(true)
   const visibleParticipants = participants.slice(0, 5)
   const remainingCount = participants.length - visibleParticipants.length
 
@@ -134,14 +124,6 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
             </div>
           </div>
           <div className={styles.participantsHeaderActions}>
-            <Button
-              type="button"
-              variant="ghost"
-              size="xs"
-              onClick={() => setOpen((current) => !current)}
-            >
-              {open ? uiCopy.board.participantsHide : uiCopy.board.participantsShow}
-            </Button>
             {isOwner ? (
               <Button
                 type="button"
@@ -192,42 +174,6 @@ export const ParticipantsSectionView = React.memo(function ParticipantsSectionVi
             )}
           </div>
         </div>
-        {canEdit ? (
-          <div className={styles.participantsHeaderColumn}>
-            <form className={styles.participantsColumnForm} onSubmit={onCreateColumn}>
-              <Label className="srOnly" htmlFor="participants-new-column-title">
-                {uiCopy.board.columnNamePlaceholder}
-              </Label>
-              <Input
-                id="participants-new-column-title"
-                className={`${styles.columnTitleInput} ${styles.headerColumnInput}`}
-                value={newColumnTitle}
-                onChange={(event) => onNewColumnTitleChange(event.target.value)}
-                placeholder={uiCopy.board.columnNamePlaceholder}
-                aria-label={uiCopy.board.columnNamePlaceholder}
-                disabled={!canEdit || creatingColumn}
-                data-testid="new-column-title"
-              />
-              <Button
-                type="submit"
-                size="sm"
-                disabled={!canEdit || creatingColumn}
-                data-testid="create-column-submit"
-              >
-                {creatingColumn ? (
-                  <Spinner
-                    size="sm"
-                    className={styles.buttonSpinner}
-                    aria-hidden="true"
-                  />
-                ) : null}
-                {creatingColumn
-                  ? uiCopy.board.creatingColumn
-                  : uiCopy.board.createColumn}
-              </Button>
-            </form>
-          </div>
-        ) : null}
       </CardHeader>
       {open ? (
         <CardContent>

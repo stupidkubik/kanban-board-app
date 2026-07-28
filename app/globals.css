@@ -50,6 +50,9 @@
   --z-index-dropdown: 50;
   --z-index-overlay: 60;
   --z-index-dialog: 61;
+  --z-index-alert-overlay: 70;
+  --z-index-alert-dialog: 71;
+  --z-index-toast: 80;
   --duration-fast: 120ms;
   --duration-normal: 180ms;
   --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);

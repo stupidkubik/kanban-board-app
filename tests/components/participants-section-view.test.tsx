@@ -36,11 +36,6 @@ const renderView = (
       uiLocale="en"
       participants={participants}
       isOwner={isOwner}
-      canEdit={false}
-      creatingColumn={false}
-      newColumnTitle=""
-      onNewColumnTitleChange={vi.fn()}
-      onCreateColumn={vi.fn()}
       inviteEmail=""
       inviteRole="viewer"
       invitePending={false}
@@ -61,16 +56,12 @@ const renderView = (
 afterEach(cleanup)
 
 describe("ParticipantsSectionView role controls", () => {
-  it("hides invite and member removal controls from non-owners", async () => {
-    const user = userEvent.setup()
+  it("hides invite and member removal controls from non-owners", () => {
     renderView(false)
 
     expect(
       screen.queryByTestId("invite-member-trigger")
     ).not.toBeInTheDocument()
-    await user.click(
-      screen.getByRole("button", { name: uiCopy.board.participantsShow })
-    )
     expect(
       screen.queryByRole("button", { name: uiCopy.board.removeMember })
     ).not.toBeInTheDocument()

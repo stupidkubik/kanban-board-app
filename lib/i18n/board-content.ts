@@ -3,6 +3,11 @@ import type { Locale, BoardCopy } from "./types"
 export const boardContentCopy = {
   ru: {
     backToBoards: "Назад к доскам",
+    personalSettings: "Личные настройки",
+    boardSettings: "Настройки доски",
+    boardSettingsDescription: "Язык содержимого доски.",
+    participantsManager: "Участники",
+    labelsManager: "Метки",
     boardLoading: "Загрузка доски...",
     boardNotFoundTitle: "Доска не найдена",
     boardNotFoundDescription: "Возможно, она была удалена или ссылка устарела.",
@@ -64,6 +69,11 @@ export const boardContentCopy = {
 },
   en: {
     backToBoards: "Back to boards",
+    personalSettings: "Personal settings",
+    boardSettings: "Board settings",
+    boardSettingsDescription: "Language used for board content.",
+    participantsManager: "Participants",
+    labelsManager: "Labels",
     boardLoading: "Loading board...",
     boardNotFoundTitle: "Board not found",
     boardNotFoundDescription: "It may have been deleted or the link is outdated.",
@@ -123,4 +133,4 @@ export const boardContentCopy = {
     deleteColumnDescription: "Only an empty column can be deleted. This cannot be undone.",
     readOnlyNotice: "Read-only mode: editing is disabled."
 },
-} satisfies Record<Locale, Pick<BoardCopy, "backToBoards" | "boardLoading" | "boardNotFoundTitle" | "boardNotFoundDescription" | "boardForbiddenTitle" | "boardForbiddenDescription" | "boardLoadFailedTitle" | "boardLoadFailedDescription" | "retry" | "columnsTitle" | "addColumn" | "columnNamePlaceholder" | "createColumn" | "creatingColumn" | "addCard" | "cardTitlePlaceholder" | "cardDescriptionPlaceholder" | "cardDueDateLabel" | "cardAssigneesLabel" | "cardAssigneesEmpty" | "cardLabelsLabel" | "cardLabelsEmpty" | "labelsTitle" | "labelsDescription" | "labelNamePlaceholder" | "labelColorLabel" | "labelColorGray" | "labelColorRed" | "labelColorOrange" | "labelColorYellow" | "labelColorGreen" | "labelColorBlue" | "labelColorPurple" | "labelColorPink" | "createLabel" | "creatingLabel" | "saveLabel" | "deleteLabel" | "deleteLabelTitle" | "deleteLabelDescription" | "labelEmpty" | "labelLimitReached" | "createCard" | "creatingCard" | "editCardTitle" | "editCardDescription" | "saveCard" | "savingCard" | "deleteCard" | "deleteCardTitle" | "deleteCardDescription" | "cardsLabel" | "noCards" | "noColumns" | "cardLimitReached" | "deleteColumn" | "deleteColumnTitle" | "deleteColumnDescription" | "readOnlyNotice">>
+} satisfies Record<Locale, Pick<BoardCopy, "backToBoards" | "personalSettings" | "boardSettings" | "boardSettingsDescription" | "participantsManager" | "labelsManager" | "boardLoading" | "boardNotFoundTitle" | "boardNotFoundDescription" | "boardForbiddenTitle" | "boardForbiddenDescription" | "boardLoadFailedTitle" | "boardLoadFailedDescription" | "retry" | "columnsTitle" | "addColumn" | "columnNamePlaceholder" | "createColumn" | "creatingColumn" | "addCard" | "cardTitlePlaceholder" | "cardDescriptionPlaceholder" | "cardDueDateLabel" | "cardAssigneesLabel" | "cardAssigneesEmpty" | "cardLabelsLabel" | "cardLabelsEmpty" | "labelsTitle" | "labelsDescription" | "labelNamePlaceholder" | "labelColorLabel" | "labelColorGray" | "labelColorRed" | "labelColorOrange" | "labelColorYellow" | "labelColorGreen" | "labelColorBlue" | "labelColorPurple" | "labelColorPink" | "createLabel" | "creatingLabel" | "saveLabel" | "deleteLabel" | "deleteLabelTitle" | "deleteLabelDescription" | "labelEmpty" | "labelLimitReached" | "createCard" | "creatingCard" | "editCardTitle" | "editCardDescription" | "saveCard" | "savingCard" | "deleteCard" | "deleteCardTitle" | "deleteCardDescription" | "cardsLabel" | "noCards" | "noColumns" | "cardLimitReached" | "deleteColumn" | "deleteColumnTitle" | "deleteColumnDescription" | "readOnlyNotice">>

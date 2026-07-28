@@ -14,11 +14,6 @@ type ParticipantsSectionProps = {
   board: Board | null
   user: User | null
   isOwner: boolean
-  canEdit: boolean
-  creatingColumn: boolean
-  newColumnTitle: string
-  onNewColumnTitleChange: (value: string) => void
-  onCreateColumn: (event: React.FormEvent<HTMLFormElement>) => void
   uiCopy: BoardCopy
   uiLocale: Locale
   setError: (message: string | null) => void
@@ -29,11 +24,6 @@ export const ParticipantsSection = React.memo(function ParticipantsSection({
   board,
   user,
   isOwner,
-  canEdit,
-  creatingColumn,
-  newColumnTitle,
-  onNewColumnTitleChange,
-  onCreateColumn,
   uiCopy,
   uiLocale,
   setError,
@@ -71,11 +61,6 @@ export const ParticipantsSection = React.memo(function ParticipantsSection({
       uiLocale={uiLocale}
       participants={participants}
       isOwner={isOwner}
-      canEdit={canEdit}
-      creatingColumn={creatingColumn}
-      newColumnTitle={newColumnTitle}
-      onNewColumnTitleChange={onNewColumnTitleChange}
-      onCreateColumn={onCreateColumn}
       inviteEmail={inviteEmail}
       inviteRole={inviteRole}
       invitePending={invitePending}

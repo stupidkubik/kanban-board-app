@@ -15,13 +15,13 @@ import type { BoardCopy } from "@/lib/types/board-ui"
 import { type Locale } from "@/lib/i18n"
 import { BoardStatus } from "@/features/board/ui/board-status"
 import { useBoardColumns } from "@/features/columns/model/use-board-columns"
-import { HeaderSection } from "@/features/columns/ui/header-section"
+import { BoardHeader } from "@/features/board/ui/board-header"
+import { BoardToolbar } from "@/features/board/ui/board-toolbar"
 import { CardsSection } from "@/features/cards/ui/cards-section"
-import { ParticipantsSection } from "@/features/participants/ui/participants-section"
 import { useNotifications } from "@/features/notifications/ui/notifications-provider"
 import { useUpdateBoardLanguageMutation } from "@/features/boards/data/boards-api"
 import { getErrorMessage } from "@/lib/errors"
-import { LabelsSection } from "@/features/labels/ui/labels-section"
+import styles from "@/features/board/ui/board-page.module.css"
 
 type BoardContentProps = {
   boardId: string
@@ -107,40 +107,34 @@ export const BoardContent = React.memo(function BoardContent({
   )
 
   return (
-    <>
-      <HeaderSection
+    <div className={styles.boardContent}>
+      <div className={styles.stickyShell}>
+      <BoardHeader
         uiCopy={uiCopy}
         boardId={boardId}
         boardTitle={boardTitle}
         isViewer={isViewer}
-        boardLanguage={board?.language ?? uiLocale}
-        canEdit={canEdit}
-        updatingBoardLanguage={updatingBoardLanguage}
-        onBoardLanguageChange={handleBoardLanguageChange}
-        uiLocale={uiLocale}
-        onUiLocaleChange={onUiLocaleChange}
       />
-      <BoardStatus error={error} />
-      <ParticipantsSection
+      <BoardToolbar
         boardId={boardId}
         board={board}
         user={user}
-        isOwner={isOwner}
         canEdit={canEdit}
+        isOwner={isOwner}
+        uiCopy={uiCopy}
+        uiLocale={uiLocale}
+        onUiLocaleChange={onUiLocaleChange}
+        boardLanguage={board?.language ?? uiLocale}
+        updatingBoardLanguage={updatingBoardLanguage}
+        onBoardLanguageChange={handleBoardLanguageChange}
         creatingColumn={creatingColumn}
         newColumnTitle={newColumnTitle}
         onNewColumnTitleChange={setNewColumnTitle}
         onCreateColumn={handleCreateColumn}
-        uiCopy={uiCopy}
-        uiLocale={uiLocale}
         setError={setError}
       />
-      <LabelsSection
-        boardId={boardId}
-        canEdit={canEdit}
-        uiCopy={uiCopy}
-        setError={setError}
-      />
+      </div>
+      <BoardStatus error={error} />
       <CardsSection
         boardId={boardId}
         board={board}
@@ -162,6 +156,6 @@ export const BoardContent = React.memo(function BoardContent({
         deletePendingId={deletePendingId}
         onDeleteColumn={handleDeleteColumn}
       />
-    </>
+    </div>
   )
 })

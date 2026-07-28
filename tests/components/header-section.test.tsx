@@ -1,27 +1,21 @@
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it } from "vitest"
 import { cleanup, render, screen } from "@testing-library/react"
 
-import { HeaderSection } from "@/features/columns/ui/header-section"
+import { BoardHeader } from "@/features/board/ui/board-header"
 import { getCopy } from "@/lib/i18n"
 
 const uiCopy = getCopy("en")
 
 afterEach(cleanup)
 
-describe("HeaderSection", () => {
+describe("BoardHeader", () => {
   it("renders header title", () => {
     render(
-      <HeaderSection
+      <BoardHeader
         uiCopy={uiCopy}
         boardId="board-1"
         boardTitle="Board"
         isViewer={false}
-        boardLanguage="en"
-        canEdit
-        updatingBoardLanguage={false}
-        onBoardLanguageChange={vi.fn()}
-        uiLocale="en"
-        onUiLocaleChange={vi.fn()}
       />
     )
 
@@ -30,21 +24,15 @@ describe("HeaderSection", () => {
 
   it("shows read-only notice for viewers", () => {
     render(
-      <HeaderSection
+      <BoardHeader
         uiCopy={uiCopy}
         boardId="board-1"
         boardTitle="Board"
         isViewer
-        boardLanguage="en"
-        canEdit={false}
-        updatingBoardLanguage={false}
-        onBoardLanguageChange={vi.fn()}
-        uiLocale="en"
-        onUiLocaleChange={vi.fn()}
       />
     )
 
     expect(screen.getByText(uiCopy.board.readOnlyNotice)).toBeInTheDocument()
-    expect(screen.getByLabelText(uiCopy.board.boardLanguageLabel)).toBeDisabled()
+    expect(screen.getByRole("link", { name: uiCopy.board.backToBoards })).toBeVisible()
   })
 })

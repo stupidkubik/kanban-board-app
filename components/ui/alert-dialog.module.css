@@ -3,7 +3,7 @@
   inset: 0;
   background: var(--color-overlay);
   backdrop-filter: blur(2px);
-  z-index: 50;
+  z-index: var(--z-index-alert-overlay);
 }
 
 .overlay[data-state="open"] {
@@ -28,7 +28,7 @@
   padding: 24px;
   display: grid;
   gap: 20px;
-  z-index: 51;
+  z-index: var(--z-index-alert-dialog);
   outline: none;
 }
 
