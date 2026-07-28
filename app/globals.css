@@ -147,6 +147,12 @@ a {
   text-decoration: none;
 }
 
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
 button,
 input,
 select,
@@ -159,6 +165,12 @@ textarea {
   [role="button"] {
     min-width: var(--touch-target-min);
     min-height: var(--touch-target-min);
+  }
+
+  input[type="checkbox"],
+  input[type="radio"] {
+    min-width: 18px;
+    min-height: 18px;
   }
 }
 
