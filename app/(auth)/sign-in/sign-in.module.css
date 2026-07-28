@@ -13,7 +13,7 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
-  padding: 26px;
+  padding: 30px;
 }
 
 .header {
@@ -21,6 +21,14 @@
   flex-direction: column;
   gap: 6px;
   margin-bottom: 18px;
+}
+
+.eyebrow {
+  color: var(--color-accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 .title {
@@ -80,6 +88,12 @@
   gap: 10px;
 }
 
+.form label {
+  color: var(--color-text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
 .buttonGoogle {
   background: var(--color-surface);
   color: var(--color-text);
@@ -111,6 +125,9 @@
 }
 
 @media (max-width: 520px) {
+  .card {
+    padding: 22px;
+  }
   .row {
     flex-direction: column;
     align-items: stretch;

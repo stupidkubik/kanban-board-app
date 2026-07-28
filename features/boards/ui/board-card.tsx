@@ -26,6 +26,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -178,7 +188,7 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
           </Badge>
           {canEditBoard ? (
             <div onClick={(event) => event.stopPropagation()}>
-              <AlertDialog
+              <Dialog
                 open={renameOpen}
                 onOpenChange={(open) => {
                   if (open) {
@@ -190,7 +200,7 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                   }
                 }}
               >
-                <AlertDialogTrigger asChild>
+                <DialogTrigger asChild>
                   <Button
                     type="button"
                     variant="ghost"
@@ -201,16 +211,16 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                   >
                     <PencilSimpleLine weight="bold" />
                   </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent size="sm">
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>
+                </DialogTrigger>
+                <DialogContent size="sm">
+                  <DialogHeader>
+                    <DialogTitle>
                       {uiCopy.board.renameBoardTitle}
-                    </AlertDialogTitle>
-                    <AlertDialogDescription>
+                    </DialogTitle>
+                    <DialogDescription>
                       {uiCopy.board.renameBoardDescription}
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
+                    </DialogDescription>
+                  </DialogHeader>
                   <form
                     className={styles.modalForm}
                     onSubmit={(event) => {
@@ -220,7 +230,7 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                   >
                     <div className={styles.modalFields}>
                       <Field>
-                        <FieldLabel className="srOnly" htmlFor={`rename-board-${board.id}`}>
+                        <FieldLabel htmlFor={`rename-board-${board.id}`}>
                           {uiCopy.board.boardNamePlaceholder}
                         </FieldLabel>
                         <FieldContent>
@@ -230,15 +240,17 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                             value={renameTitle}
                             onChange={(event) => setRenameTitle(event.target.value)}
                             placeholder={uiCopy.board.boardNamePlaceholder}
-                            aria-label={uiCopy.board.boardNamePlaceholder}
+                            autoFocus
                           />
                         </FieldContent>
                       </Field>
                     </div>
-                    <AlertDialogFooter className={styles.modalFooter}>
-                      <AlertDialogCancel type="button">
-                        {uiCopy.common.cancel}
-                      </AlertDialogCancel>
+                    <DialogFooter className={styles.modalFooter}>
+                      <DialogClose asChild>
+                        <Button type="button" variant="ghost" disabled={renamePending}>
+                          {uiCopy.common.cancel}
+                        </Button>
+                      </DialogClose>
                       <Button type="submit" disabled={renamePending}>
                         {renamePending ? (
                           <Spinner
@@ -251,10 +263,10 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                           ? uiCopy.board.renamingBoard
                           : uiCopy.board.renameBoard}
                       </Button>
-                    </AlertDialogFooter>
+                    </DialogFooter>
                   </form>
-                </AlertDialogContent>
-              </AlertDialog>
+                </DialogContent>
+              </Dialog>
             </div>
           ) : null}
         </div>

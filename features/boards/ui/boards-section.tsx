@@ -17,15 +17,15 @@ import { useCreateBoardMutation } from "@/features/boards/data/boards-api"
 import { getErrorMessage } from "@/lib/errors"
 import { KanbanBoardCard } from "@/features/boards/ui/board-card"
 import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -176,23 +176,23 @@ export function KanbanBoardsSection({
                 </SelectContent>
               </Select>
             </div>
-            <AlertDialog open={createOpen} onOpenChange={setCreateOpen}>
-              <AlertDialogTrigger asChild>
+            <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+              <DialogTrigger asChild>
                 <Button type="button" size="sm" data-testid="create-board-trigger">
                   {uiCopy.board.createBoard}
                 </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>{uiCopy.board.createBoard}</AlertDialogTitle>
-                  <AlertDialogDescription>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>{uiCopy.board.createBoard}</DialogTitle>
+                  <DialogDescription>
                     {uiCopy.board.boardSectionSubtitle}
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
+                  </DialogDescription>
+                </DialogHeader>
                 <form className={styles.modalForm} onSubmit={handleCreateBoardSubmit}>
                   <div className={styles.modalFields}>
                     <Field>
-                      <FieldLabel className="srOnly" htmlFor="create-board-title">
+                      <FieldLabel htmlFor="create-board-title">
                         {uiCopy.board.boardNamePlaceholder}
                       </FieldLabel>
                       <FieldContent>
@@ -201,13 +201,13 @@ export function KanbanBoardsSection({
                           value={title}
                           onChange={(event) => setTitle(event.target.value)}
                           placeholder={uiCopy.board.boardNamePlaceholder}
-                          aria-label={uiCopy.board.boardNamePlaceholder}
                           data-testid="create-board-title"
+                          autoFocus
                         />
                       </FieldContent>
                     </Field>
                     <Field>
-                      <FieldLabel className="srOnly" htmlFor="create-board-language">
+                      <FieldLabel htmlFor="create-board-language">
                         {uiCopy.board.boardLanguageLabel}
                       </FieldLabel>
                       <FieldContent>
@@ -219,7 +219,6 @@ export function KanbanBoardsSection({
                         >
                           <SelectTrigger
                             id="create-board-language"
-                            aria-label={uiCopy.board.boardLanguageLabel}
                           >
                             <SelectValue />
                           </SelectTrigger>
@@ -231,10 +230,12 @@ export function KanbanBoardsSection({
                       </FieldContent>
                     </Field>
                   </div>
-                  <AlertDialogFooter className={styles.modalFooter}>
-                    <AlertDialogCancel type="button">
+                  <DialogFooter className={styles.modalFooter}>
+                    <DialogClose asChild>
+                      <Button type="button" variant="ghost">
                       {uiCopy.common.cancel}
-                    </AlertDialogCancel>
+                      </Button>
+                    </DialogClose>
                     <Button
                       type="submit"
                       disabled={creating}
@@ -249,10 +250,10 @@ export function KanbanBoardsSection({
                       ) : null}
                       {creating ? uiCopy.board.creatingBoard : uiCopy.board.createBoard}
                     </Button>
-                  </AlertDialogFooter>
+                  </DialogFooter>
                 </form>
-              </AlertDialogContent>
-            </AlertDialog>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
         <div className={styles.cardContent}>

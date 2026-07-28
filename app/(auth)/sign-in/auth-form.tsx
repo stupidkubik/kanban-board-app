@@ -82,6 +82,7 @@ export const AuthForm = ({
     <div className={styles.card}>
       {languageControls}
       <div className={styles.header}>
+        <span className={styles.eyebrow}>{uiCopy.common.appTitle}</span>
         <h1 className={styles.title}>
           {resetMode ? uiCopy.auth.resetTitle : uiCopy.auth.title}
         </h1>
@@ -93,7 +94,7 @@ export const AuthForm = ({
         {resetMode ? (
           <>
             <form className={styles.form} onSubmit={onPasswordReset}>
-              <Label className="srOnly" htmlFor="reset-email">
+              <Label htmlFor="reset-email">
                 {uiCopy.auth.emailPlaceholder}
               </Label>
               <Input
@@ -122,7 +123,7 @@ export const AuthForm = ({
         ) : (
           <>
             <form className={styles.form} onSubmit={onEmailAuth}>
-              <Label className="srOnly" htmlFor="auth-email">
+              <Label htmlFor="auth-email">
                 {uiCopy.auth.emailPlaceholder}
               </Label>
               <Input
@@ -133,7 +134,7 @@ export const AuthForm = ({
                 onChange={(event) => setEmail(event.target.value)}
                 required
               />
-              <Label className="srOnly" htmlFor="auth-password">
+              <Label htmlFor="auth-password">
                 {uiCopy.auth.passwordPlaceholder}
               </Label>
               <Input
