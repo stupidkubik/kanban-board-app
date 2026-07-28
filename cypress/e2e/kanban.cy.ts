@@ -202,17 +202,14 @@ describe("kanban core flows", () => {
 
     cy.contains('[data-testid^="column-"]', "Todo").within(() => {
       cy.get('[data-testid^="add-card-"]').click()
-      cy.get('[data-testid^="new-card-title-"]')
-        .type(cardTitle, { delay: 25 })
-      cy.get('[data-testid^="new-card-title-"]').should(
-        "have.value",
-        cardTitle
-      )
-      cy.get('[data-testid^="new-card-labels-"] input[type="checkbox"]')
-        .should("have.length", 1)
-        .check()
-      cy.get('[data-testid^="create-card-"]').click()
     })
+    cy.get('[role="dialog"] [data-testid^="new-card-title-"]')
+      .type(cardTitle, { delay: 25 })
+      .should("have.value", cardTitle)
+    cy.get('[role="dialog"] [data-testid^="new-card-labels-"] input[type="checkbox"]')
+      .should("have.length", 1)
+      .check()
+    cy.get('[role="dialog"] [data-testid^="create-card-"]').click()
 
     cy.contains('[data-testid^="column-"]', "Todo")
       .find(`[data-card-title="${cardTitle}"]`)
@@ -231,7 +228,7 @@ describe("kanban core flows", () => {
 
     cy.get(`[data-card-title="${cardTitle}"]`).focus().type("{enter}")
     cy.get("#edit-card-title").clear().type(editedCardTitle)
-    cy.get('[role="alertdialog"]').contains("button", "Save").click()
+    cy.get('[role="dialog"]').contains("button", "Save").click()
     cy.get(`[data-card-title="${editedCardTitle}"]`).should("exist")
 
     cy.get('[data-testid="labels-manager-trigger"]').click()
@@ -347,16 +344,16 @@ describe("kanban core flows", () => {
     cy.get('[data-testid="create-column-submit"]').click()
     cy.contains('[data-testid^="column-"]', "Assigned").within(() => {
       cy.get('[data-testid^="add-card-"]').click()
-      cy.get('[data-testid^="new-card-title-"]').type(assignedCardTitle)
-      cy.get('[data-testid^="new-card-assignees-"] input[type="checkbox"]')
-        .should("have.length", 2)
-        .check()
-      cy.get('[data-testid^="create-card-"]').click()
-      cy.get(`[data-card-title="${assignedCardTitle}"]`)
-        .find('[data-testid="card-assignees"]')
-        .children()
-        .should("have.length", 2)
     })
+    cy.get('[role="dialog"] [data-testid^="new-card-title-"]').type(assignedCardTitle)
+    cy.get('[role="dialog"] [data-testid^="new-card-assignees-"] input[type="checkbox"]')
+      .should("have.length", 2)
+      .check()
+    cy.get('[role="dialog"] [data-testid^="create-card-"]').click()
+    cy.get(`[data-card-title="${assignedCardTitle}"]`)
+      .find('[data-testid="card-assignees"]')
+      .children()
+      .should("have.length", 2)
 
     signOut()
     signIn()
