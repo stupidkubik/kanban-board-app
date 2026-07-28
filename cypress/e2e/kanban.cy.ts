@@ -177,6 +177,21 @@ describe("kanban core flows", () => {
 
     cy.get('[data-testid="close-labels-manager"]').click()
 
+    cy.viewport(375, 873)
+    cy.get('[data-testid="labels-manager-trigger"]').should("be.visible").click()
+    cy.get('[role="dialog"]')
+      .should("be.visible")
+      .then(($dialog) => {
+        const bounds = $dialog[0].getBoundingClientRect()
+        expect(bounds.left).to.be.at.least(0)
+        expect(bounds.right).to.be.at.most(375)
+        expect(bounds.top).to.be.at.least(0)
+        expect(bounds.bottom).to.be.at.most(873)
+      })
+    cy.get('[data-testid="close-labels-manager"]').should("be.visible").click()
+    cy.get('[data-testid="new-column-title"]').should("be.visible")
+    cy.viewport(1000, 660)
+
     cy.get('[data-testid="new-column-title"]').type("Todo")
     cy.get('[data-testid="create-column-submit"]').click()
     cy.contains('[data-testid^="column-"]', "Todo").should("exist")

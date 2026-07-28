@@ -1,10 +1,9 @@
 "use client"
 
-import * as React from "react"
 import { MoonStars, Sun } from "@phosphor-icons/react"
 
 import { IconButton } from "@/components/ui/icon-button"
-import { setStoredTheme, useStoredTheme, type UiTheme } from "@/lib/browser-preferences"
+import { setStoredTheme, useAppliedTheme } from "@/lib/browser-preferences"
 import styles from "@/components/ui/theme-toggle.module.css"
 
 type ThemeToggleLabels = {
@@ -18,17 +17,8 @@ type ThemeToggleProps = {
   labels: ThemeToggleLabels
 }
 
-const applyTheme = (theme: UiTheme) => {
-  document.documentElement.setAttribute("data-theme", theme)
-  document.body?.setAttribute("data-theme", theme)
-}
-
 export function ThemeToggle({ labels }: ThemeToggleProps) {
-  const theme = useStoredTheme()
-
-  React.useEffect(() => {
-    applyTheme(theme)
-  }, [theme])
+  const theme = useAppliedTheme()
 
   const nextTheme = theme === "dark" ? "light" : "dark"
   const actionLabel =

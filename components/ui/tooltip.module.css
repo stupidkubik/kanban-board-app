@@ -1,5 +1,5 @@
 .content {
-  z-index: var(--z-index-dialog);
+  z-index: var(--z-index-popover);
   max-width: min(280px, calc(100vw - 2 * var(--space-4)));
   padding: 6px 8px;
   color: var(--color-primary-contrast);

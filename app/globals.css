@@ -50,6 +50,7 @@
   --z-index-dropdown: 50;
   --z-index-overlay: 60;
   --z-index-dialog: 61;
+  --z-index-popover: 62;
   --z-index-alert-overlay: 70;
   --z-index-alert-dialog: 71;
   --z-index-toast: 80;

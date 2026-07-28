@@ -12,6 +12,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog"
 import {
   DropdownMenu,
@@ -34,7 +35,7 @@ import {
 } from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import { languageLabels, type Locale } from "@/lib/i18n"
-import { setStoredTheme, useStoredTheme } from "@/lib/browser-preferences"
+import { setStoredTheme, useAppliedTheme } from "@/lib/browser-preferences"
 import type { Board, BoardLanguage } from "@/lib/types/boards"
 import type { BoardCopy } from "@/lib/types/board-ui"
 import { LabelsSection } from "@/features/labels/ui/labels-section"
@@ -78,22 +79,65 @@ export function BoardToolbar({
   onCreateColumn,
   setError,
 }: BoardToolbarProps) {
-  const [participantsOpen, setParticipantsOpen] = React.useState(false)
-  const [labelsOpen, setLabelsOpen] = React.useState(false)
   const [settingsOpen, setSettingsOpen] = React.useState(false)
-  const theme = useStoredTheme()
+  const settingsTriggerRef = React.useRef<HTMLButtonElement>(null)
+  const theme = useAppliedTheme()
 
   return (
     <section className={styles.toolbar} aria-label={uiCopy.board.columnsTitle}>
       <div className={styles.managementActions}>
-        <Button type="button" variant="outline" size="sm" onClick={() => setParticipantsOpen(true)} data-testid="participants-manager-trigger">
-          <UsersThree weight="bold" aria-hidden="true" />
-          {uiCopy.board.participantsManager}
-        </Button>
-        <Button type="button" variant="outline" size="sm" onClick={() => setLabelsOpen(true)} data-testid="labels-manager-trigger">
-          <Tag weight="bold" aria-hidden="true" />
-          {uiCopy.board.labelsManager}
-        </Button>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button type="button" variant="outline" size="sm" data-testid="participants-manager-trigger">
+              <UsersThree weight="bold" aria-hidden="true" />
+              {uiCopy.board.participantsManager}
+            </Button>
+          </DialogTrigger>
+          <DialogContent size="lg" className={styles.managerDialog}>
+            <DialogHeader className={styles.managerHeader}>
+              <DialogTitle>{uiCopy.board.participantsManager}</DialogTitle>
+              <DialogDescription className="srOnly">
+                {uiCopy.board.participantsTitle}
+              </DialogDescription>
+              <DialogClose asChild>
+                <Button type="button" variant="ghost" size="sm" data-testid="close-participants-manager">
+                  {uiCopy.common.cancel}
+                </Button>
+              </DialogClose>
+            </DialogHeader>
+            <ParticipantsSection
+              boardId={boardId}
+              board={board}
+              user={user}
+              isOwner={isOwner}
+              uiCopy={uiCopy}
+              uiLocale={uiLocale}
+              setError={setError}
+            />
+          </DialogContent>
+        </Dialog>
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button type="button" variant="outline" size="sm" data-testid="labels-manager-trigger">
+              <Tag weight="bold" aria-hidden="true" />
+              {uiCopy.board.labelsManager}
+            </Button>
+          </DialogTrigger>
+          <DialogContent size="lg" className={styles.managerDialog}>
+            <DialogHeader className={styles.managerHeader}>
+              <DialogTitle>{uiCopy.board.labelsManager}</DialogTitle>
+              <DialogDescription className="srOnly">
+                {uiCopy.board.labelsDescription}
+              </DialogDescription>
+              <DialogClose asChild>
+                <Button type="button" variant="ghost" size="sm" data-testid="close-labels-manager">
+                  {uiCopy.common.cancel}
+                </Button>
+              </DialogClose>
+            </DialogHeader>
+            <LabelsSection boardId={boardId} canEdit={canEdit} uiCopy={uiCopy} setError={setError} />
+          </DialogContent>
+        </Dialog>
       </div>
 
       {canEdit ? (
@@ -123,11 +167,18 @@ export function BoardToolbar({
             variant="ghost"
             size="icon-sm"
             label={uiCopy.board.boardSettings}
+            ref={settingsTriggerRef}
             onClick={() => setSettingsOpen(true)}
           >
             <Gear weight="bold" aria-hidden="true" />
           </IconButton>
-          <DialogContent size="sm">
+          <DialogContent
+            size="sm"
+            onCloseAutoFocus={(event) => {
+              event.preventDefault()
+              settingsTriggerRef.current?.focus()
+            }}
+          >
             <DialogHeader>
               <DialogTitle>{uiCopy.board.boardSettings}</DialogTitle>
               <DialogDescription>{uiCopy.board.boardSettingsDescription}</DialogDescription>
@@ -176,42 +227,6 @@ export function BoardToolbar({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-
-      <Dialog open={participantsOpen} onOpenChange={setParticipantsOpen}>
-        <DialogContent size="lg" className={styles.managerDialog}>
-          <DialogHeader className={styles.managerHeader}>
-            <DialogTitle>{uiCopy.board.participantsManager}</DialogTitle>
-            <DialogClose asChild>
-              <Button type="button" variant="ghost" size="sm" data-testid="close-participants-manager">
-                {uiCopy.common.cancel}
-              </Button>
-            </DialogClose>
-          </DialogHeader>
-          <ParticipantsSection
-            boardId={boardId}
-            board={board}
-            user={user}
-            isOwner={isOwner}
-            uiCopy={uiCopy}
-            uiLocale={uiLocale}
-            setError={setError}
-          />
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={labelsOpen} onOpenChange={setLabelsOpen}>
-        <DialogContent size="lg" className={styles.managerDialog}>
-          <DialogHeader className={styles.managerHeader}>
-            <DialogTitle>{uiCopy.board.labelsManager}</DialogTitle>
-            <DialogClose asChild>
-              <Button type="button" variant="ghost" size="sm" data-testid="close-labels-manager">
-                {uiCopy.common.cancel}
-              </Button>
-            </DialogClose>
-          </DialogHeader>
-          <LabelsSection boardId={boardId} canEdit={canEdit} uiCopy={uiCopy} setError={setError} />
-        </DialogContent>
-      </Dialog>
     </section>
   )
 }

@@ -7,9 +7,9 @@ import {
   setStoredTheme,
   setStoredUiLocale,
   setUiLocaleTouched,
+  useAppliedTheme,
   useStoredBoardsSortDirection,
   useStoredBoardsSortKey,
-  useStoredTheme,
   useStoredUiLocale,
   useUiLocaleTouched,
 } from "@/lib/browser-preferences"
@@ -37,7 +37,7 @@ describe("browser preferences", () => {
 
   it("persists theme and board sorting preferences", () => {
     const { result } = renderHook(() => ({
-      theme: useStoredTheme(),
+      theme: useAppliedTheme(),
       sortKey: useStoredBoardsSortKey(),
       sortDirection: useStoredBoardsSortDirection(),
     }))
@@ -56,5 +56,7 @@ describe("browser preferences", () => {
     expect(window.localStorage.getItem("uiTheme")).toBe("dark")
     expect(window.localStorage.getItem("boardsSortKey")).toBe("title")
     expect(window.localStorage.getItem("boardsSortDirection")).toBe("asc")
+    expect(document.documentElement).toHaveAttribute("data-theme", "dark")
+    expect(document.body).toHaveAttribute("data-theme", "dark")
   })
 })

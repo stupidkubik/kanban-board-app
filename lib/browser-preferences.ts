@@ -94,6 +94,17 @@ export const setUiLocaleTouched = (touched: boolean) => {
 export const useStoredTheme = () =>
   useStringPreference(keys.theme, "light", isTheme)
 
+export const useAppliedTheme = () => {
+  const theme = useStoredTheme()
+
+  React.useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme)
+    document.body?.setAttribute("data-theme", theme)
+  }, [theme])
+
+  return theme
+}
+
 export const setStoredTheme = (theme: UiTheme) => {
   setPreference(keys.theme, theme)
 }
