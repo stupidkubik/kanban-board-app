@@ -3,7 +3,7 @@
 import * as React from "react"
 import { MoonStars, Sun } from "@phosphor-icons/react"
 
-import { Button } from "@/components/ui/button"
+import { IconButton } from "@/components/ui/icon-button"
 import { setStoredTheme, useStoredTheme, type UiTheme } from "@/lib/browser-preferences"
 import styles from "@/components/ui/theme-toggle.module.css"
 
@@ -36,14 +36,14 @@ export function ThemeToggle({ labels }: ThemeToggleProps) {
   const currentLabel = theme === "dark" ? labels.dark : labels.light
 
   return (
-    <Button
+    <IconButton
       type="button"
       variant="ghost"
       size="icon-sm"
       className={styles.toggle}
       data-theme={theme}
-      aria-label={actionLabel}
-      title={actionLabel}
+      label={actionLabel}
+      tooltip={actionLabel}
       aria-pressed={theme === "dark"}
       onClick={() => setStoredTheme(nextTheme)}
     >
@@ -51,6 +51,6 @@ export function ThemeToggle({ labels }: ThemeToggleProps) {
         {theme === "dark" ? <MoonStars weight="fill" /> : <Sun weight="fill" />}
       </span>
       <span className={styles.label}>{currentLabel}</span>
-    </Button>
+    </IconButton>
   )
 }

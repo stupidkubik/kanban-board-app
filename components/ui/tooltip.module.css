@@ -1,0 +1,16 @@
+.content {
+  z-index: var(--z-index-dialog);
+  max-width: min(280px, calc(100vw - 2 * var(--space-4)));
+  padding: 6px 8px;
+  color: var(--color-primary-contrast);
+  background: var(--color-text);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow-soft);
+  font-size: var(--text-xs);
+  line-height: 1.3;
+}
+
+.content[data-state="delayed-open"],
+.content[data-state="instant-open"] { animation: tooltip-in var(--duration-fast) var(--ease-emphasized); }
+
+@keyframes tooltip-in { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }

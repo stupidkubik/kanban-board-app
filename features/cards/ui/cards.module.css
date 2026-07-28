@@ -223,21 +223,21 @@
 }
 
 .labelOption[data-color="gray"],
-.cardLabelChip[data-color="gray"] { --label-color: #64748b; }
+.cardLabelChip[data-color="gray"] { --label-color: var(--color-label-gray); }
 .labelOption[data-color="red"],
-.cardLabelChip[data-color="red"] { --label-color: #ef4444; }
+.cardLabelChip[data-color="red"] { --label-color: var(--color-label-red); }
 .labelOption[data-color="orange"],
-.cardLabelChip[data-color="orange"] { --label-color: #f97316; }
+.cardLabelChip[data-color="orange"] { --label-color: var(--color-label-orange); }
 .labelOption[data-color="yellow"],
-.cardLabelChip[data-color="yellow"] { --label-color: #ca8a04; }
+.cardLabelChip[data-color="yellow"] { --label-color: var(--color-label-yellow); }
 .labelOption[data-color="green"],
-.cardLabelChip[data-color="green"] { --label-color: #16a34a; }
+.cardLabelChip[data-color="green"] { --label-color: var(--color-label-green); }
 .labelOption[data-color="blue"],
-.cardLabelChip[data-color="blue"] { --label-color: #2563eb; }
+.cardLabelChip[data-color="blue"] { --label-color: var(--color-label-blue); }
 .labelOption[data-color="purple"],
-.cardLabelChip[data-color="purple"] { --label-color: #9333ea; }
+.cardLabelChip[data-color="purple"] { --label-color: var(--color-label-purple); }
 .labelOption[data-color="pink"],
-.cardLabelChip[data-color="pink"] { --label-color: #db2777; }
+.cardLabelChip[data-color="pink"] { --label-color: var(--color-label-pink); }
 
 .assigneePickerLabel {
   padding: 0 4px;

@@ -36,18 +36,8 @@ import type {
 } from "@/lib/types/boards"
 import type { BoardCopy } from "@/lib/types/board-ui"
 import { getErrorMessage } from "@/lib/errors"
+import { getLabelColorStyle } from "@/lib/label-palette"
 import styles from "@/features/labels/ui/labels.module.css"
-
-const labelColorValues: Record<BoardLabelColor, string> = {
-  gray: "#64748b",
-  red: "#ef4444",
-  orange: "#f97316",
-  yellow: "#eab308",
-  green: "#22c55e",
-  blue: "#3b82f6",
-  purple: "#a855f7",
-  pink: "#ec4899",
-}
 
 const getColorLabels = (uiCopy: BoardCopy): Record<BoardLabelColor, string> => ({
   gray: uiCopy.board.labelColorGray,
@@ -87,11 +77,7 @@ const LabelRow = ({
         <span>
           <i
             className={styles.swatch}
-            style={
-              {
-                "--label-color": labelColorValues[label.color],
-              } as React.CSSProperties
-            }
+            style={getLabelColorStyle(label.color)}
           />
           {label.name}
         </span>

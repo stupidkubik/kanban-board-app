@@ -11,15 +11,15 @@
   transform-origin: var(--radix-dropdown-menu-content-transform-origin);
   overflow-x: hidden;
   overflow-y: auto;
-  z-index: 50;
+  z-index: var(--z-index-dropdown);
 }
 
 .content[data-state="open"] {
-  animation: dropdown-in 120ms ease-out;
+  animation: dropdown-in var(--duration-fast) var(--ease-emphasized);
 }
 
 .content[data-state="closed"] {
-  animation: dropdown-out 120ms ease-in;
+  animation: dropdown-out var(--duration-fast) var(--ease-emphasized);
 }
 
 .subContent {
@@ -32,15 +32,15 @@
   box-shadow: var(--shadow-soft);
   transform-origin: var(--radix-dropdown-menu-content-transform-origin);
   overflow: hidden;
-  z-index: 50;
+  z-index: var(--z-index-dropdown);
 }
 
 .subContent[data-state="open"] {
-  animation: dropdown-in 120ms ease-out;
+  animation: dropdown-in var(--duration-fast) var(--ease-emphasized);
 }
 
 .subContent[data-state="closed"] {
-  animation: dropdown-out 120ms ease-in;
+  animation: dropdown-out var(--duration-fast) var(--ease-emphasized);
 }
 
 @keyframes dropdown-in {

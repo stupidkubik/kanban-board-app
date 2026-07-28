@@ -23,6 +23,36 @@
   --color-field: #ffffff;
   --color-field-muted: #eef2f7;
   --color-overlay: rgba(9, 30, 66, 0.6);
+  --color-label-gray: #64748b;
+  --color-label-red: #dc2626;
+  --color-label-orange: #ea580c;
+  --color-label-yellow: #a16207;
+  --color-label-green: #15803d;
+  --color-label-blue: #2563eb;
+  --color-label-purple: #7e22ce;
+  --color-label-pink: #be185d;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --control-height-xs: 24px;
+  --control-height-sm: 32px;
+  --control-height: 36px;
+  --control-height-lg: 40px;
+  --touch-target-min: 44px;
+  --z-index-dropdown: 50;
+  --z-index-overlay: 60;
+  --z-index-dialog: 61;
+  --duration-fast: 120ms;
+  --duration-normal: 180ms;
+  --ease-emphasized: cubic-bezier(0.2, 0, 0, 1);
   --radius-lg: 18px;
   --radius-md: 12px;
   --radius-sm: 8px;
@@ -67,6 +97,14 @@ body[data-theme="dark"] {
   --color-field: #0f172a;
   --color-field-muted: #0b1220;
   --color-overlay: rgba(2, 6, 23, 0.75);
+  --color-label-gray: #94a3b8;
+  --color-label-red: #f87171;
+  --color-label-orange: #fb923c;
+  --color-label-yellow: #facc15;
+  --color-label-green: #4ade80;
+  --color-label-blue: #60a5fa;
+  --color-label-purple: #c084fc;
+  --color-label-pink: #f472b6;
   --shadow-card: 0 18px 32px rgba(3, 7, 18, 0.55);
   --shadow-soft: 0 8px 20px rgba(3, 7, 18, 0.45);
   --shadow-column: 0 12px 24px rgba(3, 7, 18, 0.5);
@@ -110,6 +148,25 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+@media (pointer: coarse) {
+  button,
+  [role="button"] {
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+  }
 }
 
 .srOnly {
