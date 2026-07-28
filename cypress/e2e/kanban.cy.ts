@@ -167,13 +167,13 @@ describe("kanban core flows", () => {
       "be.visible"
     )
 
+    cy.get('[data-testid="create-label-trigger"]').click()
     cy.get('[data-testid="new-label-name"]').type("Bug")
-    cy.get('[data-testid="new-label-color"]').select("red")
+    cy.get('[data-testid="new-label-color-red"]').click()
     cy.get('[data-testid="create-label"]').click()
     cy.get('[data-testid^="label-row-"]')
       .should("have.length", 1)
-      .find('input[aria-label^="Label name"]')
-      .should("have.value", "Bug")
+      .should("contain.text", "Bug")
 
     cy.get('[data-testid="close-labels-manager"]').click()
 
@@ -236,13 +236,17 @@ describe("kanban core flows", () => {
 
     cy.get('[data-testid="labels-manager-trigger"]').click()
     cy.get('[data-testid^="label-row-"]').within(() => {
+      cy.get('button[aria-label^="Edit label:"]').click()
       cy.get('input[aria-label^="Label name"]').clear().type("Critical")
-      cy.get('select[aria-label^="Label color"]').select("purple")
+      cy.get('[data-testid^="label-color-"][data-testid$="-purple"]').click()
       cy.contains("button", "Save").click()
     })
     cy.get(`[data-card-title="${editedCardTitle}"]`)
       .find('[data-testid="card-labels"]')
       .should("contain.text", "Critical")
+    cy.get('[data-testid^="label-row-"]').within(() => {
+      cy.get('button[aria-label^="Edit label:"]').click()
+    })
     cy.get('button[aria-label^="Delete label:"]').click()
     cy.get('[data-testid="delete-label-confirm"]').click()
     cy.get(`[data-card-title="${editedCardTitle}"]`)

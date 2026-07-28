@@ -1,14 +1,8 @@
 "use client"
 
 import * as React from "react"
+import { PencilSimple, Plus, TrashSimple } from "@phosphor-icons/react"
 
-import {
-  useCreateBoardLabelMutation,
-  useDeleteBoardLabelMutation,
-  useGetBoardLabelsQuery,
-  useUpdateBoardLabelMutation,
-} from "@/features/labels/data/labels-api"
-import { BOARD_LABEL_LIMIT } from "@/features/labels/model/label-normalizers"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,23 +14,15 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { IconButton } from "@/components/ui/icon-button"
 import { Input } from "@/components/ui/input"
 import { Spinner } from "@/components/ui/spinner"
-import { BOARD_LABEL_COLORS } from "@/lib/types/boards"
-import type {
-  BoardLabel,
-  BoardLabelColor,
-} from "@/lib/types/boards"
-import type { BoardCopy } from "@/lib/types/board-ui"
-import { getErrorMessage } from "@/lib/errors"
+import { useLabelManager } from "@/features/labels/model/use-label-manager"
+import { LabelColorPicker } from "@/features/labels/ui/label-color-picker"
 import { getLabelColorStyle } from "@/lib/label-palette"
+import type { BoardLabel, BoardLabelColor } from "@/lib/types/boards"
+import type { BoardCopy } from "@/lib/types/board-ui"
 import styles from "@/features/labels/ui/labels.module.css"
 
 const getColorLabels = (uiCopy: BoardCopy): Record<BoardLabelColor, string> => ({
@@ -53,262 +39,78 @@ const getColorLabels = (uiCopy: BoardCopy): Record<BoardLabelColor, string> => (
 type LabelRowProps = {
   label: BoardLabel
   canEdit: boolean
-  pending: boolean
   uiCopy: BoardCopy
-  onSave: (label: BoardLabel, name: string, color: BoardLabelColor) => void
-  onDelete: (label: BoardLabel) => void
+  colorLabels: Record<BoardLabelColor, string>
+  editing: boolean
+  editName: string
+  editColor: BoardLabelColor
+  pending: boolean
+  dirty: boolean
+  onStartEdit: () => void
+  onCancel: () => void
+  onNameChange: (value: string) => void
+  onColorChange: (value: BoardLabelColor) => void
+  onSubmit: (event: React.FormEvent<HTMLFormElement>) => void
+  onDelete: () => void
 }
 
-const LabelRow = ({
-  label,
-  canEdit,
-  pending,
-  uiCopy,
-  onSave,
-  onDelete,
-}: LabelRowProps) => {
-  const [name, setName] = React.useState(label.name)
-  const [color, setColor] = React.useState(label.color)
-  const colorLabels = getColorLabels(uiCopy)
-
-  if (!canEdit) {
-    return (
-      <li className={styles.labelRow} data-testid={`label-row-${label.id}`}>
-        <span>
-          <i
-            className={styles.swatch}
-            style={getLabelColorStyle(label.color)}
-          />
-          {label.name}
-        </span>
-      </li>
-    )
-  }
-
+function LabelRow({ label, canEdit, uiCopy, colorLabels, editing, editName, editColor, pending, dirty, onStartEdit, onCancel, onNameChange, onColorChange, onSubmit, onDelete }: LabelRowProps) {
   return (
     <li className={styles.labelRow} data-testid={`label-row-${label.id}`}>
-      <Input
-        value={name}
-        onChange={(event) => setName(event.target.value)}
-        aria-label={`${uiCopy.board.labelNamePlaceholder}: ${label.name}`}
-        disabled={!canEdit || pending}
-        maxLength={50}
-      />
-      <select
-        className={styles.colorSelect}
-        value={color}
-        onChange={(event) => setColor(event.target.value as BoardLabelColor)}
-        aria-label={`${uiCopy.board.labelColorLabel}: ${label.name}`}
-        disabled={!canEdit || pending}
-      >
-        {BOARD_LABEL_COLORS.map((value) => (
-          <option key={value} value={value}>
-            {colorLabels[value]}
-          </option>
-        ))}
-      </select>
-      <div className={styles.actions}>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
-          disabled={pending}
-          onClick={() => onSave(label, name, color)}
-        >
-          {uiCopy.board.saveLabel}
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          disabled={pending}
-          onClick={() => onDelete(label)}
-          aria-label={`${uiCopy.board.deleteLabel}: ${label.name}`}
-        >
-          {uiCopy.board.deleteLabel}
-        </Button>
-      </div>
+      {editing ? (
+        <form className={styles.editForm} onSubmit={onSubmit}>
+          <Input value={editName} onChange={(event) => onNameChange(event.target.value)} aria-label={`${uiCopy.board.labelNamePlaceholder}: ${label.name}`} disabled={pending} maxLength={50} autoFocus />
+          <LabelColorPicker value={editColor} labels={colorLabels} onValueChange={onColorChange} disabled={pending} testId={`label-color-${label.id}`} ariaLabel={`${uiCopy.board.labelColorLabel}: ${label.name}`} />
+          <div className={styles.rowActions}>
+            <Button type="submit" size="sm" disabled={pending || !dirty}>{pending ? <Spinner size="sm" aria-hidden="true" /> : null}{uiCopy.board.saveLabel}</Button>
+            <Button type="button" size="sm" variant="ghost" disabled={pending} onClick={onCancel}>{uiCopy.common.cancel}</Button>
+            <IconButton type="button" variant="ghost" size="icon-sm" label={`${uiCopy.board.deleteLabel}: ${label.name}`} disabled={pending} onClick={onDelete}><TrashSimple weight="bold" aria-hidden="true" /></IconButton>
+          </div>
+        </form>
+      ) : (
+        <div className={styles.labelReadRow}>
+          <span className={styles.labelIdentity}>
+            <i className={styles.swatch} style={getLabelColorStyle(label.color)} aria-hidden="true" />
+            <span>{label.name}</span>
+            <span className={styles.colorName}>{colorLabels[label.color]}</span>
+          </span>
+          {canEdit ? <IconButton type="button" variant="ghost" size="icon-sm" label={`Edit label: ${label.name}`} onClick={onStartEdit}><PencilSimple weight="bold" aria-hidden="true" /></IconButton> : null}
+        </div>
+      )}
     </li>
   )
 }
 
-type LabelsSectionProps = {
-  boardId: string
-  canEdit: boolean
-  uiCopy: BoardCopy
-  setError: (message: string | null) => void
-}
+type LabelsSectionProps = { boardId: string; canEdit: boolean; uiCopy: BoardCopy; setError: (message: string | null) => void }
 
-export const LabelsSection = ({
-  boardId,
-  canEdit,
-  uiCopy,
-  setError,
-}: LabelsSectionProps) => {
-  const { data: labels = [] } = useGetBoardLabelsQuery(boardId)
-  const [name, setName] = React.useState("")
-  const [color, setColor] = React.useState<BoardLabelColor>("blue")
-  const [deleteTarget, setDeleteTarget] = React.useState<BoardLabel | null>(null)
-  const [createLabel, { isLoading: creating }] =
-    useCreateBoardLabelMutation()
-  const [updateLabel, { isLoading: updating }] =
-    useUpdateBoardLabelMutation()
-  const [deleteLabel, { isLoading: deleting }] =
-    useDeleteBoardLabelMutation()
-  const pending = creating || updating || deleting
+export function LabelsSection({ boardId, canEdit, uiCopy, setError }: LabelsSectionProps) {
+  const manager = useLabelManager({ boardId, uiCopy, setError })
   const colorLabels = getColorLabels(uiCopy)
 
-  const handleCreate = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const nextName = name.trim()
-    if (!nextName) {
-      setError(uiCopy.board.errors.labelNameRequired)
-      return
-    }
-    setError(null)
-    try {
-      await createLabel({ boardId, name: nextName, color }).unwrap()
-      setName("")
-    } catch (error) {
-      setError(getErrorMessage(error, uiCopy.board.errors.createLabelFailed))
-    }
-  }
-
-  const handleSave = async (
-    label: BoardLabel,
-    nextName: string,
-    nextColor: BoardLabelColor
-  ) => {
-    if (!nextName.trim()) {
-      setError(uiCopy.board.errors.labelNameRequired)
-      return
-    }
-    setError(null)
-    try {
-      await updateLabel({
-        boardId,
-        labelId: label.id,
-        name: nextName,
-        color: nextColor,
-      }).unwrap()
-    } catch (error) {
-      setError(getErrorMessage(error, uiCopy.board.errors.updateLabelFailed))
-    }
-  }
-
-  const handleDelete = async () => {
-    if (!deleteTarget) return
-    setError(null)
-    try {
-      await deleteLabel({ boardId, labelId: deleteTarget.id }).unwrap()
-      setDeleteTarget(null)
-    } catch (error) {
-      setError(getErrorMessage(error, uiCopy.board.errors.deleteLabelFailed))
-    }
-  }
-
-  const atLimit = labels.length >= BOARD_LABEL_LIMIT
   return (
     <>
       <Card className={styles.catalog} data-testid="labels-section">
         <CardHeader className={styles.header}>
-          <div>
-            <CardTitle>{uiCopy.board.labelsTitle}</CardTitle>
-            <CardDescription className={styles.description}>
-              {uiCopy.board.labelsDescription}
-            </CardDescription>
-          </div>
+          <div><CardTitle>{uiCopy.board.labelsTitle}</CardTitle><CardDescription className={styles.description}>{uiCopy.board.labelsDescription}</CardDescription></div>
+          {canEdit && !manager.createOpen ? <Button type="button" size="sm" onClick={manager.openCreate} disabled={manager.atLimit} data-testid="create-label-trigger"><Plus weight="bold" aria-hidden="true" />{uiCopy.board.createLabel}</Button> : null}
         </CardHeader>
-        <CardContent>
-          {canEdit ? (
-            <form className={styles.createForm} onSubmit={handleCreate}>
-              <Input
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                placeholder={uiCopy.board.labelNamePlaceholder}
-                aria-label={uiCopy.board.labelNamePlaceholder}
-                maxLength={50}
-                disabled={pending || atLimit}
-                data-testid="new-label-name"
-              />
-              <select
-                className={styles.colorSelect}
-                value={color}
-                onChange={(event) =>
-                  setColor(event.target.value as BoardLabelColor)
-                }
-                aria-label={uiCopy.board.labelColorLabel}
-                disabled={pending || atLimit}
-                data-testid="new-label-color"
-              >
-                {BOARD_LABEL_COLORS.map((value) => (
-                  <option key={value} value={value}>
-                    {colorLabels[value]}
-                  </option>
-                ))}
-              </select>
-              <Button
-                type="submit"
-                size="sm"
-                disabled={pending || atLimit}
-                data-testid="create-label"
-              >
-                {creating ? <Spinner size="sm" aria-hidden="true" /> : null}
-                {creating
-                  ? uiCopy.board.creatingLabel
-                  : uiCopy.board.createLabel}
-              </Button>
+        <CardContent className={styles.content}>
+          {canEdit && manager.createOpen ? (
+            <form className={styles.createForm} onSubmit={manager.submitCreate}>
+              <Input value={manager.createName} onChange={(event) => manager.setCreateName(event.target.value)} placeholder={uiCopy.board.labelNamePlaceholder} aria-label={uiCopy.board.labelNamePlaceholder} maxLength={50} disabled={manager.creating} data-testid="new-label-name" autoFocus />
+              <LabelColorPicker value={manager.createColor} labels={colorLabels} onValueChange={manager.setCreateColor} disabled={manager.creating} testId="new-label-color" ariaLabel={uiCopy.board.labelColorLabel} />
+              <div className={styles.rowActions}>
+                <Button type="submit" size="sm" disabled={manager.creating || !manager.createDirty} data-testid="create-label">{manager.creating ? <Spinner size="sm" aria-hidden="true" /> : null}{manager.creating ? uiCopy.board.creatingLabel : uiCopy.board.createLabel}</Button>
+                <Button type="button" size="sm" variant="ghost" disabled={manager.creating} onClick={manager.cancelCreate}>{uiCopy.common.cancel}</Button>
+              </div>
             </form>
           ) : null}
-          {atLimit ? <p className={styles.limit}>{uiCopy.board.labelLimitReached}</p> : null}
-          {labels.length ? (
-            <ul className={styles.list}>
-              {labels.map((label) => (
-                <LabelRow
-                  key={`${label.id}-${label.updatedAt ?? 0}`}
-                  label={label}
-                  canEdit={canEdit}
-                  pending={pending}
-                  uiCopy={uiCopy}
-                  onSave={handleSave}
-                  onDelete={setDeleteTarget}
-                />
-              ))}
-            </ul>
-          ) : (
-            <p className={styles.empty}>{uiCopy.board.labelEmpty}</p>
-          )}
+          {manager.atLimit ? <p className={styles.limit}>{uiCopy.board.labelLimitReached}</p> : null}
+          {manager.labels.length ? <ul className={styles.list}>{manager.labels.map((label) => <LabelRow key={`${label.id}-${label.updatedAt ?? 0}`} label={label} canEdit={canEdit} uiCopy={uiCopy} colorLabels={colorLabels} editing={manager.editingLabel?.id === label.id} editName={manager.editName} editColor={manager.editColor} pending={manager.pendingLabelId === label.id} dirty={manager.editDirty} onStartEdit={() => manager.startEdit(label)} onCancel={manager.cancelEdit} onNameChange={manager.setEditName} onColorChange={manager.setEditColor} onSubmit={manager.submitEdit} onDelete={() => manager.setDeleteTarget(label)} />)}</ul> : <p className={styles.empty}>{uiCopy.board.labelEmpty}</p>}
         </CardContent>
       </Card>
-      <AlertDialog
-        open={Boolean(deleteTarget)}
-        onOpenChange={(open) => {
-          if (!open && !deleting) setDeleteTarget(null)
-        }}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{uiCopy.board.deleteLabelTitle}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {uiCopy.board.deleteLabelDescription}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={deleting}>
-              {uiCopy.common.cancel}
-            </AlertDialogCancel>
-            <AlertDialogAction
-              disabled={deleting}
-              onClick={(event) => {
-                event.preventDefault()
-                void handleDelete()
-              }}
-              data-testid="delete-label-confirm"
-            >
-              {uiCopy.board.deleteLabel}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
+      <AlertDialog open={Boolean(manager.deleteTarget)} onOpenChange={(open) => { if (!open && !manager.pendingLabelId) manager.setDeleteTarget(null) }}>
+        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle>{uiCopy.board.deleteLabelTitle}</AlertDialogTitle><AlertDialogDescription>{uiCopy.board.deleteLabelDescription}</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel disabled={Boolean(manager.pendingLabelId)}>{uiCopy.common.cancel}</AlertDialogCancel><AlertDialogAction disabled={Boolean(manager.pendingLabelId)} onClick={(event) => { event.preventDefault(); void manager.confirmDelete() }} data-testid="delete-label-confirm">{uiCopy.board.deleteLabel}</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
     </>
   )
