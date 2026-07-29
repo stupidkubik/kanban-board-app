@@ -99,19 +99,27 @@
 }
 
 .cardTitle {
+  flex: 1;
+  min-width: 0;
   font-size: 13px;
   font-weight: 600;
   line-height: 1.3;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
 
 .cardDescription {
+  min-width: 0;
   font-size: 12px;
+  line-height: 1.45;
   color: var(--color-muted);
   white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
   display: -webkit-box;
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
@@ -230,12 +238,16 @@
 }
 
 .cardLabelChip {
+  max-width: 100%;
   padding: 3px 7px;
   border-radius: 999px;
   font-size: 11px;
   font-weight: 600;
   color: white;
   background: var(--label-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .labelOption[data-color="gray"],

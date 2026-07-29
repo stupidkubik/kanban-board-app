@@ -122,17 +122,18 @@ const SortableCardItem = React.memo(function SortableCardItem({
       role={canEdit ? "button" : undefined}
       tabIndex={canEdit ? 0 : -1}
       onKeyDown={(event) => {
-        if (!canEdit || isDragging) {
-          return
-        }
-        if (event.key === "Enter" || event.key === " ") {
+        if (canEdit && !isDragging && event.key === "Enter") {
           event.preventDefault()
           onEdit(card)
+          return
         }
+        listeners?.onKeyDown?.(event)
       }}
     >
       <div className={styles.cardHeaderRow}>
-        <div className={styles.cardTitle}>{card.title}</div>
+        <div className={styles.cardTitle} data-testid="card-title">
+          {card.title}
+        </div>
         {canDelete ? (
           <Button
             type="button"
@@ -153,7 +154,9 @@ const SortableCardItem = React.memo(function SortableCardItem({
         ) : null}
       </div>
       {card.description ? (
-        <div className={styles.cardDescription}>{card.description}</div>
+        <div className={styles.cardDescription} data-testid="card-description">
+          {card.description}
+        </div>
       ) : null}
       {card.dueAt ? (
         <div className={styles.cardMeta} data-overdue={isOverdue ? "true" : undefined}>

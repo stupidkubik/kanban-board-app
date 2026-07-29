@@ -148,6 +148,10 @@ describe("kanban core flows", () => {
     const boardTitle = `E2E Core ${Date.now()}`
     const cardTitle = `Card ${Date.now()}`
     const editedCardTitle = `${cardTitle} edited`
+    const dueDate = "2026-08-01"
+    const editedDueDate = "2026-08-08"
+    const longCardTitle = `Long-${"x".repeat(180)}`
+    const longCardDescription = `https://example.com/${"path".repeat(100)}`
 
     signIn()
 
@@ -206,6 +210,9 @@ describe("kanban core flows", () => {
     cy.get('[role="dialog"] [data-testid^="new-card-title-"]')
       .type(cardTitle, { delay: 25 })
       .should("have.value", cardTitle)
+    cy.get('[role="dialog"] [data-testid^="new-card-due-"]').type(dueDate)
+    cy.get('[role="dialog"] [data-testid^="new-card-due-"]')
+      .should("have.value", dueDate)
     cy.get('[role="dialog"] [data-testid^="new-card-labels-"] input[type="checkbox"]')
       .should("have.length", 1)
       .check()
@@ -214,6 +221,18 @@ describe("kanban core flows", () => {
     cy.contains('[data-testid^="column-"]', "Todo")
       .find(`[data-card-title="${cardTitle}"]`)
       .should("exist")
+
+    cy.get(`[data-card-title="${cardTitle}"]`).focus()
+    cy.get(`[data-card-title="${cardTitle}"]`).type("{enter}")
+    cy.get("#edit-card-due").should("have.value", dueDate)
+    cy.get('[role="dialog"]').contains("button", "Cancel").click()
+
+    cy.get(`[data-card-title="${cardTitle}"]`).focus()
+    cy.get(`[data-card-title="${cardTitle}"]`).type(" ")
+    cy.get('[data-testid="card-drag-overlay"]').should("be.visible")
+    cy.get('[role="dialog"]').should("not.exist")
+    cy.get(`[data-card-title="${cardTitle}"]`).type("{esc}")
+    cy.get('[data-testid="card-drag-overlay"]').should("not.exist")
 
     const source = cy.get(`[data-card-title="${cardTitle}"]`)
     const target = cy
@@ -226,10 +245,15 @@ describe("kanban core flows", () => {
       .find('[data-testid="card-labels"]')
       .should("contain.text", "Bug")
 
-    cy.get(`[data-card-title="${cardTitle}"]`).focus().type("{enter}")
+    cy.get(`[data-card-title="${cardTitle}"]`).focus()
+    cy.get(`[data-card-title="${cardTitle}"]`).type("{enter}")
     cy.get("#edit-card-title").clear().type(editedCardTitle)
+    cy.get("#edit-card-due").clear().type(editedDueDate)
     cy.get('[role="dialog"]').contains("button", "Save").click()
-    cy.get(`[data-card-title="${editedCardTitle}"]`).should("exist")
+    cy.get(`[data-card-title="${editedCardTitle}"]`).should(
+      "contain.text",
+      "Due date: 08.08.26"
+    )
 
     cy.intercept("PATCH", "/api/boards/*/labels/*").as("updateLabel")
     cy.get('[data-testid="labels-manager-trigger"]').click()
@@ -265,6 +289,30 @@ describe("kanban core flows", () => {
       cy.contains("button", "Undo").click()
     })
     cy.get(`[data-card-title="${editedCardTitle}"]`).should("exist")
+
+    cy.get(`[data-card-title="${editedCardTitle}"]`).focus()
+    cy.get(`[data-card-title="${editedCardTitle}"]`).type("{enter}")
+    cy.get("#edit-card-title").clear().type(longCardTitle)
+    cy.get("#edit-card-description").clear().type(longCardDescription)
+    cy.get('[role="dialog"]').contains("button", "Save").click()
+    cy.contains("[data-card-title]", longCardTitle).within(() => {
+      cy.get('[data-testid="card-title"]')
+        .should("have.css", "overflow-wrap", "anywhere")
+        .should("have.css", "-webkit-line-clamp", "3")
+        .then(($title) => {
+          expect($title[0].scrollWidth).to.be.at.most(
+            $title[0].clientWidth + 1
+          )
+        })
+      cy.get('[data-testid="card-description"]')
+        .should("have.css", "overflow-wrap", "anywhere")
+        .should("have.css", "-webkit-line-clamp", "4")
+        .then(($description) => {
+          expect($description[0].scrollWidth).to.be.at.most(
+            $description[0].clientWidth + 1
+          )
+        })
+    })
   })
 
   it("sends an invite from the board page", () => {
@@ -353,7 +401,7 @@ describe("kanban core flows", () => {
       .should("have.length", 2)
       .check()
     cy.get('[role="dialog"] [data-testid^="create-card-"]').click()
-    cy.get(`[data-card-title="${assignedCardTitle}"]`)
+    cy.contains("[data-card-title]", assignedCardTitle)
       .find('[data-testid="card-assignees"]')
       .children()
       .should("have.length", 2)
@@ -381,11 +429,11 @@ describe("kanban core flows", () => {
     cy.get('[data-testid="labels-section"]').should("be.visible")
     cy.get('[data-testid="new-label-name"]').should("not.exist")
     cy.get('[data-testid="close-labels-manager"]').click()
-    cy.get(`[data-card-title="${assignedCardTitle}"]`)
+    cy.contains("[data-card-title]", assignedCardTitle)
       .find('[data-testid="card-assignees"]')
       .children()
       .should("have.length", 2)
-    cy.get(`[data-card-title="${assignedCardTitle}"]`).click()
+    cy.contains("[data-card-title]", assignedCardTitle).click()
     cy.get("#edit-card-title").should("not.exist")
 
     signOut()

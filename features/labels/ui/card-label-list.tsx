@@ -20,6 +20,7 @@ export const CardLabelList = ({
           key={label.id}
           className={styles.cardLabelChip}
           data-color={label.color}
+          title={label.name}
         >
           {label.name}
         </span>
