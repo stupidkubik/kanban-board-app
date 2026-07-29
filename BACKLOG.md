@@ -1,44 +1,30 @@
-# Backlog: возможные улучшения
+# Backlog
 
-Ниже — идеи на будущее.  
-Оценка трудоемкости: **S** (1–2 дня), **M** (3–5 дней), **L** (1–2 недели+).
+Only deliberately deferred work belongs here. Completed audit and refactoring
+items are recorded in `docs/DEVELOPMENT_HISTORY.md`.
 
-1) Улучшить доступность (A11y): фокус‑стили, aria‑лейблы, навигация с клавиатуры, роли в DnD.  
-   - Трудоемкость: **M**  
-   - Бонусы: лучшее UX для клавиатуры/скринридеров, соответствие стандартам.
+Effort guide: **S** — up to two days, **M** — roughly three to five days,
+**L** — one or more weeks.
 
-2) Виртуализация карточек при больших досках.  
-   - Трудоемкость: **M–L**  
-   - Бонусы: стабильная производительность при сотнях карточек, меньше лагов в DnD.
+| Opportunity | Why it matters | Effort |
+| --- | --- | :---: |
+| Search and filters | Find cards by title, label, assignee, or due date on a busy board | M |
+| Checklists and comments | Support richer task execution without leaving the card | L |
+| Activity log | Explain who changed roles, cards, labels, or board structure | M |
+| Due-date reminders | Surface today/tomorrow deadlines through in-app or email notifications | M |
+| Board templates and cloning | Reduce setup time for recurring workflows | S–M |
+| Ownership transfer | Let teams safely hand a board to another member | M |
+| Offline mutation queue | Preserve edits across unreliable network connections | L |
+| Pagination or virtualization | Support boards beyond the current 500-card product cap | L |
+| Time-zone preferences | Make due dates unambiguous for distributed teams | M |
+| External client telemetry | Capture browser-only failures when existing observability proves insufficient | S–M |
 
-3) Устойчивость к потере сети: очередь мутаций + повтор отправки.  
-   - Трудоемкость: **L**  
-   - Бонусы: карточки/колонки не “теряются” при оффлайне, меньше ошибок у пользователей.
+## Decision notes
 
-4) Логи активности (audit log): кто/что/когда изменил.  
-   - Трудоемкость: **M**  
-   - Бонусы: прозрачность действий в команде, проще разбирать инциденты.
-
-5) Умные напоминания по срокам (toast/email) + отметка “сегодня/завтра”.  
-   - Трудоемкость: **M**  
-   - Бонусы: меньше просрочек, повышается вовлеченность.
-
-6) Шаблоны/клонирование досок.  
-   - Трудоемкость: **S–M**  
-   - Бонусы: быстрый старт для новых проектов, меньше рутины.
-
-7) Улучшение ошибок и наблюдаемости: error boundaries + централизованный логгер.  
-   - Трудоемкость: **S**  
-   - Бонусы: быстрее находить проблемы, меньше “тихих” падений UI.
-
-8) Расширение тестов: e2e сценарии DnD + правила безопасности.  
-   - Трудоемкость: **M**  
-   - Бонусы: меньше регрессий при доработках и рефакторинге.
-
-9) Настройки временной зоны и локали для сроков.  
-   - Трудоемкость: **M**  
-   - Бонусы: корректные дедлайны для распределенных команд.
-
-10) Оптимизация хранения и загрузки: пагинация карточек + lazy‑loading.  
-    - Трудоемкость: **M–L**  
-    - Бонусы: быстрее старт доски, меньше трафика и нагрузка на Firestore.
+- Archive UI is not planned unless a concrete workflow requires it.
+- Pagination cannot be added independently of cross-page drag-and-drop and
+  ordering semantics.
+- External telemetry should solve a demonstrated diagnostic gap; Vercel and
+  Firebase Console remain the current baseline.
+- Any ownership-transfer design must preserve the single-owner invariant in API
+  transactions and Firestore Rules.

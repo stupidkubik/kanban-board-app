@@ -1,6 +1,6 @@
 # Kanban Board App — функциональное описание текущей версии
 
-Статус документа: **as-is**, обновлено 27 июля 2026 года.
+Статус документа: **as-is**, обновлено 29 июля 2026 года.
 Назначение: единая точка входа для последующей доработки, тестирования и рефакторинга.
 Источник истины: фактическая реализация в `app/`, `features/`, `lib/`,
 `firestore.rules`; operational ограничения описаны в `OPERATIONS.md`.
@@ -237,15 +237,23 @@ Header показывает:
 
 - ссылку назад на список досок;
 - title доски;
-- read-only badge для viewer;
-- выбор UI locale;
-- переключатель темы.
+- read-only badge для viewer.
+
+Под header расположен компактный toolbar:
+
+- создание колонки для owner/editor;
+- managers участников и меток;
+- единое меню настроек с разделами «Доска», «Интерфейс» и «Оформление».
+
+Язык доски доступен для изменения owner/editor. Персональные UI locale и тема
+остаются доступны всем ролям, включая viewer.
 
 До первого snapshot показывается loading state. Ошибка listener уточняется безопасным server access check и отображается как отдельное not-found, forbidden или retryable error состояние.
 
 ### 7.2 Участники
 
-Секция участников по умолчанию свёрнута и показывает preview до пяти avatars. В раскрытом виде для каждого активного member отображаются:
+Участники открываются из toolbar в отдельном manager dialog. Для каждого
+активного member отображаются:
 
 - avatar или первая буква имени;
 - displayName/email/UID fallback;
@@ -261,7 +269,8 @@ Owner может:
 
 Editor/viewer может покинуть board с подтверждением. Owner вместо выхода видит invite action. Удаление участника и самостоятельный выход выполняются через server API: membership, role и `memberProfiles/{uid}` удаляются в одной Admin SDK transaction.
 
-В header секции участников owner/editor также видит компактную форму создания колонки.
+Создание колонки находится в toolbar доски и не смешивается с управлением
+участниками.
 
 ### 7.3 Колонки
 
@@ -286,6 +295,9 @@ Board имеет realtime-каталог `boards/{boardId}/labels`. Owner/editor
 write controls. Имя содержит 1–50 символов и уникально без учёта регистра и
 повторяющихся пробелов. Цвет выбирается из восьми значений палитры. Лимит —
 50 labels на board.
+
+Каталог открывается из toolbar в manager dialog, поэтому административные
+controls не занимают постоянное место над рабочими колонками.
 
 Create/update/delete проходят через server API. Board document хранит
 server-maintained maps `labelIds` и `labelNames`, чтобы transaction атомарно
@@ -317,7 +329,10 @@ Client заранее генерирует Firestore card id и `order = Date.no
 Card показывает title, description при наличии, due date в формате `DD.MM.YY`
 и chips назначенных участников с avatar/name/email fallback, а также цветные
 label chips. Для editor/owner card кликабельна и keyboard-focusable; viewer
-видит card, исполнителей и labels без edit behavior.
+видит card, исполнителей и labels без edit behavior. Длинные title и description
+переносятся внутри карточки и ограничиваются соответственно тремя и четырьмя
+строками, сохраняя предсказуемую высоту preview; полное содержимое доступно в
+edit dialog для ролей с правом редактирования.
 
 #### Редактирование
 
@@ -370,7 +385,7 @@ Mutation меняет `columnId` и `order`; RTK Query сразу патчит �
 
 ### 8.1 Язык интерфейса
 
-Поддерживаются `ru` и `en`. Тексты хранятся централизованно в `lib/i18n.ts`.
+Поддерживаются `ru` и `en`. Typed domain dictionaries находятся в `lib/i18n/`.
 
 На всех маршрутах locale:
 
@@ -383,11 +398,15 @@ Browser preferences для locale, theme и сортировки использ�
 
 ### 8.2 Язык доски
 
-`board.language` хранится как `ru/en`, выбирается при создании, показывается на карточке и редактируется owner/editor в header доски. Это язык содержимого/команды доски; он намеренно не переключает персональный язык интерфейса пользователя.
+`board.language` хранится как `ru/en`, выбирается при создании, показывается на
+карточке и редактируется owner/editor в общем меню настроек доски. Это язык
+содержимого/команды доски; он намеренно не переключает персональный язык
+интерфейса пользователя.
 
 ### 8.3 Тема
 
-Light/dark theme хранится в `localStorage`; ThemeToggle обновляет состояние документа. Настройка пользовательская и не связана с board.
+Light/dark theme хранится в `localStorage` и меняется в общем меню настроек.
+Настройка пользовательская и не связана с board.
 
 ## 9. Realtime, cache и optimistic state
 
@@ -642,6 +661,7 @@ Toast system:
 - Firestore/card normalization и legacy fields;
 - CardEditDialog;
 - Header viewer notice;
+- единое меню board/interface/appearance settings и viewer restrictions;
 - notifications и Undo action.
 
 ### 13.2 Firestore Rules

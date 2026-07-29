@@ -10,6 +10,8 @@ This reference records the UI/UX refactor conventions used across the app.
   than expanding into wide, sparse tiles.
 - Management actions stay out of document flow. Participants and labels open
   from toolbar triggers in dialogs.
+- Related board and personal preferences share one settings menu with explicit
+  Board, Interface, and Appearance groups.
 
 ## Dialog policy
 
@@ -32,6 +34,8 @@ This reference records the UI/UX refactor conventions used across the app.
 ## Role-aware UI
 
 - Viewer retains the same information architecture but sees no edit actions.
+- Board settings follow board permissions; personal locale and theme remain
+  available to viewers.
 - Owner-only destructive actions remain protected in both the UI and server
   rules.
 - Pending state is scoped to the action being performed, not the entire

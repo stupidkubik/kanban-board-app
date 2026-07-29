@@ -1,6 +1,6 @@
 # Kanban Board App — operations
 
-Статус: живой runbook, обновлён 27 июля 2026 года.
+Статус: живой runbook, обновлён 29 июля 2026 года.
 
 ## Production baseline
 
@@ -10,10 +10,11 @@
 - Next.js: `16.2.12`
 - Production bundler: Webpack
 - Firebase project: `kanban-mvp-1baf2`
-- Последний проверенный deployment:
-  `dpl_BbeqJFYm6y3hCLh1V5yfwhiT52Sk`
-- Предыдущий rollback deployment:
-  `dpl_GZB8xV5bwcBKrKonmPmuGFJufDcm`
+
+Конкретные deployment IDs намеренно не закрепляются в документации: они
+устаревают после каждого релиза. Текущий production и доступные rollback
+кандидаты следует определять в Vercel dashboard или CLI непосредственно перед
+операцией.
 
 ## Credentials and security
 
@@ -66,7 +67,7 @@ server API и Firestore smoke.
 
 | Проверка | Результат |
 | --- | --- |
-| Unit/component | 106 passed; 12 conditionally skipped |
+| Unit/component | 128 passed; 12 conditionally skipped |
 | Firestore Rules | 12 passed |
 | Server traces | 16, credential findings отсутствуют |
 | Cypress | 3/3 passed |
@@ -187,11 +188,11 @@ Sentry, OpenTelemetry, Log Drains или session replay добавлять то�
 
 Application rollback:
 
-1. переназначить production alias на
-   `dpl_GZB8xV5bwcBKrKonmPmuGFJufDcm`;
-2. проверить `/`, `/sign-in` и protected API;
-3. просмотреть runtime logs;
-4. не откатывать данные автоматически.
+1. в Vercel выбрать последний deployment, который прошёл полный release gate;
+2. переназначить на него production alias;
+3. проверить `/`, `/sign-in` и protected API;
+4. просмотреть runtime logs;
+5. не откатывать данные автоматически.
 
 Новые label catalog fields опциональны, а legacy label strings остаются
 read-compatible, поэтому предыдущий deployment может читать существующие cards.

@@ -1,209 +1,218 @@
 # Kanban Board App
 
-Realtime kanban with Firebase Auth + Firestore, optimistic UI, and drag-and-drop.
+A production-ready collaborative kanban board for small teams. It combines
+realtime Firestore synchronization, optimistic interactions, role-based access,
+and drag-and-drop in a responsive bilingual interface.
 
-## Project documentation
+[Live application](https://kanban-board-app-ten-psi.vercel.app/)
 
-- [`docs/FUNCTIONAL_SPEC.md`](docs/FUNCTIONAL_SPEC.md) — current product behavior and refactoring invariants.
-- [`docs/OPERATIONS.md`](docs/OPERATIONS.md) — release, migration, security, observability, and rollback runbook.
-- [`docs/DEVELOPMENT_HISTORY.md`](docs/DEVELOPMENT_HISTORY.md) — historical audit and phases 0–8.
-- [`schema.md`](schema.md) — Firestore schema reference.
-- [`BACKLOG.md`](BACKLOG.md) — earlier improvement ideas.
+## Why this project matters
 
-## Functionality
-- Sign in with email/password or Google, plus password reset.
-- Create/rename/delete boards and configure board language (ru/en).
-- Invite members by email, switch accepted members between editor/viewer, and
-  keep viewers read-only.
-- Manage a shared label catalog and cards (title, description, due date,
-  multiple assignees and labels), and drag cards between columns.
-- Realtime sync via Firestore listeners with optimistic UI for create/move/delete.
-- UI language stored per user in `users/{uid}` (ru/en).
+This project goes beyond a CRUD demo. It covers the difficult parts of a shared
+workspace: concurrent updates, secure permissions, optimistic rollback,
+cross-column ordering, server-side cascades, isolated end-to-end tests, and safe
+production operations.
 
-## Tech Stack
-- Next.js (App Router) + React 19 + TypeScript
-- Redux Toolkit Query + Redux (cache, optimistic updates, UI state)
-- Firebase Auth + Firestore (client SDK)
-- Firebase Admin SDK (server API routes)
-- dnd-kit for drag-and-drop
-- shadcn/ui + Radix UI + CSS Modules
+Key engineering outcomes:
+
+- Near-realtime collaboration through lifecycle-safe Firestore listeners.
+- Responsive optimistic card creation, movement, and deletion with rollback.
+- Owner, editor, and viewer permissions enforced in the UI, API routes, and
+  Firestore Rules.
+- Numeric gap ordering and automatic rebalance without reindexing a column on
+  every drag.
+- Atomic board creation, invite acceptance, membership changes, and guarded
+  destructive operations.
+- Emulator-isolated Cypress flows that cannot write to the production Firebase
+  project and verify their own cleanup.
+- English and Russian UI, light/dark themes, keyboard-friendly controls, and a
+  responsive board canvas.
+
+## Product capabilities
+
+- Email/password and Google sign-in, registration, password reset, and secure
+  server session cookies.
+- Create, rename, sort, and delete private boards.
+- Invite teammates as editors or read-only viewers and update accepted roles.
+- Create and manage columns and cards with descriptions and due dates.
+- Assign up to 20 board members and 10 shared labels to a card.
+- Move cards within or between columns using pointer or keyboard drag-and-drop.
+- Manage a board-level label catalog with realtime rename and color updates.
+- Recover selected destructive actions through time-limited Undo notifications.
+- Switch personal interface language and theme independently from board
+  language.
 
 ## Architecture
-```text
-Browser (Next.js App Router)
-  ├─ UI (shadcn/ui + dnd-kit)
-  ├─ Redux Toolkit Query cache
-  │   ├─ Firestore listeners (onSnapshot)
-  │   └─ Optimistic patches (create/move/delete cards)
-  └─ Firebase Auth (client SDK)
-        │
-        ├─ Firestore (boards/columns/cards/memberProfiles/users)
-        └─ boardInvites
 
-Server (Next.js API routes)
-  ├─ /api/auth/session (session cookies)
-  ├─ /api/boards (atomic board + owner profile creation)
-  ├─ /api/boards/[boardId] (access check, rename, cascade delete)
-  ├─ /api/boards/[boardId]/columns/[columnId] (safe empty-column delete)
-  ├─ /api/boards/[boardId]/members/[memberId] (role update, atomic remove/leave)
-  ├─ /api/boards/[boardId]/labels (validated label catalog writes)
-  └─ /api/invites/[inviteId]/accept (atomic invite acceptance)
+```text
+Next.js App Router
+├── React UI + Radix primitives + CSS Modules
+├── dnd-kit pointer and keyboard interactions
+├── Redux Toolkit Query
+│   ├── Firestore onSnapshot subscriptions
+│   └── optimistic cache patches and rollback
+├── Firebase Auth client
+└── Next.js API routes
+    ├── verified session cookies
+    ├── Firebase Admin transactions
+    └── cascade and membership operations
+
+Firebase
+├── Authentication
+├── Firestore data and realtime listeners
+└── Firestore Security Rules
 ```
 
-## Codebase Analysis (quick)
-- **Feature modules are cleanly separated** (`features/*`), with shared primitives in `components/ui` and shared utilities in `lib/`.
-- **Realtime flow**: RTK Query subscribes to Firestore `onSnapshot` and feeds cached data to UI, while optimistic updates keep interactions responsive.
-- **Ordering model**: cards use numeric `order` gaps to avoid mass reindexing; client groups cards by `columnId` for column rendering.
-- **UI state**: per-board UI drafts (new/edit card, etc.) live in Redux, keeping forms predictable across renders.
-- **DnD**: `dnd-kit` handles card moves; drag overlay is separate to avoid layout shifts.
-- **Localization**: UI locale is stored per user in `users/{uid}`; board language is separate editable board metadata.
+The codebase follows feature boundaries:
 
-## Feature Modules
 ```text
-features/
-  board/        board page shell + status
-  cards/        card data, model hooks, UI
-  columns/      columns model + UI
-  participants/ participants model + UI
-  boards/       boards list + board card
-  invites/      invite list/accept/decline
-  home/         home page shell
-```
-Shared layers:
-```text
-lib/            Firebase, store, types, utils
-components/ui   shared UI primitives (Radix/shadcn)
-app/            Next.js routes
+app/             routes, layouts, and server API handlers
+features/        board, cards, columns, participants, labels, invites, home
+components/ui/   shared accessible UI primitives
+lib/             Firebase setup, store, types, i18n, and utilities
+tests/           Vitest unit, component, and Firestore Rules tests
+cypress/         critical user journeys
+scripts/         smoke checks, migrations, and E2E orchestration
 ```
 
-## Data Model (Firestore)
-- `boards/{boardId}`
-- `boards/{boardId}/columns/{columnId}`
-- `boards/{boardId}/cards/{cardId}` with `columnId` + `order` (board-level cards)
-- `boardInvites/{boardId__email}`
-- `boards/{boardId}/memberProfiles/{userId}`
-- `users/{uid}` (preferredLocale, email)
+## Technical highlights
 
-See `schema.md` for more details.
+### Realtime and optimistic state
 
-## Getting Started
-Requires Node.js 24.x. The major version is pinned so local development and
-Vercel builds do not move to a new Node.js major automatically.
+RTK Query owns Firestore subscriptions and cleans them up with cache lifecycle
+hooks. Mutations patch every relevant cache immediately and restore prior state
+when a write fails. This keeps interactions fast without hiding persistence
+errors.
 
-Install dependencies:
+### Ordering and drag-and-drop
+
+Cards live in one board-level collection and are grouped by `columnId` on the
+client. Their numeric `order` uses gaps between neighbours, so a normal move
+updates one card. When gaps become too small, the target column is rebalanced in
+a bounded batch.
+
+### Security model
+
+The browser is never the security boundary. Firestore Rules repeat role and data
+shape checks, while sensitive membership, catalog, and cascade operations use
+authenticated server routes backed by Firebase Admin transactions. Viewer access
+remains read-only across all layers.
+
+### Release safety
+
+Production builds use Webpack and include a server-trace check that rejects
+credential files. Cypress runs against local Auth and Firestore emulators under
+a non-routable demo project. Production smoke writes require an explicit opt-in
+and remove all synthetic data in `finally`.
+
+## Stack
+
+- Next.js 16, React 19, TypeScript
+- Redux Toolkit and RTK Query
+- Firebase Authentication, Firestore, and Firebase Admin SDK
+- dnd-kit
+- Radix UI, shadcn-style primitives, CSS Modules
+- Vitest, Testing Library, Firebase Rules Unit Testing, Cypress
+- Vercel
+
+## Quality checks
+
+The current automated baseline contains:
+
+- 128 passing unit and component tests, with 12 environment-conditional skips.
+- 12 Firestore Rules scenarios covering owner/editor/viewer access and data
+  invariants.
+- 3 full Cypress journeys covering core CRUD, Undo, drag-and-drop, invitations,
+  labels, assignees, role changes, realtime updates, and cleanup.
+- A production build check for secret-free Next.js server traces.
+
+Run the release-oriented checks:
+
+```bash
+npm run lint
+npm run test:unit
+npm run test:rules
+npm run build
+npm run cypress:run
+```
+
+## Run locally
+
+Requirements: Node.js 24.x and a Firebase web application.
+
 ```bash
 npm install
-```
-
-Run the dev server:
-```bash
+cp .env.example .env.local
 npm run dev
 ```
 
-## Environment
-Create `.env.local` with client Firebase config (start from `.env.example`):
-```
-NEXT_PUBLIC_FIREBASE_API_KEY=...
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=...
-NEXT_PUBLIC_FIREBASE_PROJECT_ID=...
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=...
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=...
-NEXT_PUBLIC_FIREBASE_APP_ID=...
-```
+Fill the public Firebase values in `.env.local`:
 
-Admin SDK credentials (server):
-- On the target Vercel deployment, set `FIREBASE_SERVICE_ACCOUNT` to a JSON string in the protected environment-variable store.
-- On a platform with managed identity, Application Default Credentials may be used instead.
-- For local ADC, `GOOGLE_APPLICATION_CREDENTIALS` may point to a credential file outside the repository.
-
-The app never searches for credential files inside the project. Do not place service-account JSON in the repository or deployment bundle.
-
-Production deployment:
-- Target platform: Vercel — https://kanban-board-app-ten-psi.vercel.app/
-- Current phase 8 release: Vercel deployment `dpl_BbeqJFYm6y3hCLh1V5yfwhiT52Sk`.
-- Store `FIREBASE_SERVICE_ACCOUNT` only as a protected Vercel environment variable; never commit or bundle a credential file.
-- Production builds explicitly use Webpack. `firebase-admin` stays on the compatible 13.x line because 14.x currently produces a Vercel runtime `ERR_REQUIRE_ESM` through `jwks-rsa@4 -> jose@6`.
-- Treat upgrading Firebase Admin to 14.x as a separate compatibility migration: deploy a preview, verify `/` and protected API routes, and inspect runtime logs before promoting it.
-- The operational review in `docs/OPERATIONS.md` confirms Vercel plus Firebase Console as the current monitoring baseline; do not add an external telemetry SDK without a concrete client-side diagnostic gap.
-
-App Check (recommended):
-```
-NEXT_PUBLIC_FIREBASE_APP_CHECK_SITE_KEY=...
-NEXT_PUBLIC_RECAPTCHA_SITE_KEY=...
-NEXT_PUBLIC_FIREBASE_APP_CHECK_DEBUG=true
-FIREBASE_APPCHECK_ENFORCE=true
+```dotenv
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
 ```
 
-## Scripts
-- `npm run dev` - local dev server
-- `npm run build` - production build plus server-trace secret check
-- `npm run check:server-trace` - verify existing Next.js NFT manifests contain no project credential files
-- `npm run start` - run production server
-- `npm run lint` - lint
-- `npm run format` - auto-fix lint issues
-- `npm run smoke` - guarded production smoke (requires `SMOKE_ALLOW_WRITES=true`)
-- `npm run migrate:stale-member-profiles` - dry-run cleanup audit for legacy member profiles
-- `npm run migrate:card-labels` - dry-run migration audit for legacy card label strings
-- `npm run test` - unit/component tests (Vitest)
-- `npm run test:rules` - Firestore rules tests (emulator)
-- `npm run cypress:open` - local Auth/Firestore emulators + Cypress UI runner
-- `npm run cypress:run` - isolated local Auth/Firestore emulator E2E
+Server routes additionally require one Admin SDK credential source:
 
-## Testing
+- `FIREBASE_SERVICE_ACCOUNT` in protected hosting environment variables;
+- managed Application Default Credentials; or
+- `GOOGLE_APPLICATION_CREDENTIALS` pointing outside the repository.
 
-`npm run cypress:run` is self-contained: Firebase CLI starts Auth and Firestore
-emulators under the non-routable demo project `demo-kanban-e2e`, the launcher starts
-Next.js on port 3100, seeds a local Auth user, runs Cypress, and verifies that no
-boards, invites, columns, cards, labels, or member profiles remain. It does not read
-Cypress credentials from `.env.local` and cannot write to the cloud Firebase
-project.
+Never store a service-account file or `.env.local` in Git.
 
-Notes:
-- `npm run test:rules` запускает Firestore emulator через `firebase emulators:exec`.
-- E2E launcher disables App Check only inside the isolated emulator process.
+## Useful commands
 
-The stale member profile migration uses the same Admin SDK credentials described
-above and is read-only by default:
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the development server |
+| `npm run build` | Build with Webpack and inspect server traces |
+| `npm run lint` | Run ESLint |
+| `npm run test:unit` | Run unit and component tests once |
+| `npm run test:rules` | Test Firestore Rules in the emulator |
+| `npm run cypress:run` | Run isolated Auth/Firestore E2E |
+| `npm run smoke` | Run the guarded production smoke script |
+| `npm run migrate:stale-member-profiles` | Audit stale profiles in dry-run mode |
+| `npm run migrate:card-labels` | Audit legacy card labels in dry-run mode |
 
-```bash
-npm run migrate:stale-member-profiles
-MIGRATION_APPLY=true npm run migrate:stale-member-profiles
-```
+See [operations](docs/OPERATIONS.md) before a release, migration, or production
+smoke run.
 
-Run the dry-run first and review the per-board counts. Apply mode deletes only
-profiles that are still absent from the board membership when each transaction
-commits; owner profiles are always protected. Re-run the dry-run after apply and
-expect `staleProfilesFound: 0`. Migration output contains board ids and counts,
-but no profile names or email addresses.
+## Documentation
 
-The card label migration follows the same dry-run-first contract:
+- [Functional specification](docs/FUNCTIONAL_SPEC.md) — current product
+  behaviour, permissions, limits, and invariants.
+- [Operations](docs/OPERATIONS.md) — release, security, migration,
+  observability, and rollback procedures.
+- [Firestore schema](schema.md) — canonical collections, fields, ordering, and
+  compatibility notes.
+- [UI patterns](docs/UI_PATTERNS.md) — reusable interaction and accessibility
+  conventions.
+- [Development history](docs/DEVELOPMENT_HISTORY.md) — completed audit and
+  refactoring decisions.
+- [Backlog](BACKLOG.md) — deliberately deferred product and engineering work.
 
-```bash
-npm run migrate:card-labels
-MIGRATION_APPLY=true npm run migrate:card-labels
-```
+## Portfolio summary
 
-Apply mode creates board-level catalog entries, replaces legacy card label names
-with `labelIds`, and removes the legacy field. Re-run the dry-run after apply and
-expect no legacy cards, no new catalog entries, and no catalog index changes.
+Short version suitable for a résumé or project card:
 
-The production smoke is write-protected by default:
+> Built and deployed a realtime collaborative kanban application with Next.js,
+> TypeScript, Redux Toolkit, and Firebase. Implemented optimistic updates,
+> role-based access across UI/API/Firestore Rules, keyboard-accessible
+> drag-and-drop, shared labels and assignees, emulator-isolated E2E tests, and
+> production safety checks.
 
-```bash
-SMOKE_ALLOW_WRITES=true npm run smoke
-```
+Impact-oriented bullet points:
 
-It prints the selected project and synthetic `smoke-*` UID before writing,
-creates one uniquely prefixed board with two columns, a member profile, a label,
-and an assigned/labeled card. It verifies the release data model and list/order
-queries, deletes all created data in `finally`, and independently verifies that
-the board and every created subcollection are empty. A custom `SMOKE_TEST_UID`
-is accepted only when it also uses the restricted `smoke-*` format.
-
-## Notes
-- Card order uses numeric gaps to avoid reindexing entire columns.
-- Cards live under each board for board-level queries; the client groups by column.
-- Firestore listeners keep multiple clients in sync in near-realtime.
-
-## Backlog
-See `BACKLOG.md` for future improvements with effort/benefit notes.
+- Designed a realtime client architecture with deterministic listener cleanup
+  and optimistic rollback for responsive multi-user workflows.
+- Secured owner/editor/viewer permissions across three enforcement layers and
+  moved sensitive mutations into atomic server transactions.
+- Built a bounded card-ordering model that avoids full-column rewrites during
+  normal drag-and-drop.
+- Created a repeatable release gate spanning unit, component, security-rules,
+  end-to-end, build-trace, migration, and production smoke checks.
