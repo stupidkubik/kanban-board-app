@@ -70,9 +70,10 @@ export type BoardCopy = {
     boardDeleteUndoToast: string;
     openBoard: string;
     backToBoards: string;
+    settings: string;
     personalSettings: string;
+    appearanceSettings: string;
     boardSettings: string;
-    boardSettingsDescription: string;
     participantsManager: string;
     labelsManager: string;
     boardLoading: string;

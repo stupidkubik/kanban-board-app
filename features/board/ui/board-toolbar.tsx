@@ -26,13 +26,6 @@ import {
 import { IconButton } from "@/components/ui/icon-button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
 import { Spinner } from "@/components/ui/spinner"
 import { languageLabels, type Locale } from "@/lib/i18n"
 import { setStoredTheme, useAppliedTheme } from "@/lib/browser-preferences"
@@ -79,8 +72,6 @@ export function BoardToolbar({
   onCreateColumn,
   setError,
 }: BoardToolbarProps) {
-  const [settingsOpen, setSettingsOpen] = React.useState(false)
-  const settingsTriggerRef = React.useRef<HTMLButtonElement>(null)
   const theme = useAppliedTheme()
 
   return (
@@ -140,68 +131,75 @@ export function BoardToolbar({
       ) : null}
 
       <div className={styles.settingsActions}>
-        <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-          <IconButton
-            type="button"
-            variant="ghost"
-            size="icon-sm"
-            label={uiCopy.board.boardSettings}
-            ref={settingsTriggerRef}
-            onClick={() => setSettingsOpen(true)}
-          >
-            <Gear weight="bold" aria-hidden="true" />
-          </IconButton>
-          <DialogContent
-            size="sm"
-            onCloseAutoFocus={(event) => {
-              event.preventDefault()
-              settingsTriggerRef.current?.focus()
-            }}
-          >
-            <DialogHeader>
-              <DialogTitle>{uiCopy.board.boardSettings}</DialogTitle>
-              <DialogDescription>{uiCopy.board.boardSettingsDescription}</DialogDescription>
-            </DialogHeader>
-            <div className={styles.settingsBody}>
-              <Label htmlFor={`board-content-language-${boardId}`}>
-                {uiCopy.board.boardLanguageLabel}
-              </Label>
-              <Select
-                value={boardLanguage}
-                disabled={!canEdit || updatingBoardLanguage}
-                onValueChange={(value) => onBoardLanguageChange(value as BoardLanguage)}
-              >
-                <SelectTrigger id={`board-content-language-${boardId}`} aria-label={uiCopy.board.boardLanguageLabel}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ru">{languageLabels.ru}</SelectItem>
-                  <SelectItem value="en">{languageLabels.en}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </DialogContent>
-        </Dialog>
-
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <IconButton type="button" variant="ghost" size="icon-sm" label={uiCopy.board.personalSettings}>
+            <IconButton
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              label={uiCopy.board.settings}
+              data-testid="board-settings-trigger"
+            >
               <Gear weight="bold" aria-hidden="true" />
             </IconButton>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className={styles.personalMenu}>
-            <DropdownMenuLabel>{uiCopy.board.personalSettings}</DropdownMenuLabel>
+          <DropdownMenuContent align="end" className={styles.settingsMenu}>
+            <DropdownMenuLabel>{uiCopy.board.settings}</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel>{uiCopy.common.interfaceLanguage}</DropdownMenuLabel>
-            <DropdownMenuRadioGroup value={uiLocale} onValueChange={(value) => onUiLocaleChange(value as Locale)}>
-              <DropdownMenuRadioItem value="ru">{languageLabels.ru}</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="en">{languageLabels.en}</DropdownMenuRadioItem>
+            <DropdownMenuLabel>{uiCopy.board.boardSettings}</DropdownMenuLabel>
+            <DropdownMenuLabel>{uiCopy.board.boardLanguageLabel}</DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              value={boardLanguage}
+              aria-label={uiCopy.board.boardLanguageLabel}
+              onValueChange={(value) =>
+                onBoardLanguageChange(value as BoardLanguage)
+              }
+            >
+              <DropdownMenuRadioItem
+                value="ru"
+                disabled={!canEdit || updatingBoardLanguage}
+                data-testid="board-language-ru"
+              >
+                {languageLabels.ru}
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem
+                value="en"
+                disabled={!canEdit || updatingBoardLanguage}
+                data-testid="board-language-en"
+              >
+                {languageLabels.en}
+              </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel>{theme === "dark" ? uiCopy.common.themeDark : uiCopy.common.themeLight}</DropdownMenuLabel>
-            <DropdownMenuRadioGroup value={theme} onValueChange={(value) => setStoredTheme(value as "light" | "dark")}>
-              <DropdownMenuRadioItem value="light">{uiCopy.common.themeLight}</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="dark">{uiCopy.common.themeDark}</DropdownMenuRadioItem>
+            <DropdownMenuLabel>{uiCopy.board.personalSettings}</DropdownMenuLabel>
+            <DropdownMenuLabel>{uiCopy.common.interfaceLanguage}</DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              value={uiLocale}
+              aria-label={uiCopy.common.interfaceLanguage}
+              onValueChange={(value) => onUiLocaleChange(value as Locale)}
+            >
+              <DropdownMenuRadioItem value="ru">
+                {languageLabels.ru}
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="en">
+                {languageLabels.en}
+              </DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>{uiCopy.board.appearanceSettings}</DropdownMenuLabel>
+            <DropdownMenuRadioGroup
+              value={theme}
+              aria-label={uiCopy.board.appearanceSettings}
+              onValueChange={(value) =>
+                setStoredTheme(value as "light" | "dark")
+              }
+            >
+              <DropdownMenuRadioItem value="light">
+                {uiCopy.common.themeLight}
+              </DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="dark">
+                {uiCopy.common.themeDark}
+              </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>

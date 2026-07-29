@@ -24,6 +24,7 @@
 .DS_Store
 *.pem
 kanban-mvp-1baf2-firebase-adminsdk-fbsvc-ae0f47a077.json
+/screenshots/
 
 # debug
 npm-debug.log*

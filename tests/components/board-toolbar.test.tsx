@@ -4,7 +4,7 @@ import { cleanup, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
 import { BoardToolbar } from "@/features/board/ui/board-toolbar"
-import { getCopy } from "@/lib/i18n"
+import { getCopy, languageLabels } from "@/lib/i18n"
 import type { Board } from "@/lib/types/boards"
 
 vi.mock("@/features/participants/ui/participants-section", () => ({
@@ -44,6 +44,8 @@ const renderToolbar = ({
     event.preventDefault()
   })
   const onNewColumnTitleChange = vi.fn()
+  const onUiLocaleChange = vi.fn()
+  const onBoardLanguageChange = vi.fn()
 
   const view = render(
     <BoardToolbar
@@ -54,10 +56,10 @@ const renderToolbar = ({
       isOwner={isOwner}
       uiCopy={uiCopy}
       uiLocale="en"
-      onUiLocaleChange={vi.fn()}
+      onUiLocaleChange={onUiLocaleChange}
       boardLanguage="en"
       updatingBoardLanguage={false}
-      onBoardLanguageChange={vi.fn()}
+      onBoardLanguageChange={onBoardLanguageChange}
       creatingColumn={false}
       newColumnTitle=""
       onNewColumnTitleChange={onNewColumnTitleChange}
@@ -66,7 +68,13 @@ const renderToolbar = ({
     />
   )
 
-  return { ...view, onCreateColumn, onNewColumnTitleChange }
+  return {
+    ...view,
+    onCreateColumn,
+    onNewColumnTitleChange,
+    onUiLocaleChange,
+    onBoardLanguageChange,
+  }
 }
 
 beforeEach(() => {
@@ -122,14 +130,50 @@ describe("BoardToolbar", () => {
     await user.keyboard("{Escape}")
 
     const settingsTrigger = screen.getByRole("button", {
-      name: uiCopy.board.boardSettings,
+      name: uiCopy.board.settings,
     })
     await user.click(settingsTrigger)
+    expect(screen.getByTestId("board-language-ru")).toHaveAttribute(
+      "aria-disabled",
+      "true"
+    )
+    expect(screen.getByTestId("board-language-en")).toHaveAttribute(
+      "aria-disabled",
+      "true"
+    )
     expect(
-      screen.getByRole("combobox", { name: uiCopy.board.boardLanguageLabel })
-    ).toBeDisabled()
+      screen.getByRole("menuitemradio", { name: uiCopy.common.themeLight })
+    ).toBeEnabled()
 
     await user.keyboard("{Escape}")
     expect(settingsTrigger).toHaveFocus()
+  })
+
+  it("groups board, interface, and appearance settings under one trigger", async () => {
+    const user = userEvent.setup()
+    const { onBoardLanguageChange, onUiLocaleChange } = renderToolbar()
+
+    expect(
+      screen.getAllByRole("button", { name: uiCopy.board.settings })
+    ).toHaveLength(1)
+
+    await user.click(
+      screen.getByRole("button", { name: uiCopy.board.settings })
+    )
+    expect(screen.getByText(uiCopy.board.boardSettings)).toBeVisible()
+    expect(screen.getByText(uiCopy.board.personalSettings)).toBeVisible()
+    expect(screen.getByText(uiCopy.board.appearanceSettings)).toBeVisible()
+
+    await user.click(screen.getByTestId("board-language-ru"))
+    expect(onBoardLanguageChange).toHaveBeenCalledWith("ru")
+
+    await user.click(
+      screen.getByRole("button", { name: uiCopy.board.settings })
+    )
+    const russianItems = screen.getAllByRole("menuitemradio", {
+      name: languageLabels.ru,
+    })
+    await user.click(russianItems[1])
+    expect(onUiLocaleChange).toHaveBeenCalledWith("ru")
   })
 })
