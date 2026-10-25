@@ -52,6 +52,6 @@
     "firebase-tools": "^15.3.1",
     "jsdom": "^27.4.0",
     "typescript": "^5",
-    "vitest": "^4.1.0"
+    "vitest": "^4.1.11"
   }
 }
