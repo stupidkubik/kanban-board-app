@@ -1,17 +1,17 @@
-import type { Metadata, Viewport } from "next";
-import { Rubik } from "next/font/google";
-import "./globals.css";
-import { AppProviders } from "@/components/app-providers";
+import type { Metadata, Viewport } from "next"
+import { Rubik } from "next/font/google"
+import "./globals.css"
+import { AppProviders } from "@/components/app-providers"
 
 const rubik = Rubik({
   subsets: ["latin"],
   variable: "--font-sans",
   weight: ["400", "500", "600", "700"],
-});
+})
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-const appName = "Kanban Board";
-const appDescription = "Private kanban boards with role-based access.";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"
+const appName = "Kanban Board"
+const appDescription = "Private kanban boards with role-based access."
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -38,16 +38,16 @@ export const metadata: Metadata = {
     shortcut: "/favicon.ico",
   },
   manifest: "/site.webmanifest",
-};
+}
 
 export const viewport: Viewport = {
   themeColor: "#111827",
-};
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode;
+  children: React.ReactNode
 }>) {
   return (
     <html lang="en" className={rubik.variable}>
@@ -55,5 +55,5 @@ export default function RootLayout({
         <AppProviders>{children}</AppProviders>
       </body>
     </html>
-  );
+  )
 }

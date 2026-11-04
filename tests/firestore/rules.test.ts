@@ -192,12 +192,18 @@ describeRules("firestore rules", () => {
 
     const viewerDb = env!.authenticatedContext("viewer").firestore()
     await assertFails(
-      setDoc(doc(viewerDb, "boards", boardId, "columns", "col-1"), columnPayload)
+      setDoc(
+        doc(viewerDb, "boards", boardId, "columns", "col-1"),
+        columnPayload
+      )
     )
 
     const editorDb = env!.authenticatedContext("editor").firestore()
     await assertSucceeds(
-      setDoc(doc(editorDb, "boards", boardId, "columns", "col-1"), columnPayload)
+      setDoc(
+        doc(editorDb, "boards", boardId, "columns", "col-1"),
+        columnPayload
+      )
     )
 
     const ownerDb = env!.authenticatedContext("owner").firestore()

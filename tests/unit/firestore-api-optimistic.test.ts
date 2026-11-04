@@ -38,7 +38,9 @@ vi.mock("@/features/cards/data/card-operations", () => ({
 }))
 
 vi.mock("@/features/cards/model/card-normalizers", () => ({
-  ensureCardId: vi.fn((_boardId: string, cardId?: string) => cardId ?? "card-1"),
+  ensureCardId: vi.fn(
+    (_boardId: string, cardId?: string) => cardId ?? "card-1"
+  ),
   ensureCardOrder: vi.fn((order?: number) => order ?? 1),
 }))
 
@@ -197,9 +199,7 @@ describe("Firestore RTK Query optimistic card mutations", () => {
     await mutation
 
     expect(selectCards(store, { boardId })).toEqual([])
-    expect(
-      selectCards(store, { boardId, columnId: todoColumn.id })
-    ).toEqual([])
+    expect(selectCards(store, { boardId, columnId: todoColumn.id })).toEqual([])
     store.dispatch(firestoreApi.util.resetApiState())
   })
 
@@ -222,9 +222,9 @@ describe("Firestore RTK Query optimistic card mutations", () => {
         columnId: doneColumn.id,
         order: 20,
       })
-      expect(
-        selectCards(store, { boardId, columnId: todoColumn.id })
-      ).toEqual([])
+      expect(selectCards(store, { boardId, columnId: todoColumn.id })).toEqual(
+        []
+      )
       expect(
         selectCards(store, { boardId, columnId: doneColumn.id })[0]
       ).toMatchObject({ id: card.id, order: 20 })
@@ -240,9 +240,7 @@ describe("Firestore RTK Query optimistic card mutations", () => {
     expect(
       selectCards(store, { boardId, columnId: todoColumn.id })[0]
     ).toMatchObject({ id: card.id, order: card.order })
-    expect(
-      selectCards(store, { boardId, columnId: doneColumn.id })
-    ).toEqual([])
+    expect(selectCards(store, { boardId, columnId: doneColumn.id })).toEqual([])
     store.dispatch(firestoreApi.util.resetApiState())
   })
 
@@ -324,17 +322,15 @@ describe("Firestore RTK Query optimistic card mutations", () => {
         cardId: card.id,
       })
     )
-    await vi.waitFor(() =>
-      expect(selectCards(store, { boardId })).toEqual([])
-    )
+    await vi.waitFor(() => expect(selectCards(store, { boardId })).toEqual([]))
 
     write.reject(new Error("delete failed"))
     await mutation
 
     expect(selectCards(store, { boardId })).toEqual([card])
-    expect(
-      selectCards(store, { boardId, columnId: todoColumn.id })
-    ).toEqual([card])
+    expect(selectCards(store, { boardId, columnId: todoColumn.id })).toEqual([
+      card,
+    ])
     store.dispatch(firestoreApi.util.resetApiState())
   })
 })

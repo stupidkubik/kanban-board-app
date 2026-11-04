@@ -1,4 +1,8 @@
-import { createSelector, createSlice, type PayloadAction } from "@reduxjs/toolkit"
+import {
+  createSelector,
+  createSlice,
+  type PayloadAction,
+} from "@reduxjs/toolkit"
 
 import type { AddCardDraft, EditingCardDraft } from "@/lib/types/board-ui"
 
@@ -59,7 +63,11 @@ const boardUiSlice = createSlice({
   reducers: {
     toggleAddCardForm(
       state,
-      action: PayloadAction<{ boardId: string; columnId: string; open: boolean }>
+      action: PayloadAction<{
+        boardId: string
+        columnId: string
+        open: boolean
+      }>
     ) {
       const boardState = ensureBoardState(state, action.payload.boardId)
       const draft = ensureColumnDraft(boardState, action.payload.columnId)
@@ -151,10 +159,7 @@ const boardUiSlice = createSlice({
       state,
       action: PayloadAction<{ boardId: string; assigneeId: string }>
     ) {
-      const draft = ensureBoardState(
-        state,
-        action.payload.boardId
-      ).editingCard
+      const draft = ensureBoardState(state, action.payload.boardId).editingCard
       const index = draft.assigneeIds.indexOf(action.payload.assigneeId)
       if (index >= 0) {
         draft.assigneeIds.splice(index, 1)
@@ -185,10 +190,7 @@ const boardUiSlice = createSlice({
       state,
       action: PayloadAction<{ boardId: string; labelId: string }>
     ) {
-      const draft = ensureBoardState(
-        state,
-        action.payload.boardId
-      ).editingCard
+      const draft = ensureBoardState(state, action.payload.boardId).editingCard
       const index = draft.labelIds.indexOf(action.payload.labelId)
       if (index >= 0) {
         draft.labelIds.splice(index, 1)
@@ -220,8 +222,10 @@ export const boardUiReducer = boardUiSlice.reducer
 
 export const selectBoardUi = createSelector(
   [
-    (state: { boardUi?: State }) => state.boardUi?.byBoard ?? initialState.byBoard,
-    (_state: { boardUi?: State }, boardId: string | null | undefined) => boardId,
+    (state: { boardUi?: State }) =>
+      state.boardUi?.byBoard ?? initialState.byBoard,
+    (_state: { boardUi?: State }, boardId: string | null | undefined) =>
+      boardId,
   ],
   (byBoard, boardId) => {
     if (!boardId) {

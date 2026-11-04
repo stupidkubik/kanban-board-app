@@ -13,7 +13,8 @@ export const boardContentCopy = {
     boardNotFoundTitle: "Доска не найдена",
     boardNotFoundDescription: "Возможно, она была удалена или ссылка устарела.",
     boardForbiddenTitle: "Нет доступа к доске",
-    boardForbiddenDescription: "Попросите владельца отправить новое приглашение.",
+    boardForbiddenDescription:
+      "Попросите владельца отправить новое приглашение.",
     boardLoadFailedTitle: "Не удалось загрузить доску",
     boardLoadFailedDescription: "Проверьте соединение и попробуйте ещё раз.",
     retry: "Повторить",
@@ -49,7 +50,8 @@ export const boardContentCopy = {
     saveLabel: "Сохранить",
     deleteLabel: "Удалить метку",
     deleteLabelTitle: "Удалить метку?",
-    deleteLabelDescription: "Метка будет снята со всех карточек и удалена из каталога.",
+    deleteLabelDescription:
+      "Метка будет снята со всех карточек и удалена из каталога.",
     labelEmpty: "В каталоге пока нет меток.",
     labelLimitReached: "Достигнут лимит 50 меток.",
     createCard: "Создать карточку",
@@ -60,16 +62,19 @@ export const boardContentCopy = {
     savingCard: "Сохранение...",
     deleteCard: "Удалить карточку",
     deleteCardTitle: "Удалить карточку?",
-    deleteCardDescription: "Карточка будет удалена без возможности восстановления.",
+    deleteCardDescription:
+      "Карточка будет удалена без возможности восстановления.",
     cardsLabel: "Карточки",
     noCards: "Пока нет карточек.",
     noColumns: "Пока нет колонок.",
-    cardLimitReached: "Показаны первые 500 карточек. Редактирование содержимого отключено — разделите доску перед продолжением.",
+    cardLimitReached:
+      "Показаны первые 500 карточек. Редактирование содержимого отключено — разделите доску перед продолжением.",
     deleteColumn: "Удалить",
     deleteColumnTitle: "Удалить колонку?",
-    deleteColumnDescription: "Можно удалить только пустую колонку. Действие нельзя отменить.",
-    readOnlyNotice: "Режим только чтение: изменения недоступны."
-},
+    deleteColumnDescription:
+      "Можно удалить только пустую колонку. Действие нельзя отменить.",
+    readOnlyNotice: "Режим только чтение: изменения недоступны.",
+  },
   en: {
     backToBoards: "Back to boards",
     settings: "Settings",
@@ -80,7 +85,8 @@ export const boardContentCopy = {
     labelsManager: "Labels",
     boardLoading: "Loading board...",
     boardNotFoundTitle: "Board not found",
-    boardNotFoundDescription: "It may have been deleted or the link is outdated.",
+    boardNotFoundDescription:
+      "It may have been deleted or the link is outdated.",
     boardForbiddenTitle: "You do not have access",
     boardForbiddenDescription: "Ask the owner to send you a new invitation.",
     boardLoadFailedTitle: "Could not load board",
@@ -118,7 +124,8 @@ export const boardContentCopy = {
     saveLabel: "Save",
     deleteLabel: "Delete label",
     deleteLabelTitle: "Delete label?",
-    deleteLabelDescription: "The label will be removed from every card and deleted from the catalog.",
+    deleteLabelDescription:
+      "The label will be removed from every card and deleted from the catalog.",
     labelEmpty: "The catalog has no labels yet.",
     labelLimitReached: "The 50-label limit has been reached.",
     createCard: "Create card",
@@ -133,10 +140,84 @@ export const boardContentCopy = {
     cardsLabel: "Cards",
     noCards: "No cards yet.",
     noColumns: "No columns yet.",
-    cardLimitReached: "Showing the first 500 cards. Content editing is disabled; split this board before continuing.",
+    cardLimitReached:
+      "Showing the first 500 cards. Content editing is disabled; split this board before continuing.",
     deleteColumn: "Delete",
     deleteColumnTitle: "Delete column?",
-    deleteColumnDescription: "Only an empty column can be deleted. This cannot be undone.",
-    readOnlyNotice: "Read-only mode: editing is disabled."
-},
-} satisfies Record<Locale, Pick<BoardCopy, "backToBoards" | "settings" | "personalSettings" | "appearanceSettings" | "boardSettings" | "participantsManager" | "labelsManager" | "boardLoading" | "boardNotFoundTitle" | "boardNotFoundDescription" | "boardForbiddenTitle" | "boardForbiddenDescription" | "boardLoadFailedTitle" | "boardLoadFailedDescription" | "retry" | "columnsTitle" | "addColumn" | "columnNamePlaceholder" | "createColumn" | "creatingColumn" | "addCard" | "cardTitlePlaceholder" | "cardDescriptionPlaceholder" | "cardDueDateLabel" | "cardOverdue" | "cardAssigneesLabel" | "cardAssigneesEmpty" | "cardLabelsLabel" | "cardLabelsEmpty" | "labelsTitle" | "labelsDescription" | "labelNamePlaceholder" | "labelColorLabel" | "labelColorGray" | "labelColorRed" | "labelColorOrange" | "labelColorYellow" | "labelColorGreen" | "labelColorBlue" | "labelColorPurple" | "labelColorPink" | "createLabel" | "creatingLabel" | "editLabel" | "saveLabel" | "deleteLabel" | "deleteLabelTitle" | "deleteLabelDescription" | "labelEmpty" | "labelLimitReached" | "createCard" | "creatingCard" | "editCardTitle" | "editCardDescription" | "saveCard" | "savingCard" | "deleteCard" | "deleteCardTitle" | "deleteCardDescription" | "cardsLabel" | "noCards" | "noColumns" | "cardLimitReached" | "deleteColumn" | "deleteColumnTitle" | "deleteColumnDescription" | "readOnlyNotice">>
+    deleteColumnDescription:
+      "Only an empty column can be deleted. This cannot be undone.",
+    readOnlyNotice: "Read-only mode: editing is disabled.",
+  },
+} satisfies Record<
+  Locale,
+  Pick<
+    BoardCopy,
+    | "backToBoards"
+    | "settings"
+    | "personalSettings"
+    | "appearanceSettings"
+    | "boardSettings"
+    | "participantsManager"
+    | "labelsManager"
+    | "boardLoading"
+    | "boardNotFoundTitle"
+    | "boardNotFoundDescription"
+    | "boardForbiddenTitle"
+    | "boardForbiddenDescription"
+    | "boardLoadFailedTitle"
+    | "boardLoadFailedDescription"
+    | "retry"
+    | "columnsTitle"
+    | "addColumn"
+    | "columnNamePlaceholder"
+    | "createColumn"
+    | "creatingColumn"
+    | "addCard"
+    | "cardTitlePlaceholder"
+    | "cardDescriptionPlaceholder"
+    | "cardDueDateLabel"
+    | "cardOverdue"
+    | "cardAssigneesLabel"
+    | "cardAssigneesEmpty"
+    | "cardLabelsLabel"
+    | "cardLabelsEmpty"
+    | "labelsTitle"
+    | "labelsDescription"
+    | "labelNamePlaceholder"
+    | "labelColorLabel"
+    | "labelColorGray"
+    | "labelColorRed"
+    | "labelColorOrange"
+    | "labelColorYellow"
+    | "labelColorGreen"
+    | "labelColorBlue"
+    | "labelColorPurple"
+    | "labelColorPink"
+    | "createLabel"
+    | "creatingLabel"
+    | "editLabel"
+    | "saveLabel"
+    | "deleteLabel"
+    | "deleteLabelTitle"
+    | "deleteLabelDescription"
+    | "labelEmpty"
+    | "labelLimitReached"
+    | "createCard"
+    | "creatingCard"
+    | "editCardTitle"
+    | "editCardDescription"
+    | "saveCard"
+    | "savingCard"
+    | "deleteCard"
+    | "deleteCardTitle"
+    | "deleteCardDescription"
+    | "cardsLabel"
+    | "noCards"
+    | "noColumns"
+    | "cardLimitReached"
+    | "deleteColumn"
+    | "deleteColumnTitle"
+    | "deleteColumnDescription"
+    | "readOnlyNotice"
+  >
+>

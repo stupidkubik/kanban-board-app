@@ -19,7 +19,12 @@ export const normalizeLegacyLabelName = (value) =>
 export const legacyLabelId = (normalizedName) =>
   `legacy_${createHash("sha256").update(normalizedName).digest("hex").slice(0, 20)}`
 
-export const catalogMapsEqual = (currentIds, currentNames, nextIds, nextNames) => {
+export const catalogMapsEqual = (
+  currentIds,
+  currentNames,
+  nextIds,
+  nextNames
+) => {
   const normalizeMap = (value) =>
     value && typeof value === "object" && !Array.isArray(value) ? value : {}
   const firstIds = normalizeMap(currentIds)
@@ -68,9 +73,8 @@ export const buildCardLabelsMigrationPlan = ({
         : []
     )
     card.labels.forEach((rawName) => {
-      const name = typeof rawName === "string"
-        ? rawName.trim().replace(/\s+/g, " ")
-        : ""
+      const name =
+        typeof rawName === "string" ? rawName.trim().replace(/\s+/g, " ") : ""
       const normalizedName = normalizeLegacyLabelName(name)
       if (!normalizedName || name.length > 50) return
       let id = labelsByName.get(normalizedName)

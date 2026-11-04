@@ -60,7 +60,10 @@ export async function POST(
     return NextResponse.json({ status: "ok", labelId: labelRef.id })
   } catch (error) {
     if (error instanceof LabelRouteError) {
-      return NextResponse.json({ error: error.message }, { status: error.status })
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status }
+      )
     }
     return NextResponse.json(
       { error: getErrorMessage(error, "Create label failed") },

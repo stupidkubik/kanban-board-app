@@ -1,8 +1,4 @@
-export {
-  getCopy,
-  languageLabels,
-  roleLabels,
-} from "@/lib/i18n/index"
+export { getCopy, languageLabels, roleLabels } from "@/lib/i18n/index"
 export type {
   AuthCopy,
   BoardCopy,

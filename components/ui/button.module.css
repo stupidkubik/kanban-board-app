@@ -11,7 +11,10 @@
   font-weight: 400;
   line-height: 1;
   cursor: pointer;
-  transition: background var(--duration-normal) var(--ease-emphasized), color var(--duration-normal) var(--ease-emphasized), border-color var(--duration-normal) var(--ease-emphasized),
+  transition:
+    background var(--duration-normal) var(--ease-emphasized),
+    color var(--duration-normal) var(--ease-emphasized),
+    border-color var(--duration-normal) var(--ease-emphasized),
     box-shadow var(--duration-normal) var(--ease-emphasized);
   outline: none;
 }

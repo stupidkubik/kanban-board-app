@@ -7,7 +7,10 @@ import { getSession } from "@/lib/firebase/session"
 import { getErrorMessage } from "@/lib/errors"
 
 class MemberRouteError extends Error {
-  constructor(readonly status: number, message: string) {
+  constructor(
+    readonly status: number,
+    message: string
+  ) {
     super(message)
   }
 }
@@ -96,7 +99,10 @@ export async function DELETE(
         throw new MemberRouteError(403, "Forbidden")
       }
       if (board.ownerId === memberId) {
-        throw new MemberRouteError(409, "Board owner cannot leave or be removed")
+        throw new MemberRouteError(
+          409,
+          "Board owner cannot leave or be removed"
+        )
       }
       if (board.members?.[memberId] !== true) {
         throw new MemberRouteError(404, "Board member not found")
@@ -191,10 +197,7 @@ export async function PATCH(
       if (board.ownerId === memberId || board.roles?.[memberId] === "owner") {
         throw new MemberRouteError(409, "Board owner role cannot be changed")
       }
-      if (
-        board.members?.[memberId] !== true ||
-        !board.roles?.[memberId]
-      ) {
+      if (board.members?.[memberId] !== true || !board.roles?.[memberId]) {
         throw new MemberRouteError(404, "Board member not found")
       }
       if (!["editor", "viewer"].includes(board.roles[memberId])) {

@@ -123,9 +123,7 @@ export const AuthForm = ({
         ) : (
           <>
             <form className={styles.form} onSubmit={onEmailAuth}>
-              <Label htmlFor="auth-email">
-                {uiCopy.auth.emailPlaceholder}
-              </Label>
+              <Label htmlFor="auth-email">{uiCopy.auth.emailPlaceholder}</Label>
               <Input
                 id="auth-email"
                 type="email"

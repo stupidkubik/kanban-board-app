@@ -63,7 +63,11 @@ export function CardDeleteDialog({
             disabled={!isOwner || deletingCard}
           >
             {deletingCard ? (
-              <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
+              <Spinner
+                size="sm"
+                className={styles.buttonSpinner}
+                aria-hidden="true"
+              />
             ) : null}
             {uiCopy.board.deleteCard}
           </AlertDialogAction>

@@ -109,7 +109,9 @@ describe("SignInPage", () => {
     const user = userEvent.setup()
     render(<SignInPage />)
 
-    await user.click(screen.getByRole("button", { name: "No account? Sign up" }))
+    await user.click(
+      screen.getByRole("button", { name: "No account? Sign up" })
+    )
     expect(
       screen.getByRole("button", { name: "Create account" })
     ).toBeInTheDocument()
@@ -138,13 +140,12 @@ describe("SignInPage", () => {
     await waitFor(() => {
       expect(mocks.resetPassword).toHaveBeenCalledWith({}, "user@example.com")
     })
-    expect(
-      screen.getByText("Password reset email sent.")
-    ).toBeInTheDocument()
+    expect(screen.getByText("Password reset email sent.")).toBeInTheDocument()
 
     await user.click(screen.getByRole("button", { name: "Back to sign in" }))
-    expect(screen.getByRole("heading", { name: "Sign in to Kanban" }))
-      .toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { name: "Sign in to Kanban" })
+    ).toBeInTheDocument()
   })
 
   it("falls back from a blocked Google popup to redirect", async () => {
@@ -154,7 +155,9 @@ describe("SignInPage", () => {
     )
     render(<SignInPage />)
 
-    await user.click(screen.getByRole("button", { name: "Sign in with Google" }))
+    await user.click(
+      screen.getByRole("button", { name: "Sign in with Google" })
+    )
 
     await waitFor(() => {
       expect(mocks.signInRedirect).toHaveBeenCalledOnce()
@@ -197,20 +200,23 @@ describe("SignInPage", () => {
     mocks.authState.user = null
     view.rerender(<SignInPage />)
 
-    expect(await screen.findByText("Failed to create session."))
-      .toBeInTheDocument()
+    expect(
+      await screen.findByText("Failed to create session.")
+    ).toBeInTheDocument()
     expect(mocks.replace).not.toHaveBeenCalled()
   })
 
   it("renders complete auth copy in English and Russian", () => {
     const view = render(<SignInPage />)
-    expect(screen.getByRole("heading", { name: "Sign in to Kanban" }))
-      .toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { name: "Sign in to Kanban" })
+    ).toBeInTheDocument()
 
     mocks.locale = "ru"
     view.rerender(<SignInPage />)
-    expect(screen.getByRole("heading", { name: "Вход в Kanban" }))
-      .toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { name: "Вход в Kanban" })
+    ).toBeInTheDocument()
     expect(
       screen.getByRole("button", { name: "Войти через Google" })
     ).toBeInTheDocument()

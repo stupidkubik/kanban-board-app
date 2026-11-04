@@ -58,7 +58,6 @@ const renderView = (
   return { ...view, onUpdateParticipantRole }
 }
 
-
 describe("ParticipantsSectionView role controls", () => {
   it("hides invite and member removal controls from non-owners", () => {
     renderView(false)

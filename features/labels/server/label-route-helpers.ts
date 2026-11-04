@@ -9,7 +9,10 @@ import {
 import type { BoardLabelColor } from "@/lib/types/boards"
 
 export class LabelRouteError extends Error {
-  constructor(readonly status: number, message: string) {
+  constructor(
+    readonly status: number,
+    message: string
+  ) {
     super(message)
   }
 }
@@ -27,7 +30,8 @@ export const parseLabelBody = async (request: Request): Promise<LabelBody> => {
   } catch {
     throw new LabelRouteError(400, "Invalid JSON body")
   }
-  const name = typeof body.name === "string" ? body.name.trim().replace(/\s+/g, " ") : ""
+  const name =
+    typeof body.name === "string" ? body.name.trim().replace(/\s+/g, " ") : ""
   const normalizedName = normalizeLabelName(name)
   if (!name || name.length > BOARD_LABEL_NAME_LIMIT) {
     throw new LabelRouteError(400, "Label name must contain 1 to 50 characters")

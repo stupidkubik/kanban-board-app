@@ -46,7 +46,9 @@ describe("Dialog", () => {
 
     await user.keyboard("{Escape}")
 
-    expect(screen.queryByRole("dialog", { name: "Manager" })).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("dialog", { name: "Manager" })
+    ).not.toBeInTheDocument()
     expect(trigger).toHaveFocus()
   })
 })

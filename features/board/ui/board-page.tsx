@@ -8,7 +8,11 @@ import { useAuth } from "@/components/auth-provider"
 import { usePreferredLocale } from "@/lib/use-preferred-locale"
 import { useGetBoardQuery } from "@/features/boards/data/boards-api"
 import { getCopy } from "@/lib/i18n"
-import { canEditBoard, canInviteMembers, getMemberRole } from "@/lib/permissions"
+import {
+  canEditBoard,
+  canInviteMembers,
+  getMemberRole,
+} from "@/lib/permissions"
 import { BoardContent } from "@/features/board/ui/board-content"
 import styles from "@/features/board/ui/board-page.module.css"
 import { useNotifications } from "@/features/notifications/ui/notifications-provider"

@@ -72,8 +72,12 @@ export function KanbanApp() {
         {user ? (
           <div className={styles.topBarControls}>
             <div className={styles.topBarUser}>
-              <span className={styles.topBarUserLabel}>{uiCopy.common.signedIn}</span>
-              <span className={styles.topBarUserValue}>{user.email ?? user.uid}</span>
+              <span className={styles.topBarUserLabel}>
+                {uiCopy.common.signedIn}
+              </span>
+              <span className={styles.topBarUserValue}>
+                {user.email ?? user.uid}
+              </span>
             </div>
             <div className={styles.topBarActions}>
               <Label className="srOnly" htmlFor="home-locale">
@@ -103,7 +107,12 @@ export function KanbanApp() {
                   switchToDark: uiCopy.common.themeSwitchToDark,
                 }}
               />
-              <Button variant="outline" size="sm" onClick={handleSignOut} type="button">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSignOut}
+                type="button"
+              >
                 {uiCopy.common.signOut}
               </Button>
             </div>

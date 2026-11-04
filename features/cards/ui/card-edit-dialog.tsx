@@ -70,86 +70,103 @@ export function CardEditDialog({
           </DialogDescription>
         </DialogHeader>
         <form className={styles.cardDialogForm} onSubmit={onSubmit}>
-        <DialogBody>
-        <div className={styles.cardForm}>
-          <Field>
-            <FieldLabel htmlFor="edit-card-title">
-              {uiCopy.board.cardTitlePlaceholder}
-            </FieldLabel>
-            <FieldContent>
-              <Input
-                id="edit-card-title"
-                className={styles.cardFormInput}
-                value={editingCard.title}
-                onChange={(event) => onFieldChange("title", event.target.value)}
-                placeholder={uiCopy.board.cardTitlePlaceholder}
+          <DialogBody>
+            <div className={styles.cardForm}>
+              <Field>
+                <FieldLabel htmlFor="edit-card-title">
+                  {uiCopy.board.cardTitlePlaceholder}
+                </FieldLabel>
+                <FieldContent>
+                  <Input
+                    id="edit-card-title"
+                    className={styles.cardFormInput}
+                    value={editingCard.title}
+                    onChange={(event) =>
+                      onFieldChange("title", event.target.value)
+                    }
+                    placeholder={uiCopy.board.cardTitlePlaceholder}
+                    disabled={!canEdit || updatingCard}
+                    autoFocus
+                  />
+                </FieldContent>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="edit-card-description">
+                  {uiCopy.board.cardDescriptionPlaceholder}
+                </FieldLabel>
+                <FieldContent>
+                  <Textarea
+                    id="edit-card-description"
+                    className={styles.cardFormTextarea}
+                    value={editingCard.description}
+                    onChange={(event) =>
+                      onFieldChange("description", event.target.value)
+                    }
+                    placeholder={uiCopy.board.cardDescriptionPlaceholder}
+                    rows={4}
+                    disabled={!canEdit || updatingCard}
+                  />
+                </FieldContent>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="edit-card-due">
+                  {uiCopy.board.cardDueDateLabel}
+                </FieldLabel>
+                <FieldContent>
+                  <Input
+                    id="edit-card-due"
+                    className={`${styles.cardDateInput} ${styles.cardFormInput}`}
+                    value={editingCard.due}
+                    onChange={(event) =>
+                      onFieldChange("due", event.target.value)
+                    }
+                    type="date"
+                    disabled={!canEdit || updatingCard}
+                  />
+                </FieldContent>
+              </Field>
+              <CardAssigneePicker
+                assignees={assignees}
+                selectedIds={editingCard.assigneeIds}
+                label={uiCopy.board.cardAssigneesLabel}
+                emptyLabel={uiCopy.board.cardAssigneesEmpty}
                 disabled={!canEdit || updatingCard}
-                autoFocus
+                testId="edit-card-assignees"
+                onToggle={onToggleAssignee}
               />
-            </FieldContent>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="edit-card-description">
-              {uiCopy.board.cardDescriptionPlaceholder}
-            </FieldLabel>
-            <FieldContent>
-              <Textarea
-                id="edit-card-description"
-                className={styles.cardFormTextarea}
-                value={editingCard.description}
-                onChange={(event) => onFieldChange("description", event.target.value)}
-                placeholder={uiCopy.board.cardDescriptionPlaceholder}
-                rows={4}
+              <CardLabelPicker
+                labels={labels}
+                selectedIds={editingCard.labelIds}
+                label={uiCopy.board.cardLabelsLabel}
+                emptyLabel={uiCopy.board.cardLabelsEmpty}
                 disabled={!canEdit || updatingCard}
+                testId="edit-card-labels"
+                onToggle={onToggleLabel}
               />
-            </FieldContent>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="edit-card-due">
-              {uiCopy.board.cardDueDateLabel}
-            </FieldLabel>
-            <FieldContent>
-            <Input
-              id="edit-card-due"
-              className={`${styles.cardDateInput} ${styles.cardFormInput}`}
-              value={editingCard.due}
-              onChange={(event) => onFieldChange("due", event.target.value)}
-              type="date"
-              disabled={!canEdit || updatingCard}
-            />
-            </FieldContent>
-          </Field>
-          <CardAssigneePicker
-            assignees={assignees}
-            selectedIds={editingCard.assigneeIds}
-            label={uiCopy.board.cardAssigneesLabel}
-            emptyLabel={uiCopy.board.cardAssigneesEmpty}
-            disabled={!canEdit || updatingCard}
-            testId="edit-card-assignees"
-            onToggle={onToggleAssignee}
-          />
-          <CardLabelPicker
-            labels={labels}
-            selectedIds={editingCard.labelIds}
-            label={uiCopy.board.cardLabelsLabel}
-            emptyLabel={uiCopy.board.cardLabelsEmpty}
-            disabled={!canEdit || updatingCard}
-            testId="edit-card-labels"
-            onToggle={onToggleLabel}
-          />
-        </div>
-        </DialogBody>
-        <DialogFooter>
-          <DialogClose asChild>
-            <Button type="button" variant="ghost" size="sm" disabled={updatingCard}>
-              {uiCopy.common.cancel}
+            </div>
+          </DialogBody>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                disabled={updatingCard}
+              >
+                {uiCopy.common.cancel}
+              </Button>
+            </DialogClose>
+            <Button type="submit" size="sm" disabled={!canEdit || updatingCard}>
+              {updatingCard ? (
+                <Spinner
+                  size="sm"
+                  className={styles.buttonSpinner}
+                  aria-hidden="true"
+                />
+              ) : null}
+              {updatingCard ? uiCopy.board.savingCard : uiCopy.board.saveCard}
             </Button>
-          </DialogClose>
-          <Button type="submit" size="sm" disabled={!canEdit || updatingCard}>
-            {updatingCard ? <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" /> : null}
-            {updatingCard ? uiCopy.board.savingCard : uiCopy.board.saveCard}
-          </Button>
-        </DialogFooter>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>

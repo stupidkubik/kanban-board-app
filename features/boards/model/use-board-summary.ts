@@ -53,7 +53,7 @@ const drainSummaryQueue = () => {
   })
 }
 
-const enqueueSummary = <Result,>(load: () => Promise<Result>) =>
+const enqueueSummary = <Result>(load: () => Promise<Result>) =>
   new Promise<Result>((resolve, reject) => {
     summaryQueue.push({
       run: async () => {
@@ -117,7 +117,10 @@ const loadRemoteSummary = (boardId: string, memberKey: string) => {
 
 export const useBoardSummary = (board: Board, user: User): BoardSummary => {
   const memberIds = React.useMemo(
-    () => Object.entries(board.members).filter(([, active]) => active).map(([id]) => id),
+    () =>
+      Object.entries(board.members)
+        .filter(([, active]) => active)
+        .map(([id]) => id),
     [board.members]
   )
   const memberKey = memberIds.join("\u0000")
@@ -166,7 +169,8 @@ export const useBoardSummary = (board: Board, user: User): BoardSummary => {
   return {
     columnCount:
       remoteSummary?.boardId === board.id ? remoteSummary.columnCount : null,
-    cardCount: remoteSummary?.boardId === board.id ? remoteSummary.cardCount : null,
+    cardCount:
+      remoteSummary?.boardId === board.id ? remoteSummary.cardCount : null,
     memberCount: memberIds.length,
     visibleMembers,
   }

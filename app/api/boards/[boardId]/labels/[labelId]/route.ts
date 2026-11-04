@@ -36,9 +36,7 @@ const errorResponse = (error: unknown, fallback: string) => {
 
 export async function PATCH(
   request: Request,
-  {
-    params,
-  }: { params: Promise<{ boardId: string; labelId: string }> }
+  { params }: { params: Promise<{ boardId: string; labelId: string }> }
 ) {
   try {
     const session = await authorize(request)
@@ -85,9 +83,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: Request,
-  {
-    params,
-  }: { params: Promise<{ boardId: string; labelId: string }> }
+  { params }: { params: Promise<{ boardId: string; labelId: string }> }
 ) {
   try {
     const session = await authorize(request)

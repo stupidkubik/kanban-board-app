@@ -16,13 +16,15 @@ type ErrorPageProps = {
 const copy = {
   ru: {
     title: "Что-то пошло не так",
-    description: "Попробуйте повторить действие. Если ошибка вернётся, сообщите код ниже.",
+    description:
+      "Попробуйте повторить действие. Если ошибка вернётся, сообщите код ниже.",
     retry: "Повторить",
     code: "Код ошибки",
   },
   en: {
     title: "Something went wrong",
-    description: "Try the action again. If the error returns, report the code below.",
+    description:
+      "Try the action again. If the error returns, report the code below.",
     retry: "Try again",
     code: "Error code",
   },
@@ -30,7 +32,9 @@ const copy = {
 
 export default function ErrorPage({ error, reset }: ErrorPageProps) {
   const locale = useStoredUiLocale()
-  const [correlationId] = React.useState(() => getClientErrorCorrelationId(error))
+  const [correlationId] = React.useState(() =>
+    getClientErrorCorrelationId(error)
+  )
 
   React.useEffect(() => {
     reportClientError(error, { boundary: "route" }, correlationId)

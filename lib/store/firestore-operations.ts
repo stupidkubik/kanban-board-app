@@ -164,13 +164,19 @@ export const updateBoardLanguage = async ({
   )
 }
 
-export const updateBoardTitle = async ({ boardId, title }: UpdateBoardTitleInput) => {
-  const response = await fetchWithAppCheck(`/api/boards/${encodeURIComponent(boardId)}`, {
-    method: "PATCH",
-    credentials: "same-origin",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ title }),
-  })
+export const updateBoardTitle = async ({
+  boardId,
+  title,
+}: UpdateBoardTitleInput) => {
+  const response = await fetchWithAppCheck(
+    `/api/boards/${encodeURIComponent(boardId)}`,
+    {
+      method: "PATCH",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title }),
+    }
+  )
 
   if (!response.ok) {
     let message = "Update board failed"
@@ -236,7 +242,10 @@ export const restoreColumn = async ({
   )
 }
 
-export const deleteColumn = async ({ boardId, columnId }: DeleteColumnInput) => {
+export const deleteColumn = async ({
+  boardId,
+  columnId,
+}: DeleteColumnInput) => {
   const response = await fetchWithAppCheck(
     `/api/boards/${encodeURIComponent(boardId)}/columns/${encodeURIComponent(columnId)}`,
     {
@@ -248,7 +257,10 @@ export const deleteColumn = async ({ boardId, columnId }: DeleteColumnInput) => 
   if (!response.ok) {
     let message = "Delete column failed"
     try {
-      const payload = (await response.json()) as { code?: string; error?: string }
+      const payload = (await response.json()) as {
+        code?: string
+        error?: string
+      }
       message = payload.code ?? payload.error ?? message
     } catch {
       // Keep the fallback error when the server does not return JSON.

@@ -37,10 +37,7 @@ export const languageLabels: Record<Locale, string> = {
   en: "English",
 }
 
-export const roleLabels: Record<
-  Locale,
-  Record<BoardRoleLabel, string>
-> = {
+export const roleLabels: Record<Locale, Record<BoardRoleLabel, string>> = {
   ru: {
     owner: "Владелец",
     editor: "Редактор",

@@ -15,8 +15,7 @@ export function Spinner({ size = "md", className, ...props }: SpinnerProps) {
         ? styles.sizeSm
         : styles.sizeMd
   const ariaHidden = props["aria-hidden"] === true
-  const ariaLabel =
-    props["aria-label"] ?? (ariaHidden ? undefined : "Loading")
+  const ariaLabel = props["aria-label"] ?? (ariaHidden ? undefined : "Loading")
 
   return (
     <span

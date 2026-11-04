@@ -40,15 +40,15 @@ export const buildCardAssignees = (
     .map(([id]) => {
       const profile = profilesById.get(id)
       const isCurrentUser = id === user?.uid
-      const email = profile?.email ?? (isCurrentUser ? user?.email : null) ?? null
+      const email =
+        profile?.email ?? (isCurrentUser ? user?.email : null) ?? null
       const displayName =
         profile?.displayName ?? (isCurrentUser ? user?.displayName : null)
       return {
         id,
         name: displayName || email || id,
         email,
-        photoURL:
-          profile?.photoURL ?? (isCurrentUser ? user?.photoURL : null),
+        photoURL: profile?.photoURL ?? (isCurrentUser ? user?.photoURL : null),
       }
     })
 }

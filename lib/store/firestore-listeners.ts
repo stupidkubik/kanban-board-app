@@ -1,6 +1,18 @@
-import { collection, doc, limit, onSnapshot, orderBy, query, where } from "firebase/firestore"
+import {
+  collection,
+  doc,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+  where,
+} from "firebase/firestore"
 
-import { isVisibleCard, normalizeCard, type CardRecord } from "@/features/cards/model/card-normalizers"
+import {
+  isVisibleCard,
+  normalizeCard,
+  type CardRecord,
+} from "@/features/cards/model/card-normalizers"
 import {
   BOARD_LABEL_LIMIT,
   normalizeBoardLabel,
@@ -33,10 +45,14 @@ export const BOARD_CARD_LIMIT = 500
 type Listener<T> = (value: T) => void
 type ListenerError = (error: Error) => void
 
-export function subscribeToBoards(uid: string, onData: Listener<Board[]>, onError: ListenerError) {
+export function subscribeToBoards(
+  uid: string,
+  onData: Listener<Board[]>,
+  onError: ListenerError
+) {
   const boardsQuery = query(
     collection(clientDb, "boards"),
-    where(memberFieldPath(uid), "==", true),
+    where(memberFieldPath(uid), "==", true)
   )
 
   return onSnapshot(
@@ -44,17 +60,20 @@ export function subscribeToBoards(uid: string, onData: Listener<Board[]>, onErro
     (snapshot) =>
       onData(
         snapshot.docs.map((docSnapshot) =>
-          normalizeBoard(docSnapshot.id, docSnapshot.data() as Omit<Board, "id">),
-        ),
+          normalizeBoard(
+            docSnapshot.id,
+            docSnapshot.data() as Omit<Board, "id">
+          )
+        )
       ),
-    onError,
+    onError
   )
 }
 
 export function subscribeToBoard(
   boardId: string,
   onData: Listener<Board | null>,
-  onError: ListenerError,
+  onError: ListenerError
 ) {
   return onSnapshot(
     doc(clientDb, "boards", boardId),
@@ -63,22 +82,22 @@ export function subscribeToBoard(
         snapshot.exists()
           ? normalizeBoard(
               boardId,
-              snapshot.data() as Omit<Board, "id"> & { createdBy?: string },
+              snapshot.data() as Omit<Board, "id"> & { createdBy?: string }
             )
-          : null,
+          : null
       ),
-    onError,
+    onError
   )
 }
 
 export function subscribeToInvites(
   email: string,
   onData: Listener<Invite[]>,
-  onError: ListenerError,
+  onError: ListenerError
 ) {
   const invitesQuery = query(
     collection(clientDb, "boardInvites"),
-    where("email", "==", email.toLowerCase()),
+    where("email", "==", email.toLowerCase())
   )
 
   return onSnapshot(
@@ -86,22 +105,22 @@ export function subscribeToInvites(
     (snapshot) =>
       onData(
         snapshot.docs.map((docSnapshot) =>
-          normalizeInvite(docSnapshot.id, docSnapshot.data() as InviteRecord),
-        ),
+          normalizeInvite(docSnapshot.id, docSnapshot.data() as InviteRecord)
+        )
       ),
-    onError,
+    onError
   )
 }
 
 export function subscribeToColumns(
   boardId: string,
   onData: Listener<Column[]>,
-  onError: ListenerError,
+  onError: ListenerError
 ) {
   const columnsQuery = query(
     collection(clientDb, "boards", boardId, "columns"),
     orderBy("order", "asc"),
-    limit(BOARD_COLUMN_LIMIT),
+    limit(BOARD_COLUMN_LIMIT)
   )
 
   return onSnapshot(
@@ -109,22 +128,26 @@ export function subscribeToColumns(
     (snapshot) =>
       onData(
         snapshot.docs.map((docSnapshot) =>
-          normalizeColumn(boardId, docSnapshot.id, docSnapshot.data() as ColumnRecord),
-        ),
+          normalizeColumn(
+            boardId,
+            docSnapshot.id,
+            docSnapshot.data() as ColumnRecord
+          )
+        )
       ),
-    onError,
+    onError
   )
 }
 
 export function subscribeToBoardMembers(
   boardId: string,
   onData: Listener<BoardMemberProfile[]>,
-  onError: ListenerError,
+  onError: ListenerError
 ) {
   const membersQuery = query(
     collection(clientDb, "boards", boardId, "memberProfiles"),
     orderBy("joinedAt", "asc"),
-    limit(BOARD_MEMBER_LIMIT),
+    limit(BOARD_MEMBER_LIMIT)
   )
 
   return onSnapshot(
@@ -134,11 +157,11 @@ export function subscribeToBoardMembers(
         snapshot.docs.map((docSnapshot) =>
           normalizeMemberProfile(
             docSnapshot.id,
-            docSnapshot.data() as MemberProfileRecord,
-          ),
-        ),
+            docSnapshot.data() as MemberProfileRecord
+          )
+        )
       ),
-    onError,
+    onError
   )
 }
 
@@ -174,7 +197,7 @@ export function subscribeToBoardLabels(
 export function subscribeToCards(
   args: { boardId: string; columnId?: string | null },
   onData: Listener<Card[]>,
-  onError: ListenerError,
+  onError: ListenerError
 ) {
   const cardsCollection = collection(clientDb, "boards", args.boardId, "cards")
   const cardsQuery = args.columnId
@@ -182,7 +205,7 @@ export function subscribeToCards(
         cardsCollection,
         where("columnId", "==", args.columnId),
         orderBy("order", "asc"),
-        limit(BOARD_CARD_LIMIT),
+        limit(BOARD_CARD_LIMIT)
       )
     : query(cardsCollection, orderBy("order", "asc"), limit(BOARD_CARD_LIMIT))
 
@@ -195,11 +218,11 @@ export function subscribeToCards(
             normalizeCard(
               args.boardId,
               docSnapshot.id,
-              docSnapshot.data() as CardRecord,
-            ),
+              docSnapshot.data() as CardRecord
+            )
           )
-          .filter(isVisibleCard),
+          .filter(isVisibleCard)
       ),
-    onError,
+    onError
   )
 }

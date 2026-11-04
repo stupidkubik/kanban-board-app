@@ -2,9 +2,8 @@ import { describe, expect, it, vi } from "vitest"
 
 vi.mock("@/lib/firebase/client", () => ({ clientDb: {} }))
 
-const { ensureCardOrder, isVisibleCard, normalizeCard } = await import(
-  "@/features/cards/model/card-normalizers"
-)
+const { ensureCardOrder, isVisibleCard, normalizeCard } =
+  await import("@/features/cards/model/card-normalizers")
 
 describe("normalizeCard", () => {
   it("normalizes base fields and filters arrays", () => {

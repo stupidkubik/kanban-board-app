@@ -50,7 +50,12 @@ const buildCardSorter = () => (first: Card, second: Card) => {
   return first.order - second.order
 }
 
-const updateCardOrder = (draft: Card[], cardId: string, toColumnId: string, order: number) => {
+const updateCardOrder = (
+  draft: Card[],
+  cardId: string,
+  toColumnId: string,
+  order: number
+) => {
   const card = draft.find((item) => item.id === cardId)
   if (!card) {
     return

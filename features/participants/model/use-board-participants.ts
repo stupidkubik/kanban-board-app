@@ -58,14 +58,19 @@ export function useBoardParticipants({
   const [inviteEmail, setInviteEmail] = React.useState("")
   const [inviteRole, setInviteRole] = React.useState<BoardRole>("editor")
   const [invitePending, setInvitePending] = React.useState(false)
-  const [removePendingId, setRemovePendingId] = React.useState<string | null>(null)
+  const [removePendingId, setRemovePendingId] = React.useState<string | null>(
+    null
+  )
   const [rolePendingId, setRolePendingId] = React.useState<string | null>(null)
   const [leavePending, setLeavePending] = React.useState(false)
   const [updateBoardMemberRole] = useUpdateBoardMemberRoleMutation()
 
-  const { data: memberProfiles = [] } = useGetBoardMembersQuery(boardId ?? null, {
-    skip: !boardId,
-  })
+  const { data: memberProfiles = [] } = useGetBoardMembersQuery(
+    boardId ?? null,
+    {
+      skip: !boardId,
+    }
+  )
 
   const memberProfilesById = React.useMemo(() => {
     return new Map(memberProfiles.map((member) => [member.id, member]))
@@ -84,10 +89,10 @@ export function useBoardParticipants({
         const displayName =
           profile?.displayName ?? (isYou ? user?.displayName : null)
         const email = profile?.email ?? (isYou ? user?.email : null)
-        const photoURL =
-          profile?.photoURL ?? (isYou ? user?.photoURL : null)
+        const photoURL = profile?.photoURL ?? (isYou ? user?.photoURL : null)
         const roleKey: BoardRoleLabel =
-          board.roles?.[memberId] ?? (memberId === board.ownerId ? "owner" : "member")
+          board.roles?.[memberId] ??
+          (memberId === board.ownerId ? "owner" : "member")
 
         return {
           id: memberId,
@@ -108,103 +113,109 @@ export function useBoardParticipants({
     user?.uid,
   ])
 
-  const handleInvite = React.useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!board) {
-      return
-    }
+  const handleInvite = React.useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      if (!board) {
+        return
+      }
 
-    if (!user) {
-      setError(uiCopy.board.errors.signInToInvite)
-      return
-    }
+      if (!user) {
+        setError(uiCopy.board.errors.signInToInvite)
+        return
+      }
 
-    if (!isOwner) {
-      setError(uiCopy.board.errors.onlyOwnerCanInvite)
-      return
-    }
+      if (!isOwner) {
+        setError(uiCopy.board.errors.onlyOwnerCanInvite)
+        return
+      }
 
-    const normalizedEmail = inviteEmail.trim().toLowerCase()
+      const normalizedEmail = inviteEmail.trim().toLowerCase()
 
-    if (!isValidEmail(normalizedEmail)) {
-      setError(uiCopy.board.errors.inviteInvalidEmail)
-      return
-    }
+      if (!isValidEmail(normalizedEmail)) {
+        setError(uiCopy.board.errors.inviteInvalidEmail)
+        return
+      }
 
-    if (user.email && normalizedEmail === user.email.toLowerCase()) {
-      setError(uiCopy.board.errors.inviteSelf)
-      return
-    }
+      if (user.email && normalizedEmail === user.email.toLowerCase()) {
+        setError(uiCopy.board.errors.inviteSelf)
+        return
+      }
 
-    setError(null)
-    setInvitePending(true)
+      setError(null)
+      setInvitePending(true)
 
-    try {
-      await createBoardInvite({
-        boardId: board.id,
-        boardTitle: board.title,
-        email: normalizedEmail,
-        role: inviteRole,
-        invitedById: user.uid,
-      })
-      setInviteEmail("")
-    } catch (err) {
-      setError(getErrorMessage(err, uiCopy.board.errors.inviteFailed))
-    } finally {
-      setInvitePending(false)
-    }
-  }, [
-    board,
-    inviteEmail,
-    inviteRole,
-    isOwner,
-    setError,
-    uiCopy.board.errors.inviteFailed,
-    uiCopy.board.errors.inviteInvalidEmail,
-    uiCopy.board.errors.inviteSelf,
-    uiCopy.board.errors.onlyOwnerCanInvite,
-    uiCopy.board.errors.signInToInvite,
-    user,
-  ])
+      try {
+        await createBoardInvite({
+          boardId: board.id,
+          boardTitle: board.title,
+          email: normalizedEmail,
+          role: inviteRole,
+          invitedById: user.uid,
+        })
+        setInviteEmail("")
+      } catch (err) {
+        setError(getErrorMessage(err, uiCopy.board.errors.inviteFailed))
+      } finally {
+        setInvitePending(false)
+      }
+    },
+    [
+      board,
+      inviteEmail,
+      inviteRole,
+      isOwner,
+      setError,
+      uiCopy.board.errors.inviteFailed,
+      uiCopy.board.errors.inviteInvalidEmail,
+      uiCopy.board.errors.inviteSelf,
+      uiCopy.board.errors.onlyOwnerCanInvite,
+      uiCopy.board.errors.signInToInvite,
+      user,
+    ]
+  )
 
-  const handleRemoveParticipant = React.useCallback(async (participantId: string) => {
-    if (!board) {
-      return
-    }
+  const handleRemoveParticipant = React.useCallback(
+    async (participantId: string) => {
+      if (!board) {
+        return
+      }
 
-    if (!user) {
-      setError(uiCopy.board.errors.signInToInvite)
-      return
-    }
+      if (!user) {
+        setError(uiCopy.board.errors.signInToInvite)
+        return
+      }
 
-    if (!isOwner) {
-      setError(uiCopy.board.errors.onlyOwnerCanRemove)
-      return
-    }
+      if (!isOwner) {
+        setError(uiCopy.board.errors.onlyOwnerCanRemove)
+        return
+      }
 
-    if (participantId === board.ownerId || participantId === user.uid) {
-      return
-    }
+      if (participantId === board.ownerId || participantId === user.uid) {
+        return
+      }
 
-    setError(null)
-    setRemovePendingId(participantId)
+      setError(null)
+      setRemovePendingId(participantId)
 
-    try {
-      await deleteBoardMember({ boardId: board.id, memberId: participantId })
-    } catch (err) {
-      setError(getErrorMessage(err, uiCopy.board.errors.removeMemberFailed))
-    } finally {
-      setRemovePendingId(null)
-    }
-  }, [
-    board,
-    isOwner,
-    setError,
-    uiCopy.board.errors.onlyOwnerCanRemove,
-    uiCopy.board.errors.removeMemberFailed,
-    uiCopy.board.errors.signInToInvite,
-    user,
-  ])
+      try {
+        await deleteBoardMember({ boardId: board.id, memberId: participantId })
+      } catch (err) {
+        setError(getErrorMessage(err, uiCopy.board.errors.removeMemberFailed))
+      } finally {
+        setRemovePendingId(null)
+      }
+    },
+    [
+      board,
+      isOwner,
+      setError,
+      uiCopy.board.errors.onlyOwnerCanRemove,
+      uiCopy.board.errors.removeMemberFailed,
+      uiCopy.board.errors.signInToInvite,
+      user,
+    ]
+  )
 
   const handleUpdateParticipantRole = React.useCallback(
     async (participantId: string, role: EditableBoardRole) => {

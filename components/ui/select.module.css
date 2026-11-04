@@ -11,7 +11,9 @@
   color: var(--color-text);
   min-width: 140px;
   cursor: pointer;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .trigger[data-size="default"] {

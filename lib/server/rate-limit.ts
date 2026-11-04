@@ -19,7 +19,10 @@ const MAX_ENTRIES = 10_000
 export function createFixedWindowRateLimiter() {
   const entries = new Map<string, RateLimitEntry>()
 
-  return (key: string, { limit, windowMs, now = Date.now() }: RateLimitOptions): RateLimitResult => {
+  return (
+    key: string,
+    { limit, windowMs, now = Date.now() }: RateLimitOptions
+  ): RateLimitResult => {
     const current = entries.get(key)
 
     if (!current || current.resetAt <= now) {
@@ -28,7 +31,8 @@ export function createFixedWindowRateLimiter() {
           if (entry.resetAt <= now) entries.delete(entryKey)
         }
 
-        if (entries.size >= MAX_ENTRIES) entries.delete(entries.keys().next().value ?? "")
+        if (entries.size >= MAX_ENTRIES)
+          entries.delete(entries.keys().next().value ?? "")
       }
 
       entries.set(key, { count: 1, resetAt: now + windowMs })
@@ -45,13 +49,18 @@ export function createFixedWindowRateLimiter() {
 }
 
 declare global {
-  var __kanbanRateLimit: ReturnType<typeof createFixedWindowRateLimiter> | undefined
+  var __kanbanRateLimit:
+    ReturnType<typeof createFixedWindowRateLimiter> | undefined
 }
 
 export const checkRateLimit =
-  globalThis.__kanbanRateLimit ?? (globalThis.__kanbanRateLimit = createFixedWindowRateLimiter())
+  globalThis.__kanbanRateLimit ??
+  (globalThis.__kanbanRateLimit = createFixedWindowRateLimiter())
 
 export function getRequestClientKey(request: Request) {
-  const forwardedFor = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+  const forwardedFor = request.headers
+    .get("x-forwarded-for")
+    ?.split(",")[0]
+    ?.trim()
   return forwardedFor || request.headers.get("x-real-ip")?.trim() || "unknown"
 }

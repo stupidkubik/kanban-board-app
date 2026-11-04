@@ -25,7 +25,9 @@ if (process.env.SMOKE_ALLOW_WRITES !== "true") {
 }
 
 let projectId =
-  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? process.env.FIREBASE_PROJECT_ID ?? ""
+  process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ??
+  process.env.FIREBASE_PROJECT_ID ??
+  ""
 
 const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT?.trim()
 let serviceAccount = null
@@ -99,13 +101,16 @@ const run = async () => {
       updatedAt: FieldValue.serverTimestamp(),
     })
 
-    await boardRef.collection("memberProfiles").doc(uid).set({
-      email: `${uid}@example.invalid`,
-      displayName: "Release smoke",
-      photoURL: null,
-      createdAt: FieldValue.serverTimestamp(),
-      updatedAt: FieldValue.serverTimestamp(),
-    })
+    await boardRef
+      .collection("memberProfiles")
+      .doc(uid)
+      .set({
+        email: `${uid}@example.invalid`,
+        displayName: "Release smoke",
+        photoURL: null,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      })
 
     const columnRefs = []
     for (const [index, title] of columnTitles.entries()) {
@@ -187,7 +192,9 @@ const run = async () => {
       !card?.assigneeIds?.includes(uid) ||
       !card?.labelIds?.includes(labelRef.id)
     ) {
-      throw new Error("Card, assignee, label, or member profile verification failed.")
+      throw new Error(
+        "Card, assignee, label, or member profile verification failed."
+      )
     }
 
     process.stdout.write("Smoke assertions passed.\n")
@@ -208,14 +215,21 @@ const run = async () => {
         }
         await boardRef.delete()
 
-        const [boardAfterCleanup, matchingBoards, ...subcollectionsAfterCleanup] =
-          await Promise.all([
-            boardRef.get(),
-            db.collection("boards").where("title", "==", boardTitle).limit(1).get(),
-            ...SMOKE_SUBCOLLECTIONS.map((collectionName) =>
-              boardRef.collection(collectionName).limit(1).get()
-            ),
-          ])
+        const [
+          boardAfterCleanup,
+          matchingBoards,
+          ...subcollectionsAfterCleanup
+        ] = await Promise.all([
+          boardRef.get(),
+          db
+            .collection("boards")
+            .where("title", "==", boardTitle)
+            .limit(1)
+            .get(),
+          ...SMOKE_SUBCOLLECTIONS.map((collectionName) =>
+            boardRef.collection(collectionName).limit(1).get()
+          ),
+        ])
         if (
           boardAfterCleanup.exists ||
           subcollectionsAfterCleanup.some((snapshot) => !snapshot.empty) ||

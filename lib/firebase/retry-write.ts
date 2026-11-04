@@ -15,7 +15,11 @@ export const isTransientFirebaseError = (error: unknown) => {
     return false
   }
 
-  const candidate = error as { code?: unknown; message?: unknown; name?: unknown }
+  const candidate = error as {
+    code?: unknown
+    message?: unknown
+    name?: unknown
+  }
   if (
     typeof candidate.code === "string" &&
     transientCodes.has(candidate.code)

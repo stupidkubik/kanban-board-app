@@ -109,10 +109,7 @@ export const useCardEditController = ({
             editingCard.assigneeIds,
             availableAssigneeIds
           ),
-          labelIds: normalizeLabelIds(
-            editingCard.labelIds,
-            availableLabelIds
-          ),
+          labelIds: normalizeLabelIds(editingCard.labelIds, availableLabelIds),
         }).unwrap()
         resetEditCard()
       } catch (error) {

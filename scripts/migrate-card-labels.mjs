@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 
 import nextEnv from "@next/env"
-import { applicationDefault, cert, deleteApp, initializeApp } from "firebase-admin/app"
+import {
+  applicationDefault,
+  cert,
+  deleteApp,
+  initializeApp,
+} from "firebase-admin/app"
 import { FieldPath, FieldValue, getFirestore } from "firebase-admin/firestore"
 
 import {
@@ -14,7 +19,9 @@ nextEnv.loadEnvConfig(process.cwd())
 const applyChanges = process.env.MIGRATION_APPLY === "true"
 const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT?.trim()
 const emulatorMode = Boolean(process.env.FIRESTORE_EMULATOR_HOST)
-const serviceAccount = serviceAccountJson ? JSON.parse(serviceAccountJson) : null
+const serviceAccount = serviceAccountJson
+  ? JSON.parse(serviceAccountJson)
+  : null
 const projectId =
   process.env.GCLOUD_PROJECT ??
   process.env.FIREBASE_PROJECT_ID ??
@@ -29,7 +36,9 @@ const app = initializeApp(
   emulatorMode
     ? { projectId }
     : {
-        credential: serviceAccount ? cert(serviceAccount) : applicationDefault(),
+        credential: serviceAccount
+          ? cert(serviceAccount)
+          : applicationDefault(),
         projectId,
       },
   "card-labels-migration"
@@ -51,7 +60,9 @@ const scanBoard = async (boardSnapshot) => {
     boardRef.collection("cards").limit(501).get(),
   ])
   if (cardsSnapshot.size > 500) {
-    throw new Error(`Board ${boardSnapshot.id} exceeds the 500-card product cap.`)
+    throw new Error(
+      `Board ${boardSnapshot.id} exceeds the 500-card product cap.`
+    )
   }
   const plan = buildCardLabelsMigrationPlan({
     existingLabels: labelsSnapshot.docs.map((label) => ({
@@ -71,22 +82,24 @@ const scanBoard = async (boardSnapshot) => {
   if (applyChanges) {
     const timestamp = FieldValue.serverTimestamp()
     const writes = [
-      ...plan.createdLabels.map((label) => (batch) =>
-        batch.set(boardRef.collection("labels").doc(label.id), {
-          name: label.name,
-          normalizedName: label.normalizedName,
-          color: label.color,
-          order: Date.now(),
-          createdAt: timestamp,
-          updatedAt: timestamp,
-        })
+      ...plan.createdLabels.map(
+        (label) => (batch) =>
+          batch.set(boardRef.collection("labels").doc(label.id), {
+            name: label.name,
+            normalizedName: label.normalizedName,
+            color: label.color,
+            order: Date.now(),
+            createdAt: timestamp,
+            updatedAt: timestamp,
+          })
       ),
-      ...plan.cardUpdates.map((card) => (batch) =>
-        batch.update(boardRef.collection("cards").doc(card.id), {
-          labelIds: card.labelIds,
-          labels: FieldValue.delete(),
-          updatedAt: timestamp,
-        })
+      ...plan.cardUpdates.map(
+        (card) => (batch) =>
+          batch.update(boardRef.collection("cards").doc(card.id), {
+            labelIds: card.labelIds,
+            labels: FieldValue.delete(),
+            updatedAt: timestamp,
+          })
       ),
       ...(catalogIndexChanged
         ? [

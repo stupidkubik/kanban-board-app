@@ -32,11 +32,7 @@ import {
 import { CardsColumnBody } from "@/features/cards/ui/cards-column-body"
 import styles from "@/features/board/ui/board-page.module.css"
 import cardStyles from "@/features/cards/ui/cards.module.css"
-import type {
-  BoardLabel,
-  Card as BoardCard,
-  Column,
-} from "@/lib/types/boards"
+import type { BoardLabel, Card as BoardCard, Column } from "@/lib/types/boards"
 import type { CardAssignee } from "@/lib/types/board-ui"
 
 const isOverdueDate = (value?: number) => {
@@ -61,7 +57,9 @@ const ColumnDropZone = ({ id, testId, children }: ColumnDropZoneProps) => {
     <div
       ref={setNodeRef}
       className={
-        isOver ? `${styles.columnDropZone} ${styles.columnDropZoneOver}` : styles.columnDropZone
+        isOver
+          ? `${styles.columnDropZone} ${styles.columnDropZoneOver}`
+          : styles.columnDropZone
       }
       data-testid={testId}
       data-drop-active={isOver ? "true" : "false"}
@@ -107,7 +105,10 @@ type ColumnsGridProps = {
   onChangeCardDue: (columnId: string, value: string) => void
   onToggleCardAssignee: (columnId: string, assigneeId: string) => void
   onToggleCardLabel: (columnId: string, labelId: string) => void
-  onCreateCard: (event: React.FormEvent<HTMLFormElement>, columnId: string) => void
+  onCreateCard: (
+    event: React.FormEvent<HTMLFormElement>,
+    columnId: string
+  ) => void
   onCancelCreateCard: (columnId: string) => void
   onStartEditingCard: (card: BoardCard) => void
   onStartDeletingCard: (card: BoardCard) => void
@@ -206,7 +207,9 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
                       <Input
                         className={styles.columnTitleInput}
                         value={editingTitle}
-                        onChange={(event) => onEditingTitleChange(event.target.value)}
+                        onChange={(event) =>
+                          onEditingTitleChange(event.target.value)
+                        }
                         onBlur={onCommitEditing}
                         onKeyDown={(event) => {
                           if (event.key === "Enter") {
@@ -235,7 +238,9 @@ export const ColumnsGrid = React.memo(function ColumnsGrid({
                         </CardTitle>
                       </Button>
                     ) : (
-                      <CardTitle className={styles.columnTitle}>{column.title}</CardTitle>
+                      <CardTitle className={styles.columnTitle}>
+                        {column.title}
+                      </CardTitle>
                     )}
                     <div className={styles.columnActions}>
                       {isOwner ? (
