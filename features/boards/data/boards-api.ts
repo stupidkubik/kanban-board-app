@@ -28,6 +28,9 @@ const mutationOk: MutationResult = { ok: true }
 export const boardsApi = firestoreBaseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Firestore listeners drive the cache; queryFn is a stub and onCacheEntryAdded updates it.
+    // Mutations must not invalidate these tags: a refetch re-runs the stub and
+    // replaces listener data until the next snapshot. The listener already
+    // reflects every write.
     getBoards: builder.query<Board[], string | null>({
       queryFn: async () => ({ data: [] }),
       keepUnusedDataFor: 60,
@@ -179,9 +182,6 @@ export const boardsApi = firestoreBaseApi.injectEndpoints({
           }
         }
       },
-      invalidatesTags: (_result, _error, arg) => [
-        { type: "Board", id: arg.boardId },
-      ],
     }),
     updateBoardTitle: builder.mutation<MutationResult, UpdateBoardTitleInput>({
       async queryFn(args) {
@@ -196,9 +196,6 @@ export const boardsApi = firestoreBaseApi.injectEndpoints({
           }
         }
       },
-      invalidatesTags: (_result, _error, arg) => [
-        { type: "Board", id: arg.boardId },
-      ],
     }),
     deleteBoard: builder.mutation<MutationResult, DeleteBoardInput>({
       async queryFn(args) {
@@ -211,10 +208,6 @@ export const boardsApi = firestoreBaseApi.injectEndpoints({
           }
         }
       },
-      invalidatesTags: (_result, _error, arg) => [
-        { type: "Board", id: arg.boardId },
-        { type: "Board", id: "LIST" },
-      ],
     }),
   }),
 })

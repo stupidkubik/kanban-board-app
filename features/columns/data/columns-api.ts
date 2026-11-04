@@ -16,6 +16,7 @@ const mutationOk: MutationResult = { ok: true }
 
 export const columnsApi = invitesApi.injectEndpoints({
   endpoints: (builder) => ({
+    // Listener-fed like getBoards: mutations below must not invalidate its tags.
     getColumns: builder.query<Column[], string | null>({
       queryFn: async () => ({ data: [] }),
       keepUnusedDataFor: 0,
@@ -75,9 +76,6 @@ export const columnsApi = invitesApi.injectEndpoints({
           }
         }
       },
-      invalidatesTags: (_result, _error, arg) => [
-        { type: "Column", id: `LIST-${arg.boardId}` },
-      ],
     }),
     updateColumn: builder.mutation<MutationResult, UpdateColumnInput>({
       async queryFn(args) {
@@ -90,9 +88,6 @@ export const columnsApi = invitesApi.injectEndpoints({
           }
         }
       },
-      invalidatesTags: (_result, _error, arg) => [
-        { type: "Column", id: arg.columnId },
-      ],
     }),
     deleteColumn: builder.mutation<MutationResult, DeleteColumnInput>({
       async queryFn(args) {
@@ -105,10 +100,6 @@ export const columnsApi = invitesApi.injectEndpoints({
           }
         }
       },
-      invalidatesTags: (_result, _error, arg) => [
-        { type: "Column", id: arg.columnId },
-        { type: "Column", id: `LIST-${arg.boardId}` },
-      ],
     }),
   }),
 })
