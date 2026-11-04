@@ -1,6 +1,6 @@
-import { cleanup, render, screen } from "@testing-library/react"
+import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { ParticipantsSectionView } from "@/features/participants/ui/participants-section-view"
 import { getCopy, roleLabels } from "@/lib/i18n"
@@ -58,7 +58,6 @@ const renderView = (
   return { ...view, onUpdateParticipantRole }
 }
 
-afterEach(cleanup)
 
 describe("ParticipantsSectionView role controls", () => {
   it("hides invite and member removal controls from non-owners", () => {

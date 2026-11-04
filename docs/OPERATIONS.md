@@ -46,7 +46,7 @@ job — `npm audit --omit=dev --audit-level=high`. Остальные шаги �
 Перед каждым production release:
 
 1. `npm ci`
-2. `npm run check` (ESLint без warnings, `tsc --noEmit`, Vitest)
+2. `npm run check` (ESLint без warnings, `tsc` для приложения, тестов и Cypress, Vitest `unit` с порогами coverage)
 3. `npm run test:rules`
 4. `npm run build`
 5. `npm run cypress:run`
@@ -68,15 +68,16 @@ job — `npm audit --omit=dev --audit-level=high`. Остальные шаги �
 
 Последний полный gate:
 
-| Проверка | Результат |
-| --- | --- |
-| Unit/component | 128 passed; 12 conditionally skipped |
-| Firestore Rules | 12 passed |
-| Server traces | 16, credential findings отсутствуют |
-| Cypress | 3/3 passed |
-| Production audit | 3 high, 8 moderate, 0 critical |
-| Migration dry-runs | 7 boards, изменений не требуется |
-| Production smoke | passed, cleanup verified |
+| Проверка | Результат | Дата |
+| --- | --- | --- |
+| Unit/component | 128 passed (project `unit`); coverage 46% statements | 2026-11-04 |
+| Firestore Rules | 12 passed (project `rules`) | 2026-11-04 |
+| Server traces | 16, credential findings отсутствуют | 2026-11-04 |
+| Cypress | 3/3 passed | 2026-11-04 |
+| Production audit | 0 (`npm audit --omit=dev`) | 2026-11-04 |
+| Production HTTP | `/` 307, `/sign-in` 200, `POST /api/boards` 401 | 2026-11-04 |
+| Migration dry-runs | 7 boards, изменений не требуется | 2026-07-29 |
+| Production smoke | passed, cleanup verified | 2026-07-29 |
 
 ## Dependency policy
 

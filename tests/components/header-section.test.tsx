@@ -1,12 +1,11 @@
-import { afterEach, describe, expect, it } from "vitest"
-import { cleanup, render, screen } from "@testing-library/react"
+import { describe, expect, it } from "vitest"
+import { render, screen } from "@testing-library/react"
 
 import { BoardHeader } from "@/features/board/ui/board-header"
 import { getCopy } from "@/lib/i18n"
 
 const uiCopy = getCopy("en")
 
-afterEach(cleanup)
 
 describe("BoardHeader", () => {
   it("renders header title", () => {

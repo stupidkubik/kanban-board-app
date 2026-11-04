@@ -1,6 +1,6 @@
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react"
+import { act, render, screen, waitFor } from "@testing-library/react"
 import { Provider } from "react-redux"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const mocks = vi.hoisted(() => ({
   authListener: null as null | ((user: unknown) => void),
@@ -43,7 +43,6 @@ describe("AuthProvider", () => {
     mocks.refreshServerSession.mockResolvedValue(undefined)
   })
 
-  afterEach(cleanup)
 
   it("tracks token refresh events and renews the server session", async () => {
     const view = render(
