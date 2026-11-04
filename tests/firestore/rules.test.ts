@@ -432,7 +432,7 @@ describeRules("firestore rules", () => {
     )
   })
 
-  it("enforces invite create, read, and decline permissions", async () => {
+  it("enforces invite create, read, and decline permissions for verified invitees", async () => {
     const boardId = `board-${Math.random().toString(36).slice(2)}`
     await seedBoard(env!, boardId)
     const inviteEmail = "new-member@example.com"
@@ -454,8 +454,20 @@ describeRules("firestore rules", () => {
     const outsiderDb = env!.authenticatedContext("outsider").firestore()
     await assertFails(getDoc(doc(outsiderDb, "boardInvites", inviteId)))
 
+    const unverifiedDb = env!
+      .authenticatedContext("impostor", {
+        email: inviteEmail,
+        email_verified: false,
+      })
+      .firestore()
+    await assertFails(getDoc(doc(unverifiedDb, "boardInvites", inviteId)))
+    await assertFails(deleteDoc(doc(unverifiedDb, "boardInvites", inviteId)))
+
     const inviteeDb = env!
-      .authenticatedContext("invitee", { email: inviteEmail })
+      .authenticatedContext("invitee", {
+        email: inviteEmail,
+        email_verified: true,
+      })
       .firestore()
     await assertSucceeds(getDoc(doc(inviteeDb, "boardInvites", inviteId)))
     await assertSucceeds(deleteDoc(doc(inviteeDb, "boardInvites", inviteId)))

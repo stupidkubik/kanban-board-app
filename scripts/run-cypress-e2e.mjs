@@ -84,7 +84,7 @@ const seedAuthUsers = async () => {
     [E2E_EMAIL, E2E_PASSWORD],
     [E2E_MEMBER_EMAIL, E2E_MEMBER_PASSWORD],
   ]) {
-    await requestJson(
+    const { localId } = await requestJson(
       `${AUTH_EMULATOR_URL}/identitytoolkit.googleapis.com/v1/accounts:signUp?key=demo-api-key`,
       {
         method: "POST",
@@ -94,6 +94,19 @@ const seedAuthUsers = async () => {
           password,
           returnSecureToken: true,
         }),
+      }
+    )
+    // Invites are released only to verified addresses (rules + accept API).
+    // The Auth emulator treats `Bearer owner` as an admin credential.
+    await requestJson(
+      `${AUTH_EMULATOR_URL}/identitytoolkit.googleapis.com/v1/projects/${PROJECT_ID}/accounts:update`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer owner",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ localId, emailVerified: true }),
       }
     )
   }

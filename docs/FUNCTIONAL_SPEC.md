@@ -92,7 +92,7 @@ UI-проверки не являются границей безопаснос�
 - card create/update — owner/editor;
 - card delete — owner;
 - invite create — owner соответствующей доски;
-- invite read/delete — owner или адресат invitation;
+- invite read/delete — owner или адресат invitation с подтверждённым email (`email_verified == true` в ID token);
 - member profile read — member board;
 - member profile create/update — только профиль самого authenticated member;
 - user profile read/write — только сам пользователь;
@@ -130,7 +130,7 @@ UI-проверки не являются границей безопаснос�
 Пользователь может:
 
 1. Войти по email и паролю.
-2. Создать Firebase account по email и паролю; минимальная длина пароля в UI — 6 символов.
+2. Создать Firebase account по email и паролю; минимальная длина пароля в UI — 6 символов. После регистрации отправляется письмо подтверждения email (`sendEmailVerification`); неудачная отправка не блокирует вход.
 3. Войти Google popup; при popup-blocked/closed/unsupported применяется redirect fallback.
 4. Запросить password-reset email.
 
@@ -179,6 +179,8 @@ UI нормализует и проверяет email простой регул�
 ### 6.2 Список приглашений
 
 Приложение realtime-запросом получает `boardInvites`, где `email` равен email текущего пользователя в lowercase.
+
+Запрос выполняется только для подтверждённого email. Пока адрес не подтверждён, вместо списка показывается карточка «Подтвердите email» с кнопками «Я подтвердил» (`user.reload()` и `getIdToken(true)`, чтобы rules увидели `email_verified`) и «Отправить письмо ещё раз». Google-аккаунты приходят подтверждёнными.
 
 Для каждого invitation показываются board title и предлагаемая роль. Действия:
 
@@ -616,7 +618,7 @@ Legacy reads поддерживают `invitedBy -> invitedById`.
 3. Не меняет `members`, `memberProfiles` или `ownerId`; повтор текущей роли является idempotent no-op.
 4. Обновляет `roles[memberId]` и `updatedAt`; board listener немедленно обновляет read/write UI участника.
 
-`POST /api/invites/[inviteId]/accept` атомарно проверяет email/role приглашения, добавляет membership, создаёт профиль и удаляет invite. Повтор после успешной операции безопасен для уже добавленного участника.
+`POST /api/invites/[inviteId]/accept` сначала читает живую запись пользователя (`adminAuth.getUser`): без email или с `emailVerified: false` — `403` с `code: "email-not-verified"` (claims session cookie заморожены на момент входа, поэтому на них не опираемся). Затем атомарно проверяет совпадение email из этой записи с invite, role приглашения, добавляет membership, создаёт профиль и удаляет invite. Повтор после успешной операции безопасен для уже добавленного участника.
 
 Прямое изменение membership и ролей для remove/leave, accept invite и role update запрещено Firestore Rules.
 

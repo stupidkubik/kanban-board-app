@@ -21,6 +21,7 @@ const mocks = vi.hoisted(() => ({
   refreshServerSession: vi.fn(),
   replace: vi.fn(),
   resetPassword: vi.fn(),
+  sendVerification: vi.fn(),
   setLocale: vi.fn(),
   signInEmail: vi.fn(),
   signInPopup: vi.fn(),
@@ -34,6 +35,7 @@ vi.mock("next/navigation", () => ({
 vi.mock("firebase/auth", () => ({
   GoogleAuthProvider: class GoogleAuthProvider {},
   createUserWithEmailAndPassword: mocks.createUser,
+  sendEmailVerification: mocks.sendVerification,
   sendPasswordResetEmail: mocks.resetPassword,
   signInWithEmailAndPassword: mocks.signInEmail,
   signInWithPopup: mocks.signInPopup,
@@ -76,7 +78,8 @@ describe("SignInPage", () => {
     mocks.authState.loading = false
     mocks.locale = "en"
     vi.clearAllMocks()
-    mocks.createUser.mockResolvedValue({})
+    mocks.createUser.mockResolvedValue({ user: { uid: "new-user" } })
+    mocks.sendVerification.mockResolvedValue(undefined)
     mocks.refreshServerSession.mockResolvedValue(undefined)
     mocks.getIdToken.mockResolvedValue("firebase-id-token")
     mocks.resetPassword.mockResolvedValue(undefined)
@@ -127,6 +130,7 @@ describe("SignInPage", () => {
         "secret1"
       )
     })
+    expect(mocks.sendVerification).toHaveBeenCalledWith({ uid: "new-user" })
   })
 
   it("sends a password reset email and returns to sign-in", async () => {

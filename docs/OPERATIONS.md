@@ -79,6 +79,18 @@ job — `npm audit --omit=dev --audit-level=high`. Остальные шаги �
 | Migration dry-runs | 7 boards, изменений не требуется | 2026-07-29 |
 | Production smoke | passed, cleanup verified | 2026-07-29 |
 
+## Firestore Rules deploy
+
+Vercel не публикует `firestore.rules`: после мержа изменений в rules их нужно
+выкатить отдельно, иначе в production продолжают действовать старые правила.
+
+1. `npm run test:rules` на ветке, которая уходит в `main`;
+2. дождаться production-деплоя приложения на Vercel (клиент должен уже
+   соответствовать новым правилам);
+3. `npx firebase deploy --only firestore:rules --project kanban-mvp-1baf2`;
+4. проверить в Firebase Console → Firestore → Rules дату публикации и повторить
+   sign-in и открытие доски в production.
+
 ## Dependency policy
 
 Не запускать `npm audit fix --force`. Предложенный downgrade или semver-major
