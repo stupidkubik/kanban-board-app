@@ -404,7 +404,7 @@ describe("member server routes", () => {
 
     const response = await acceptInvite(
       jsonRequest(
-        "https://example.test/api/invites/invite-1/accept",
+        `https://example.test/api/invites/${boardId}__invitee@example.com/accept`,
         {
           boardId,
           displayName: "Invitee",
@@ -413,7 +413,11 @@ describe("member server routes", () => {
         },
         "POST"
       ),
-      { params: Promise.resolve({ inviteId: "invite-1" }) }
+      {
+        params: Promise.resolve({
+          inviteId: `${boardId}__invitee@example.com`,
+        }),
+      }
     )
 
     expect(response.status).toBe(200)

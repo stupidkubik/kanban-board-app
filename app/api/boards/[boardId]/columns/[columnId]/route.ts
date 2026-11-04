@@ -4,6 +4,7 @@ import { adminDb } from "@/lib/firebase/admin"
 import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { getSession } from "@/lib/firebase/session"
 import { getErrorMessage } from "@/lib/errors"
+import { isDocumentId } from "@/lib/server/route-input"
 
 const COLUMN_NOT_EMPTY = "COLUMN_NOT_EMPTY"
 
@@ -36,9 +37,9 @@ export async function DELETE(
   }
 
   const { boardId, columnId } = await params
-  if (!boardId || !columnId) {
+  if (!isDocumentId(boardId) || !isDocumentId(columnId)) {
     return NextResponse.json(
-      { error: "Missing boardId or columnId" },
+      { error: "Invalid boardId or columnId" },
       { status: 400 }
     )
   }
