@@ -29,9 +29,17 @@ import { AuthProvider, useAuth } from "@/components/auth-provider"
 import { store } from "@/lib/store"
 
 const AuthProbe = () => {
-  const { user, loading } = useAuth()
-  return <div>{loading ? "loading" : (user?.uid ?? "signed-out")}</div>
+  const { user, loading, emailVerified } = useAuth()
+  return (
+    <div>
+      <span>{loading ? "loading" : (user?.uid ?? "signed-out")}</span>
+      <span>{emailVerified ? "verified" : "unverified"}</span>
+    </div>
+  )
 }
+
+const tokenWith = (emailVerified: boolean) =>
+  Promise.resolve({ claims: { email_verified: emailVerified } })
 
 describe("AuthProvider", () => {
   beforeEach(() => {
@@ -55,6 +63,7 @@ describe("AuthProvider", () => {
       displayName: "User",
       photoURL: null,
       email: "user@example.com",
+      getIdTokenResult: () => tokenWith(true),
     }
     await act(async () => {
       mocks.authListener?.(user)
@@ -67,5 +76,61 @@ describe("AuthProvider", () => {
 
     view.unmount()
     expect(mocks.unsubscribe).toHaveBeenCalledOnce()
+  })
+
+  it("publishes email verification from the ID token, not the reloaded user", async () => {
+    render(
+      <Provider store={store}>
+        <AuthProvider>
+          <AuthProbe />
+        </AuthProvider>
+      </Provider>
+    )
+    const user = {
+      uid: "user-1",
+      email: "user@example.com",
+      // user.reload() already flipped the flag; the cached token has not.
+      emailVerified: true,
+      getIdTokenResult: vi.fn(() => tokenWith(false)),
+    }
+
+    await act(async () => {
+      mocks.authListener?.(user)
+    })
+    expect(screen.getByText("unverified")).toBeInTheDocument()
+
+    // getIdToken(true) fires the listener again with the refreshed token.
+    user.getIdTokenResult.mockImplementation(() => tokenWith(true))
+    await act(async () => {
+      mocks.authListener?.(user)
+    })
+    expect(screen.getByText("verified")).toBeInTheDocument()
+  })
+
+  it("ignores claims that resolve after a newer token event", async () => {
+    render(
+      <Provider store={store}>
+        <AuthProvider>
+          <AuthProbe />
+        </AuthProvider>
+      </Provider>
+    )
+    let resolveStale: (value: unknown) => void = () => {}
+    const stale = {
+      uid: "user-1",
+      getIdTokenResult: () =>
+        new Promise((resolve) => (resolveStale = resolve)),
+    }
+    const fresh = { uid: "user-1", getIdTokenResult: () => tokenWith(true) }
+
+    await act(async () => {
+      mocks.authListener?.(stale)
+      mocks.authListener?.(fresh)
+    })
+    await act(async () => {
+      resolveStale({ claims: { email_verified: false } })
+    })
+
+    expect(screen.getByText("verified")).toBeInTheDocument()
   })
 })
