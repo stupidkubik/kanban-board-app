@@ -1,7 +1,14 @@
 import type { Card } from "@/lib/types/boards"
 
+export const isVisibleCard = (card: Card) => card.archived !== true
+
 export type CardsProjection = {
+  // Visible (non-archived) cards.
   cards: Card[]
+  // Every loaded card document, archived included. The listener window is
+  // `limit(500)` by order, so the card cap must count archived documents too:
+  // otherwise a new card lands outside the window and vanishes.
+  documentCount: number
   cardsByColumn: Map<string, Card[]>
   cardColumnById: Map<string, string>
 }
@@ -9,6 +16,7 @@ export type CardsProjection = {
 const emptyCards: Card[] = []
 const emptyProjection: CardsProjection = {
   cards: emptyCards,
+  documentCount: 0,
   cardsByColumn: new Map(),
   cardColumnById: new Map(),
 }
@@ -24,7 +32,7 @@ export const projectCards = (cards: Card[] | undefined): CardsProjection => {
     return cached
   }
 
-  const cardsList = cards
+  const cardsList = cards.filter(isVisibleCard)
   const cardsByColumn = new Map<string, Card[]>()
   const cardColumnById = new Map<string, string>()
 
@@ -48,6 +56,7 @@ export const projectCards = (cards: Card[] | undefined): CardsProjection => {
 
   const projection = {
     cards: cardsList,
+    documentCount: cards.length,
     cardsByColumn,
     cardColumnById,
   }

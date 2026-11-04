@@ -1,6 +1,10 @@
 import { boardsApi } from "@/features/boards/data/boards-api"
 import type { Invite } from "@/lib/store/firestore-normalizers"
 import { subscribeToInvites } from "@/lib/store/firestore-listeners"
+import {
+  listenerKeys,
+  runRetryableListener,
+} from "@/lib/store/listener-lifecycle"
 
 export const invitesApi = boardsApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -19,7 +23,7 @@ export const invitesApi = boardsApi.injectEndpoints({
           : [{ type: "Invite" as const, id: "LIST" }],
       async onCacheEntryAdded(
         email,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved, dispatch }
       ) {
         if (!email) {
           await cacheEntryRemoved
@@ -27,23 +31,28 @@ export const invitesApi = boardsApi.injectEndpoints({
         }
 
         await cacheDataLoaded
-        const unsubscribe = subscribeToInvites(
-          email,
-          (nextInvites) => {
-            updateCachedData((draft) => {
-              draft.length = 0
-              draft.push(...nextInvites)
-            })
-          },
-          () => {
-            updateCachedData((draft) => {
-              draft.length = 0
-            })
-          }
-        )
-
-        await cacheEntryRemoved
-        unsubscribe()
+        await runRetryableListener({
+          key: listenerKeys.invites(email),
+          dispatch,
+          cacheEntryRemoved,
+          subscribe: (onListenerError) =>
+            subscribeToInvites(
+              email,
+              (nextInvites) => {
+                updateCachedData((draft) => {
+                  draft.length = 0
+                  draft.push(...nextInvites)
+                })
+              },
+              (error) => {
+                console.error("Failed to load invites", error)
+                updateCachedData((draft) => {
+                  draft.length = 0
+                })
+                onListenerError(error)
+              }
+            ),
+        })
       },
     }),
   }),

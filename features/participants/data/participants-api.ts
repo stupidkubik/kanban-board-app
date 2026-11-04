@@ -7,6 +7,10 @@ import { serializeError } from "@/lib/errors"
 import { subscribeToBoardMembers } from "@/lib/store/firestore-listeners"
 import type { MutationResult } from "@/lib/store/firestore-api-types"
 import type { BoardMemberProfile } from "@/lib/types/boards"
+import {
+  listenerKeys,
+  runRetryableListener,
+} from "@/lib/store/listener-lifecycle"
 
 const mutationOk: MutationResult = { ok: true }
 
@@ -32,7 +36,7 @@ export const participantsApi = columnsApi.injectEndpoints({
       },
       async onCacheEntryAdded(
         boardId,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved, dispatch }
       ) {
         if (!boardId) {
           await cacheEntryRemoved
@@ -40,24 +44,28 @@ export const participantsApi = columnsApi.injectEndpoints({
         }
 
         await cacheDataLoaded
-        const unsubscribe = subscribeToBoardMembers(
-          boardId,
-          (nextMembers) => {
-            updateCachedData((draft) => {
-              draft.length = 0
-              draft.push(...nextMembers)
-            })
-          },
-          (error) => {
-            console.error("Failed to load board members", error)
-            updateCachedData((draft) => {
-              draft.length = 0
-            })
-          }
-        )
-
-        await cacheEntryRemoved
-        unsubscribe()
+        await runRetryableListener({
+          key: listenerKeys.members(boardId),
+          dispatch,
+          cacheEntryRemoved,
+          subscribe: (onListenerError) =>
+            subscribeToBoardMembers(
+              boardId,
+              (nextMembers) => {
+                updateCachedData((draft) => {
+                  draft.length = 0
+                  draft.push(...nextMembers)
+                })
+              },
+              (error) => {
+                console.error("Failed to load board members", error)
+                updateCachedData((draft) => {
+                  draft.length = 0
+                })
+                onListenerError(error)
+              }
+            ),
+        })
       },
     }),
     updateBoardMemberRole: builder.mutation<

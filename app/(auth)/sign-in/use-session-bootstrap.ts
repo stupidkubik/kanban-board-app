@@ -8,6 +8,29 @@ import { getFriendlyAuthError } from "./auth-error"
 import { refreshServerSession } from "@/lib/firebase/app-check-fetch"
 import type { getCopy } from "@/lib/i18n"
 
+// The sign-in page remounts after every redirect from the protected layout.
+// If the server keeps rejecting the cookie it just issued (clock skew, an
+// http deploy without Secure, a revoked session), each mount would POST and
+// redirect again. Attempts are counted per user at module level, which
+// survives client-side redirects but not a full reload.
+const MAX_ATTEMPTS = 2
+const ATTEMPT_WINDOW_MS = 60_000
+let recentAttempts: { uid: string; times: number[] } | null = null
+
+const recordAttempt = (uid: string) => {
+  const now = Date.now()
+  const times =
+    recentAttempts?.uid === uid
+      ? recentAttempts.times.filter((time) => now - time < ATTEMPT_WINDOW_MS)
+      : []
+  recentAttempts = { uid, times: [...times, now] }
+  return recentAttempts.times.length
+}
+
+export const resetSessionBootstrapAttempts = () => {
+  recentAttempts = null
+}
+
 type UseSessionBootstrapArgs = {
   loading: boolean
   user: User | null
@@ -24,6 +47,8 @@ export const useSessionBootstrap = ({
   setError,
 }: UseSessionBootstrapArgs) => {
   const [sessionPending, setSessionPending] = React.useState(false)
+  const [sessionFailed, setSessionFailed] = React.useState(false)
+  const [retryCount, setRetryCount] = React.useState(0)
   const syncedUserIdRef = React.useRef<string | null>(null)
 
   React.useEffect(() => {
@@ -39,8 +64,15 @@ export const useSessionBootstrap = ({
     }
 
     syncedUserIdRef.current = user.uid
+    const attemptsExhausted = recordAttempt(user.uid) > MAX_ATTEMPTS
 
     const syncSession = async () => {
+      if (attemptsExhausted) {
+        setSessionFailed(true)
+        setError(errors.sessionRejected)
+        return
+      }
+      setSessionFailed(false)
       setSessionPending(true)
       try {
         await refreshServerSession({
@@ -49,7 +81,7 @@ export const useSessionBootstrap = ({
         })
         router.replace("/")
       } catch (error) {
-        syncedUserIdRef.current = null
+        setSessionFailed(true)
         setError(
           error instanceof FirebaseError
             ? getFriendlyAuthError(error, errors)
@@ -61,7 +93,15 @@ export const useSessionBootstrap = ({
     }
 
     void syncSession()
-  }, [errors, loading, router, setError, user])
+  }, [errors, loading, retryCount, router, setError, user])
 
-  return sessionPending
+  const retrySession = React.useCallback(() => {
+    resetSessionBootstrapAttempts()
+    syncedUserIdRef.current = null
+    setError(null)
+    setSessionFailed(false)
+    setRetryCount((count) => count + 1)
+  }, [setError])
+
+  return { sessionPending, sessionFailed, retrySession }
 }

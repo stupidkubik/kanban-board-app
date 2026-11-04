@@ -9,7 +9,6 @@ import {
 } from "firebase/firestore"
 
 import {
-  isVisibleCard,
   normalizeCard,
   type CardRecord,
 } from "@/features/cards/model/card-normalizers"
@@ -213,15 +212,13 @@ export function subscribeToCards(
     cardsQuery,
     (snapshot) =>
       onData(
-        snapshot.docs
-          .map((docSnapshot) =>
-            normalizeCard(
-              args.boardId,
-              docSnapshot.id,
-              docSnapshot.data() as CardRecord
-            )
+        snapshot.docs.map((docSnapshot) =>
+          normalizeCard(
+            args.boardId,
+            docSnapshot.id,
+            docSnapshot.data() as CardRecord
           )
-          .filter(isVisibleCard)
+        )
       ),
     onError
   )

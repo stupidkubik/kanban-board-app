@@ -26,6 +26,7 @@ const mocks = vi.hoisted(() => ({
   signInEmail: vi.fn(),
   signInPopup: vi.fn(),
   signInRedirect: vi.fn(),
+  signOut: vi.fn(),
 }))
 
 vi.mock("next/navigation", () => ({
@@ -39,6 +40,7 @@ vi.mock("firebase/auth", () => ({
   sendPasswordResetEmail: mocks.resetPassword,
   signInWithEmailAndPassword: mocks.signInEmail,
   signInWithPopup: mocks.signInPopup,
+  signOut: mocks.signOut,
   signInWithRedirect: mocks.signInRedirect,
 }))
 
@@ -62,6 +64,7 @@ vi.mock("@/lib/use-preferred-locale", () => ({
 }))
 
 import SignInPage from "@/app/(auth)/sign-in/page"
+import { resetSessionBootstrapAttempts } from "@/app/(auth)/sign-in/use-session-bootstrap"
 
 const submitEmailForm = () => {
   const emailInput = screen.getByLabelText("Email")
@@ -74,6 +77,7 @@ const submitEmailForm = () => {
 
 describe("SignInPage", () => {
   beforeEach(() => {
+    resetSessionBootstrapAttempts()
     mocks.authState.user = null
     mocks.authState.loading = false
     mocks.locale = "en"
@@ -208,6 +212,56 @@ describe("SignInPage", () => {
       await screen.findByText("Failed to create session.")
     ).toBeInTheDocument()
     expect(mocks.replace).not.toHaveBeenCalled()
+  })
+
+  it("stops re-creating the session when the server keeps redirecting back", async () => {
+    mocks.authState.user = { uid: "user-1", getIdToken: mocks.getIdToken }
+
+    // Each redirect from the protected layout remounts the page.
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      const view = render(<SignInPage />)
+      await waitFor(() =>
+        expect(mocks.refreshServerSession).toHaveBeenCalledTimes(attempt)
+      )
+      view.unmount()
+    }
+    render(<SignInPage />)
+
+    expect(
+      await screen.findByText(
+        "The server did not accept the session. Sign out and sign in again, or try again."
+      )
+    ).toBeInTheDocument()
+    expect(mocks.refreshServerSession).toHaveBeenCalledTimes(2)
+    expect(mocks.replace).toHaveBeenCalledTimes(2)
+  })
+
+  it("offers retry and sign-out when the session cannot be created", async () => {
+    const user = userEvent.setup()
+    mocks.authState.user = { uid: "user-1", getIdToken: mocks.getIdToken }
+    mocks.refreshServerSession.mockRejectedValueOnce(new Error("500"))
+    render(<SignInPage />)
+
+    expect(
+      await screen.findByText("Failed to create session.")
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: "Try again" }))
+    await waitFor(() =>
+      expect(mocks.refreshServerSession).toHaveBeenCalledTimes(2)
+    )
+    await waitFor(() => expect(mocks.replace).toHaveBeenCalledWith("/"))
+  })
+
+  it("signs out from the session failure screen", async () => {
+    const user = userEvent.setup()
+    mocks.authState.user = { uid: "user-1", getIdToken: mocks.getIdToken }
+    mocks.refreshServerSession.mockRejectedValue(new Error("500"))
+    render(<SignInPage />)
+
+    await user.click(await screen.findByRole("button", { name: "Sign out" }))
+
+    expect(mocks.signOut).toHaveBeenCalledOnce()
   })
 
   it("renders complete auth copy in English and Russian", () => {

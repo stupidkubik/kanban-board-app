@@ -68,7 +68,7 @@ export const useBoardCards = (args: UseBoardCardsArgs) => {
   return {
     ...query,
     isCardsLimitReached: hasReachedCardLimit(
-      query.cards.length,
+      query.documentCount,
       BOARD_CARD_LIMIT
     ),
     ...createController,

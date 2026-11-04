@@ -11,6 +11,10 @@ import {
 } from "@/lib/store/firestore-operations"
 import { subscribeToColumns } from "@/lib/store/firestore-listeners"
 import type { Column } from "@/lib/types/boards"
+import {
+  listenerKeys,
+  runRetryableListener,
+} from "@/lib/store/listener-lifecycle"
 
 const mutationOk: MutationResult = { ok: true }
 
@@ -37,7 +41,7 @@ export const columnsApi = invitesApi.injectEndpoints({
       },
       async onCacheEntryAdded(
         boardId,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved, dispatch }
       ) {
         if (!boardId) {
           await cacheEntryRemoved
@@ -45,24 +49,28 @@ export const columnsApi = invitesApi.injectEndpoints({
         }
 
         await cacheDataLoaded
-        const unsubscribe = subscribeToColumns(
-          boardId,
-          (nextColumns) => {
-            updateCachedData((draft) => {
-              draft.length = 0
-              draft.push(...nextColumns)
-            })
-          },
-          (error) => {
-            console.error("Failed to load columns", error)
-            updateCachedData((draft) => {
-              draft.length = 0
-            })
-          }
-        )
-
-        await cacheEntryRemoved
-        unsubscribe()
+        await runRetryableListener({
+          key: listenerKeys.columns(boardId),
+          dispatch,
+          cacheEntryRemoved,
+          subscribe: (onListenerError) =>
+            subscribeToColumns(
+              boardId,
+              (nextColumns) => {
+                updateCachedData((draft) => {
+                  draft.length = 0
+                  draft.push(...nextColumns)
+                })
+              },
+              (error) => {
+                console.error("Failed to load columns", error)
+                updateCachedData((draft) => {
+                  draft.length = 0
+                })
+                onListenerError(error)
+              }
+            ),
+        })
       },
     }),
     createColumn: builder.mutation<MutationResult, CreateColumnInput>({

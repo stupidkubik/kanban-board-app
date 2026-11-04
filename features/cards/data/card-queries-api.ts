@@ -1,6 +1,10 @@
 import { participantsApi } from "@/features/participants/data/participants-api"
 import { subscribeToCards } from "@/lib/store/firestore-listeners"
 import type { Card } from "@/lib/types/boards"
+import {
+  listenerKeys,
+  runRetryableListener,
+} from "@/lib/store/listener-lifecycle"
 
 export const cardQueriesApi = participantsApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -28,7 +32,7 @@ export const cardQueriesApi = participantsApi.injectEndpoints({
       },
       async onCacheEntryAdded(
         args,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved, dispatch }
       ) {
         if (!args?.boardId) {
           await cacheEntryRemoved
@@ -36,24 +40,28 @@ export const cardQueriesApi = participantsApi.injectEndpoints({
         }
 
         await cacheDataLoaded
-        const unsubscribe = subscribeToCards(
-          args,
-          (nextCards) => {
-            updateCachedData((draft) => {
-              draft.length = 0
-              draft.push(...nextCards)
-            })
-          },
-          (error) => {
-            console.error("Failed to load cards", error)
-            updateCachedData((draft) => {
-              draft.length = 0
-            })
-          }
-        )
-
-        await cacheEntryRemoved
-        unsubscribe()
+        await runRetryableListener({
+          key: listenerKeys.cards(args.boardId),
+          dispatch,
+          cacheEntryRemoved,
+          subscribe: (onListenerError) =>
+            subscribeToCards(
+              args,
+              (nextCards) => {
+                updateCachedData((draft) => {
+                  draft.length = 0
+                  draft.push(...nextCards)
+                })
+              },
+              (error) => {
+                console.error("Failed to load cards", error)
+                updateCachedData((draft) => {
+                  draft.length = 0
+                })
+                onListenerError(error)
+              }
+            ),
+        })
       },
     }),
   }),
