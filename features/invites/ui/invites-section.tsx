@@ -3,7 +3,7 @@
 import { type User } from "firebase/auth"
 
 import { declineBoardInvite } from "@/features/invites/data/invite-operations"
-import { getErrorMessage } from "@/lib/errors"
+import { getErrorCode, getErrorMessage } from "@/lib/errors"
 import { acceptBoardInvite } from "@/lib/store/firestore-operations"
 import { getCopy, roleLabels, type Locale } from "@/lib/i18n"
 import { type Invite } from "@/lib/store/firestore-normalizers"
@@ -43,7 +43,14 @@ export function KanbanInvitesSection({
         photoURL: user.photoURL,
       })
     } catch (err) {
-      onError(getErrorMessage(err, uiCopy.board.errors.acceptInviteFailed))
+      const code = getErrorCode(err)
+      onError(
+        code === "email-not-verified"
+          ? uiCopy.board.errors.acceptInviteEmailNotVerified
+          : code === "member-limit"
+            ? uiCopy.board.errors.acceptInviteMemberLimit
+            : getErrorMessage(err, uiCopy.board.errors.acceptInviteFailed)
+      )
     }
   }
 

@@ -4,7 +4,7 @@ import { NextResponse } from "next/server"
 import { adminDb } from "@/lib/firebase/admin"
 import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { getSession } from "@/lib/firebase/session"
-import { getErrorMessage } from "@/lib/errors"
+import { internalErrorResponse } from "@/lib/server/error-response"
 import {
   hasOnlyKeys,
   isDocumentId,
@@ -101,7 +101,6 @@ export async function POST(request: Request) {
     if (error instanceof Error && error.message === "BOARD_ID_CONFLICT") {
       return NextResponse.json({ error: "Board ID conflict" }, { status: 409 })
     }
-    const message = getErrorMessage(error, "Create board failed")
-    return NextResponse.json({ error: message }, { status: 500 })
+    return internalErrorResponse(error, "Create board failed")
   }
 }

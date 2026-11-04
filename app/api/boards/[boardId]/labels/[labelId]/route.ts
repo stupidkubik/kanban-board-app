@@ -10,7 +10,7 @@ import {
 import { adminDb } from "@/lib/firebase/admin"
 import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { getSession } from "@/lib/firebase/session"
-import { getErrorMessage } from "@/lib/errors"
+import { internalErrorResponse } from "@/lib/server/error-response"
 import { isDocumentId } from "@/lib/server/route-input"
 
 const authorize = async (request: Request) => {
@@ -29,10 +29,7 @@ const errorResponse = (error: unknown, fallback: string) => {
   if (error instanceof LabelRouteError) {
     return NextResponse.json({ error: error.message }, { status: error.status })
   }
-  return NextResponse.json(
-    { error: getErrorMessage(error, fallback) },
-    { status: 500 }
-  )
+  return internalErrorResponse(error, fallback)
 }
 
 export async function PATCH(

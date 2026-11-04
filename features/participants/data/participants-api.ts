@@ -3,7 +3,7 @@ import {
   updateBoardMemberRole as updateBoardMemberRoleDocument,
   type UpdateBoardMemberRoleInput,
 } from "@/features/participants/data/participant-operations"
-import { getErrorMessage } from "@/lib/errors"
+import { serializeError } from "@/lib/errors"
 import { subscribeToBoardMembers } from "@/lib/store/firestore-listeners"
 import type { MutationResult } from "@/lib/store/firestore-api-types"
 import type { BoardMemberProfile } from "@/lib/types/boards"
@@ -70,9 +70,7 @@ export const participantsApi = columnsApi.injectEndpoints({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: new Error(
-              getErrorMessage(error, "Update member role failed")
-            ),
+            error: serializeError(error, "Update member role failed"),
           }
         }
       },

@@ -4,7 +4,7 @@ import { NextResponse } from "next/server"
 import { adminDb } from "@/lib/firebase/admin"
 import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { getSession } from "@/lib/firebase/session"
-import { getErrorMessage } from "@/lib/errors"
+import { internalErrorResponse } from "@/lib/server/error-response"
 import { isDocumentId } from "@/lib/server/route-input"
 
 class MemberRouteError extends Error {
@@ -131,8 +131,7 @@ export async function DELETE(
       )
     }
 
-    const message = getErrorMessage(error, "Delete member failed")
-    return NextResponse.json({ error: message }, { status: 500 })
+    return internalErrorResponse(error, "Delete member failed")
   }
 }
 
@@ -226,7 +225,6 @@ export async function PATCH(
       )
     }
 
-    const message = getErrorMessage(error, "Update member role failed")
-    return NextResponse.json({ error: message }, { status: 500 })
+    return internalErrorResponse(error, "Update member role failed")
   }
 }

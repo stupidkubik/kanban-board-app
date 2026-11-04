@@ -11,7 +11,7 @@ import {
 import { adminDb } from "@/lib/firebase/admin"
 import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { getSession } from "@/lib/firebase/session"
-import { getErrorMessage } from "@/lib/errors"
+import { internalErrorResponse } from "@/lib/server/error-response"
 import { isDocumentId } from "@/lib/server/route-input"
 
 export async function POST(
@@ -69,9 +69,6 @@ export async function POST(
         { status: error.status }
       )
     }
-    return NextResponse.json(
-      { error: getErrorMessage(error, "Create label failed") },
-      { status: 500 }
-    )
+    return internalErrorResponse(error, "Create label failed")
   }
 }

@@ -10,6 +10,7 @@ import { clientDb } from "@/lib/firebase/client"
 import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
 import { retryFirebaseWrite } from "@/lib/firebase/retry-write"
 import type { BoardLanguage } from "@/lib/types/boards"
+import { readApiError } from "@/lib/errors"
 
 export type CreateBoardInput = {
   boardId?: string
@@ -73,19 +74,6 @@ export type DeleteBoardMemberInput = {
 
 export const COLUMN_NOT_EMPTY = "COLUMN_NOT_EMPTY"
 
-const parseDeleteBoardError = async (response: Response) => {
-  let message = "Delete board failed"
-  try {
-    const payload = (await response.json()) as { error?: string }
-    if (payload?.error) {
-      message = payload.error
-    }
-  } catch {
-    // ignore JSON parse errors
-  }
-  return message
-}
-
 export const createBoard = async ({
   boardId,
   title,
@@ -110,14 +98,7 @@ export const createBoard = async ({
   })
 
   if (!response.ok) {
-    let message = "Create board failed"
-    try {
-      const payload = (await response.json()) as { error?: string }
-      message = payload.error ?? message
-    } catch {
-      // Keep the fallback error when the server does not return JSON.
-    }
-    throw new Error(message)
+    throw await readApiError(response, "Create board failed")
   }
 
   return requestedBoardId
@@ -141,14 +122,7 @@ export const acceptBoardInvite = async ({
   )
 
   if (!response.ok) {
-    let message = "Accept invite failed"
-    try {
-      const payload = (await response.json()) as { error?: string }
-      message = payload.error ?? message
-    } catch {
-      // Keep the fallback error when the server does not return JSON.
-    }
-    throw new Error(message)
+    throw await readApiError(response, "Accept invite failed")
   }
 }
 
@@ -179,14 +153,7 @@ export const updateBoardTitle = async ({
   )
 
   if (!response.ok) {
-    let message = "Update board failed"
-    try {
-      const payload = (await response.json()) as { error?: string }
-      message = payload.error ?? message
-    } catch {
-      // Keep the fallback error when the server does not return JSON.
-    }
-    throw new Error(message)
+    throw await readApiError(response, "Update board failed")
   }
 }
 
@@ -197,7 +164,7 @@ export const deleteBoard = async ({ boardId }: DeleteBoardInput) => {
     credentials: "same-origin",
   })
   if (!response.ok) {
-    throw new Error(await parseDeleteBoardError(response))
+    throw await readApiError(response, "Delete board failed")
   }
 }
 
@@ -255,17 +222,7 @@ export const deleteColumn = async ({
   )
 
   if (!response.ok) {
-    let message = "Delete column failed"
-    try {
-      const payload = (await response.json()) as {
-        code?: string
-        error?: string
-      }
-      message = payload.code ?? payload.error ?? message
-    } catch {
-      // Keep the fallback error when the server does not return JSON.
-    }
-    throw new Error(message)
+    throw await readApiError(response, "Delete column failed")
   }
 }
 
@@ -282,13 +239,6 @@ export const deleteBoardMember = async ({
   )
 
   if (!response.ok) {
-    let message = "Delete board member failed"
-    try {
-      const payload = (await response.json()) as { error?: string }
-      message = payload.error ?? message
-    } catch {
-      // Keep the fallback error when the server does not return JSON.
-    }
-    throw new Error(message)
+    throw await readApiError(response, "Delete board member failed")
   }
 }

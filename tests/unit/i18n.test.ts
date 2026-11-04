@@ -20,7 +20,7 @@ describe("i18n copy", () => {
     expect(keysAtEveryLevel(russian).sort()).toEqual(
       keysAtEveryLevel(english).sort()
     )
-    expect(keysAtEveryLevel(russian)).toHaveLength(209)
+    expect(keysAtEveryLevel(russian)).toHaveLength(211)
   })
 
   it("falls back to Russian for an unsupported runtime locale", () => {

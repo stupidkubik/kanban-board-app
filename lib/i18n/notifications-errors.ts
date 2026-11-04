@@ -43,6 +43,9 @@ export const notificationsErrorsCopy = {
       signInToLeave: "Войдите, чтобы покинуть доску.",
       leaveBoardFailed: "Не удалось покинуть доску.",
       acceptInviteFailed: "Не удалось принять приглашение.",
+      acceptInviteEmailNotVerified:
+        "Подтвердите email, чтобы принять приглашение.",
+      acceptInviteMemberLimit: "На доске уже максимальное число участников.",
       declineInviteFailed: "Не удалось отклонить приглашение.",
       labelNameRequired: "Введите название метки.",
       createLabelFailed: "Не удалось создать метку.",
@@ -92,6 +95,10 @@ export const notificationsErrorsCopy = {
       signInToLeave: "Sign in to leave the board.",
       leaveBoardFailed: "Leave board error.",
       acceptInviteFailed: "Accept invite error.",
+      acceptInviteEmailNotVerified:
+        "Verify your email to accept the invitation.",
+      acceptInviteMemberLimit:
+        "This board already has the maximum number of members.",
       declineInviteFailed: "Decline invite error.",
       labelNameRequired: "Enter a label name.",
       createLabelFailed: "Create label error.",

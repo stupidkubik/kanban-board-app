@@ -20,7 +20,7 @@ import {
 } from "@/features/cards/model/optimistic-helpers"
 import { normalizeAssigneeIds } from "@/features/cards/model/card-assignees"
 import { normalizeLabelIds } from "@/features/labels/model/label-normalizers"
-import { getErrorMessage } from "@/lib/errors"
+import { serializeError } from "@/lib/errors"
 import type { RootState } from "@/lib/store"
 import type { MutationResult } from "@/lib/store/firestore-api-types"
 import type { Card } from "@/lib/types/boards"
@@ -63,7 +63,7 @@ export const cardsApi = cardQueriesApi.injectEndpoints({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: new Error(getErrorMessage(error, "Create card failed")),
+            error: serializeError(error, "Create card failed"),
           }
         }
       },
@@ -127,7 +127,7 @@ export const cardsApi = cardQueriesApi.injectEndpoints({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: new Error(getErrorMessage(error, "Update card failed")),
+            error: serializeError(error, "Update card failed"),
           }
         }
       },
@@ -221,7 +221,7 @@ export const cardsApi = cardQueriesApi.injectEndpoints({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: new Error(getErrorMessage(error, "Delete card failed")),
+            error: serializeError(error, "Delete card failed"),
           }
         }
       },

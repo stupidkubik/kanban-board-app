@@ -1,5 +1,6 @@
 import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
 import type { BoardLabelColor } from "@/lib/types/boards"
+import { readApiError } from "@/lib/errors"
 
 export type CreateBoardLabelInput = {
   boardId: string
@@ -28,14 +29,7 @@ const requestLabel = async (
     body: body ? JSON.stringify(body) : undefined,
   })
   if (!response.ok) {
-    let message = "Label operation failed"
-    try {
-      const payload = (await response.json()) as { error?: string }
-      message = payload.error ?? message
-    } catch {
-      // Keep fallback for a non-JSON server response.
-    }
-    throw new Error(message)
+    throw await readApiError(response, "Label operation failed")
   }
 }
 
