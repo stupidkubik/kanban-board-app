@@ -26,7 +26,10 @@ type UseBoardCardsArgs = {
 export const useBoardCards = (args: UseBoardCardsArgs) => {
   const { boardId, canEdit, uiCopy, setError } = args
   const query = useBoardCardQuery(boardId)
-  const createController = useCardCreateController(args)
+  const createController = useCardCreateController({
+    ...args,
+    cardsByColumn: query.cardsByColumn,
+  })
   const editController = useCardEditController(args)
   const deleteController = useCardDeleteController(args)
   const { updateCard } = editController

@@ -1,7 +1,9 @@
-import { describe, expect, it, vi } from "vitest"
+import { describe, expect, it } from "vitest"
 
 import {
+  ORDER_GAP,
   formatDateInput,
+  getAppendOrder,
   getNextOrderValue,
   getRebalancedOrder,
   parseDateInput,
@@ -21,18 +23,37 @@ describe("board-order", () => {
     expect(getNextOrderValue(undefined, 1000)).toBe(0)
   })
 
-  it("falls back to Date.now when no neighbors exist", () => {
-    vi.useFakeTimers()
-    vi.setSystemTime(new Date("2024-04-05T12:00:00Z"))
-    expect(getNextOrderValue()).toBe(Date.now())
-    vi.useRealTimers()
+  it("starts an empty column at one gap", () => {
+    expect(getNextOrderValue()).toBe(ORDER_GAP)
+  })
+
+  it("appends after the largest order in the column", () => {
+    expect(getAppendOrder()).toBe(ORDER_GAP)
+    expect(getAppendOrder([{ order: 3000 }, { order: 1000 }])).toBe(4000)
+    // Columns that still hold cards created with Date.now() orders.
+    expect(getAppendOrder([{ order: 1_762_000_000_000 }])).toBe(
+      1_762_000_001_000
+    )
   })
 
   it("detects collapsed numeric gaps and creates stable replacement orders", () => {
     expect(shouldRebalanceOrder(1000, 1000 + Number.EPSILON)).toBe(true)
     expect(shouldRebalanceOrder(1000, 2000)).toBe(false)
+    expect(shouldRebalanceOrder(1, 1.0005)).toBe(true)
     expect(getRebalancedOrder(0)).toBe(1000)
     expect(getRebalancedOrder(2)).toBe(3000)
+  })
+
+  it("does not rebalance neighbours with Date.now()-scale orders", () => {
+    // Cards created ten seconds and one second apart (review finding C3).
+    const created = 1_762_000_000_000
+    expect(shouldRebalanceOrder(created, created + 10_000)).toBe(false)
+    expect(shouldRebalanceOrder(created, created + 1)).toBe(false)
+    // Only when midpoints stop being distinct doubles.
+    expect(shouldRebalanceOrder(created, created + 0.001)).toBe(true)
+    const next = getNextOrderValue(created, created + 1)
+    expect(next).toBeGreaterThan(created)
+    expect(next).toBeLessThan(created + 1)
   })
 
   it("formats and parses date inputs", () => {

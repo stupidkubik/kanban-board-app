@@ -4,7 +4,7 @@ import * as React from "react"
 import type { User } from "firebase/auth"
 import { collection, doc } from "firebase/firestore"
 
-import { parseDateInput } from "@/lib/board-order"
+import { getAppendOrder, parseDateInput } from "@/lib/board-order"
 import { getErrorMessage } from "@/lib/errors"
 import { clientDb } from "@/lib/firebase/client"
 import { useCreateCardMutation } from "@/features/cards/data/cards-api"
@@ -19,11 +19,13 @@ import {
 } from "@/lib/store/board-ui-slice"
 import { normalizeAssigneeIds } from "@/features/cards/model/card-assignees"
 import { normalizeLabelIds } from "@/features/labels/model/label-normalizers"
+import type { Card } from "@/lib/types/boards"
 import type { BoardCopy } from "@/lib/types/board-ui"
 import { isNonEmpty } from "@/lib/validation"
 
 type UseCardCreateControllerArgs = {
   boardId: string | null
+  cardsByColumn: ReadonlyMap<string, readonly Card[]>
   user: User | null
   uiCopy: BoardCopy
   setError: (message: string | null) => void
@@ -33,6 +35,7 @@ type UseCardCreateControllerArgs = {
 
 export const useCardCreateController = ({
   boardId,
+  cardsByColumn,
   user,
   uiCopy,
   setError,
@@ -105,7 +108,7 @@ export const useCardCreateController = ({
           description: description.length ? description : undefined,
           dueAt: dueAt ?? undefined,
           createdById: user.uid,
-          order: Date.now(),
+          order: getAppendOrder(cardsByColumn.get(columnId)),
           assigneeIds: normalizeAssigneeIds(
             draft.assigneeIds,
             availableAssigneeIds
@@ -121,6 +124,7 @@ export const useCardCreateController = ({
       availableAssigneeIds,
       availableLabelIds,
       boardId,
+      cardsByColumn,
       createCard,
       dispatch,
       setError,
