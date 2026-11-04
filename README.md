@@ -126,11 +126,14 @@ The current automated baseline contains:
   labels, assignees, role changes, realtime updates, and cleanup.
 - A production build check for secret-free Next.js server traces.
 
-Run the release-oriented checks:
+GitHub Actions (`.github/workflows/quality.yml`) runs `npm run check` (ESLint with
+zero warnings, TypeScript, Vitest) and `npm run build` on every pull request and
+push to `main`, plus a separate production-dependency audit.
+
+Run the release-oriented checks locally:
 
 ```bash
-npm run lint
-npm run test:unit
+npm run check
 npm run test:rules
 npm run build
 npm run cypress:run
@@ -171,7 +174,11 @@ Never store a service-account file or `.env.local` in Git.
 | --- | --- |
 | `npm run dev` | Start the development server |
 | `npm run build` | Build with Webpack and inspect server traces |
+| `npm run check` | Lint (zero warnings), typecheck, and run all Vitest tests once |
 | `npm run lint` | Run ESLint |
+| `npm run typecheck` | Run `tsc --noEmit` |
+| `npm run test` | Run all Vitest tests once (rules tests skip without the emulator) |
+| `npm run test:watch` | Run Vitest in watch mode |
 | `npm run test:unit` | Run unit and component tests once |
 | `npm run test:rules` | Test Firestore Rules in the emulator |
 | `npm run cypress:run` | Run isolated Auth/Firestore E2E |

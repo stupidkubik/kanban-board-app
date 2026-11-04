@@ -11,15 +11,18 @@
     "check:server-trace": "node scripts/check-server-trace.mjs",
     "start": "next start",
     "lint": "eslint",
+    "typecheck": "tsc --noEmit",
     "format": "eslint . --fix",
     "smoke": "node scripts/smoke-kanban.mjs",
     "migrate:stale-member-profiles": "node scripts/migrate-stale-member-profiles.mjs",
     "migrate:card-labels": "node scripts/migrate-card-labels.mjs",
-    "test": "vitest",
-    "test:unit": "vitest run",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run tests/unit tests/components",
     "test:rules": "firebase emulators:exec --only firestore \"vitest run tests/firestore\"",
     "cypress:open": "firebase emulators:exec --project demo-kanban-e2e --only auth,firestore \"node scripts/run-cypress-e2e.mjs --open\"",
-    "cypress:run": "firebase emulators:exec --project demo-kanban-e2e --only auth,firestore \"node scripts/run-cypress-e2e.mjs\""
+    "cypress:run": "firebase emulators:exec --project demo-kanban-e2e --only auth,firestore \"node scripts/run-cypress-e2e.mjs\"",
+    "check": "npm run lint -- --max-warnings 0 && npm run typecheck && npm run test"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

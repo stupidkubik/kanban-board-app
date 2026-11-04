@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest"
 
 import { LabelsSection } from "@/features/labels/ui/labels-section"
 import { getCopy } from "@/lib/i18n"
@@ -45,10 +45,10 @@ const labels: BoardLabel[] = [
 
 const renderSection = ({
   canEdit = true,
-  setError = vi.fn(),
+  setError = vi.fn<(message: string | null) => void>(),
 }: {
   canEdit?: boolean
-  setError?: ReturnType<typeof vi.fn>
+  setError?: Mock<(message: string | null) => void>
 } = {}) => {
   const view = render(
     <LabelsSection

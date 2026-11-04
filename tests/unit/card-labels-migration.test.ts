@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
 
-// @ts-expect-error The migration helpers are an executable JavaScript module.
 import {
   buildCardLabelsMigrationPlan,
   catalogMapsEqual,

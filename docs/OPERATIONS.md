@@ -39,23 +39,26 @@ server API и Firestore smoke.
 
 ## Release gate
 
+GitHub Actions (`.github/workflows/quality.yml`) на каждый PR и push в `main`
+выполняет шаги 1, 2 и 4 (`npm ci`, `npm run check`, `npm run build`) и отдельной
+job — `npm audit --omit=dev --audit-level=high`. Остальные шаги — вручную.
+
 Перед каждым production release:
 
 1. `npm ci`
-2. `npm run lint`
-3. `npm run test:unit`
-4. `npm run test:rules`
-5. `npm run build`
-6. `npm run cypress:run`
-7. `npm run migrate:stale-member-profiles`
-8. `npm run migrate:card-labels`
-9. `npm audit --omit=dev`
-10. Vercel preview deployment
-11. preview `/`, `/sign-in`, protected API и runtime logs
-12. promotion проверенного preview
-13. production HTTP verification и runtime logs
-14. `SMOKE_ALLOW_WRITES=true npm run smoke`
-15. проверка cleanup
+2. `npm run check` (ESLint без warnings, `tsc --noEmit`, Vitest)
+3. `npm run test:rules`
+4. `npm run build`
+5. `npm run cypress:run`
+6. `npm run migrate:stale-member-profiles`
+7. `npm run migrate:card-labels`
+8. `npm audit --omit=dev`
+9. Vercel preview deployment
+10. preview `/`, `/sign-in`, protected API и runtime logs
+11. promotion проверенного preview
+12. production HTTP verification и runtime logs
+13. `SMOKE_ALLOW_WRITES=true npm run smoke`
+14. проверка cleanup
 
 Ожидаемые unauthenticated ответы:
 

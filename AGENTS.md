@@ -107,9 +107,13 @@ Build / start:
 - npm run build
 - npm run start
 
-Lint / auto-fix:
+Quality gate (also runs in GitHub Actions, `.github/workflows/quality.yml`):
+- npm run check      (lint with zero warnings + typecheck + all Vitest tests)
+
+Lint / typecheck / auto-fix:
 - npm run lint
-- npm run format   (auto-fix lint issues)
+- npm run typecheck  (tsc --noEmit; `next build` type-checks `tests/**` too)
+- npm run format     (eslint --fix; there is no formatter yet)
 
 Seed / smoke:
 - npm run smoke    (guarded cloud smoke; see `scripts/smoke-kanban.mjs`)
@@ -117,7 +121,9 @@ Seed / smoke:
 - npm run migrate:card-labels
 
 Tests:
-- npm run test         (Vitest)
+- npm run test         (Vitest, single run)
+- npm run test:watch   (Vitest watch mode)
+- npm run test:unit    (unit + component tests only)
 - npm run test:rules   (Firestore rules tests via emulator; uses `firebase emulators:exec`)
 - npm run cypress:open
 - npm run cypress:run

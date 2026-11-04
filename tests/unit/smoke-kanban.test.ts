@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
 
-// @ts-expect-error The smoke helpers are an executable JavaScript module.
 import {
   SMOKE_SUBCOLLECTIONS,
   createSmokeIdentity,
