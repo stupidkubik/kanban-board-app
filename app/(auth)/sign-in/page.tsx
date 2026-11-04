@@ -15,6 +15,7 @@ import { signOut } from "firebase/auth"
 
 import { useAuth } from "@/components/auth-provider"
 import { Button } from "@/components/ui/button"
+import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
 import { clientAuth } from "@/lib/firebase/client"
 import { Label } from "@/components/ui/label"
 import {
@@ -79,10 +80,19 @@ export default function SignInPage() {
           <Button
             type="button"
             variant="outline"
-            onClick={() => {
+            onClick={async () => {
               resetSessionBootstrapAttempts()
               setError(null)
-              void signOut(clientAuth)
+              // A valid HttpOnly cookie may still exist; clear it on the
+              // server first, as the home page sign-out does.
+              try {
+                await fetchWithAppCheck("/api/auth/session", {
+                  method: "DELETE",
+                })
+                await signOut(clientAuth)
+              } catch {
+                setError(uiCopy.auth.errors.generic)
+              }
             }}
           >
             {uiCopy.auth.sessionSignOut}

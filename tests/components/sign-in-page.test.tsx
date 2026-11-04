@@ -27,6 +27,7 @@ const mocks = vi.hoisted(() => ({
   signInPopup: vi.fn(),
   signInRedirect: vi.fn(),
   signOut: vi.fn(),
+  fetchWithAppCheck: vi.fn(),
 }))
 
 vi.mock("next/navigation", () => ({
@@ -53,6 +54,7 @@ vi.mock("@/lib/firebase/client", () => ({
 }))
 
 vi.mock("@/lib/firebase/app-check-fetch", () => ({
+  fetchWithAppCheck: mocks.fetchWithAppCheck,
   refreshServerSession: mocks.refreshServerSession,
 }))
 
@@ -259,9 +261,16 @@ describe("SignInPage", () => {
     mocks.refreshServerSession.mockRejectedValue(new Error("500"))
     render(<SignInPage />)
 
+    mocks.fetchWithAppCheck.mockResolvedValue(new Response(null))
     await user.click(await screen.findByRole("button", { name: "Sign out" }))
 
-    expect(mocks.signOut).toHaveBeenCalledOnce()
+    await waitFor(() => expect(mocks.signOut).toHaveBeenCalledOnce())
+    expect(mocks.fetchWithAppCheck).toHaveBeenCalledWith("/api/auth/session", {
+      method: "DELETE",
+    })
+    expect(mocks.fetchWithAppCheck.mock.invocationCallOrder[0]).toBeLessThan(
+      mocks.signOut.mock.invocationCallOrder[0]
+    )
   })
 
   it("renders complete auth copy in English and Russian", () => {
