@@ -59,7 +59,7 @@
     "firebase-tools": "^15.34.2",
     "jsdom": "^27.4.0",
     "prettier": "3.9.10",
-    "typescript": "^5",
+    "typescript": "^6",
     "vitest": "^4.1.12"
   },
   "overrides": {
