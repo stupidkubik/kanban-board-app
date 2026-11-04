@@ -24,7 +24,7 @@ describe("projectCards", () => {
 
     const projection = projectCards(cards)
 
-    expect(projection.cards).toBe(cards)
+    expect(projection.cards).toEqual(cards)
     expect(projection.cards.map(({ id }) => id)).toEqual([
       "later",
       "other",
@@ -43,5 +43,22 @@ describe("projectCards", () => {
     expect(projection.cards).toEqual([])
     expect(projection.cardsByColumn.size).toBe(0)
     expect(projection.cardColumnById.size).toBe(0)
+  })
+
+  it("hides archived cards but counts them toward the card cap", () => {
+    const cards = [
+      card("visible", "column-1", 10),
+      { ...card("archived", "column-1", 20), archived: true },
+    ]
+
+    const projection = projectCards(cards)
+
+    expect(projection.cards.map(({ id }) => id)).toEqual(["visible"])
+    expect(
+      projection.cardsByColumn.get("column-1")?.map(({ id }) => id)
+    ).toEqual(["visible"])
+    expect(projection.cardColumnById.has("archived")).toBe(false)
+    // The listener window is limit(500) over all documents (review C8).
+    expect(projection.documentCount).toBe(2)
   })
 })

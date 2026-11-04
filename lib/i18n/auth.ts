@@ -21,6 +21,8 @@ export const authCopy = {
     resetBack: "Вернуться к входу",
     forgotPassword: "Забыли пароль?",
     loading: "Загрузка...",
+    sessionRetry: "Повторить",
+    sessionSignOut: "Выйти",
     errors: {
       invalidEmail: "Введите корректный email.",
       missingPassword: "Введите пароль.",
@@ -34,6 +36,8 @@ export const authCopy = {
       tooManyRequests: "Слишком много попыток. Повторите позже.",
       invalidCredential: "Неверные email или пароль.",
       sessionError: "Не удалось создать сессию.",
+      sessionRejected:
+        "Сервер не принял сессию. Выйдите и войдите снова или повторите попытку.",
       generic: "Ошибка авторизации.",
     },
   },
@@ -57,6 +61,8 @@ export const authCopy = {
     resetBack: "Back to sign in",
     forgotPassword: "Forgot password?",
     loading: "Loading...",
+    sessionRetry: "Try again",
+    sessionSignOut: "Sign out",
     errors: {
       invalidEmail: "Enter a valid email.",
       missingPassword: "Enter a password.",
@@ -70,6 +76,8 @@ export const authCopy = {
       tooManyRequests: "Too many attempts. Try again later.",
       invalidCredential: "Invalid email or password.",
       sessionError: "Failed to create session.",
+      sessionRejected:
+        "The server did not accept the session. Sign out and sign in again, or try again.",
       generic: "Authentication error.",
     },
   },

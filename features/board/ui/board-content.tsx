@@ -14,6 +14,8 @@ import type { Board, BoardLanguage } from "@/lib/types/boards"
 import type { BoardCopy } from "@/lib/types/board-ui"
 import { type Locale } from "@/lib/i18n"
 import { BoardStatus } from "@/features/board/ui/board-status"
+import { ListenerErrorNotice } from "@/components/listener-error-notice"
+import { listenerKeys } from "@/lib/store/listener-lifecycle"
 import { useBoardColumns } from "@/features/columns/model/use-board-columns"
 import { BoardHeader } from "@/features/board/ui/board-header"
 import { BoardToolbar } from "@/features/board/ui/board-toolbar"
@@ -140,6 +142,16 @@ export const BoardContent = React.memo(function BoardContent({
         />
       </div>
       <BoardStatus error={error} />
+      <ListenerErrorNotice
+        keys={[
+          listenerKeys.columns(boardId),
+          listenerKeys.cards(boardId),
+          listenerKeys.members(boardId),
+          listenerKeys.labels(boardId),
+        ]}
+        message={uiCopy.board.listenerFailed}
+        retryLabel={uiCopy.board.retry}
+      />
       <CardsSection
         boardId={boardId}
         board={board}

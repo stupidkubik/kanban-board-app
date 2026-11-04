@@ -22,6 +22,10 @@ import {
   subscribeToBoards,
 } from "@/lib/store/firestore-listeners"
 import type { Board } from "@/lib/types/boards"
+import {
+  listenerKeys,
+  runRetryableListener,
+} from "@/lib/store/listener-lifecycle"
 
 const mutationOk: MutationResult = { ok: true }
 
@@ -46,7 +50,7 @@ export const boardsApi = firestoreBaseApi.injectEndpoints({
           : [{ type: "Board" as const, id: "LIST" }],
       async onCacheEntryAdded(
         uid,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved, dispatch }
       ) {
         if (!uid) {
           await cacheEntryRemoved
@@ -54,24 +58,28 @@ export const boardsApi = firestoreBaseApi.injectEndpoints({
         }
 
         await cacheDataLoaded
-        const unsubscribe = subscribeToBoards(
-          uid,
-          (nextBoards) => {
-            updateCachedData((draft) => {
-              draft.length = 0
-              draft.push(...nextBoards)
-            })
-          },
-          (error) => {
-            console.error("Failed to load boards", error)
-            updateCachedData((draft) => {
-              draft.length = 0
-            })
-          }
-        )
-
-        await cacheEntryRemoved
-        unsubscribe()
+        await runRetryableListener({
+          key: listenerKeys.boards(uid),
+          dispatch,
+          cacheEntryRemoved,
+          subscribe: (onListenerError) =>
+            subscribeToBoards(
+              uid,
+              (nextBoards) => {
+                updateCachedData((draft) => {
+                  draft.length = 0
+                  draft.push(...nextBoards)
+                })
+              },
+              (error) => {
+                console.error("Failed to load boards", error)
+                updateCachedData((draft) => {
+                  draft.length = 0
+                })
+                onListenerError(error)
+              }
+            ),
+        })
       },
     }),
     getBoard: builder.query<BoardQueryState, BoardQueryInput>({

@@ -20,6 +20,8 @@ export type AuthCopy = {
   resetBack: string
   forgotPassword: string
   loading: string
+  sessionRetry: string
+  sessionSignOut: string
   errors: {
     invalidEmail: string
     missingPassword: string
@@ -33,6 +35,7 @@ export type AuthCopy = {
     tooManyRequests: string
     invalidCredential: string
     sessionError: string
+    sessionRejected: string
     generic: string
   }
 }
@@ -84,6 +87,7 @@ export type BoardCopy = {
   boardLoadFailedTitle: string
   boardLoadFailedDescription: string
   retry: string
+  listenerFailed: string
   columnsTitle: string
   addColumn: string
   columnNamePlaceholder: string

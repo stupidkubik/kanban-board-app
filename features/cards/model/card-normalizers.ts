@@ -93,8 +93,6 @@ export const normalizeCard = (
   return card
 }
 
-export const isVisibleCard = (card: Card) => card.archived !== true
-
 export const ensureCardId = (boardId: string, cardId?: string) => {
   return cardId ?? doc(collection(clientDb, "boards", boardId, "cards")).id
 }
@@ -105,3 +103,5 @@ export const ensureCardOrder = (order?: number) => {
   }
   return order
 }
+
+export { isVisibleCard } from "@/features/cards/model/card-projection"

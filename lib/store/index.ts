@@ -4,11 +4,13 @@ import { setupListeners } from "@reduxjs/toolkit/query"
 import { authReducer } from "@/lib/store/auth-slice"
 import { boardUiReducer } from "@/lib/store/board-ui-slice"
 import { firestoreBaseApi as firestoreApi } from "@/lib/store/firestore-base-api"
+import { listenerStatusReducer } from "@/lib/store/listener-status-slice"
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     boardUi: boardUiReducer,
+    listenerStatus: listenerStatusReducer,
     [firestoreApi.reducerPath]: firestoreApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>

@@ -11,6 +11,10 @@ import { serializeError } from "@/lib/errors"
 import { subscribeToBoardLabels } from "@/lib/store/firestore-listeners"
 import type { MutationResult } from "@/lib/store/firestore-api-types"
 import type { BoardLabel } from "@/lib/types/boards"
+import {
+  listenerKeys,
+  runRetryableListener,
+} from "@/lib/store/listener-lifecycle"
 
 const mutationOk: MutationResult = { ok: true }
 
@@ -28,30 +32,35 @@ export const labelsApi = participantsApi.injectEndpoints({
       ],
       async onCacheEntryAdded(
         boardId,
-        { updateCachedData, cacheDataLoaded, cacheEntryRemoved }
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved, dispatch }
       ) {
         if (!boardId) {
           await cacheEntryRemoved
           return
         }
         await cacheDataLoaded
-        const unsubscribe = subscribeToBoardLabels(
-          boardId,
-          (labels) => {
-            updateCachedData((draft) => {
-              draft.length = 0
-              draft.push(...labels)
-            })
-          },
-          (error) => {
-            console.error("Failed to load board labels", error)
-            updateCachedData((draft) => {
-              draft.length = 0
-            })
-          }
-        )
-        await cacheEntryRemoved
-        unsubscribe()
+        await runRetryableListener({
+          key: listenerKeys.labels(boardId),
+          dispatch,
+          cacheEntryRemoved,
+          subscribe: (onListenerError) =>
+            subscribeToBoardLabels(
+              boardId,
+              (labels) => {
+                updateCachedData((draft) => {
+                  draft.length = 0
+                  draft.push(...labels)
+                })
+              },
+              (error) => {
+                console.error("Failed to load board labels", error)
+                updateCachedData((draft) => {
+                  draft.length = 0
+                })
+                onListenerError(error)
+              }
+            ),
+        })
       },
     }),
     createBoardLabel: builder.mutation<MutationResult, CreateBoardLabelInput>({

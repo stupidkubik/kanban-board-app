@@ -13,7 +13,9 @@ import { getCopy, languageLabels, type Locale } from "@/lib/i18n"
 import { useGetBoardsQuery } from "@/features/boards/data/boards-api"
 import { useGetInvitesQuery } from "@/features/invites/data/invites-api"
 import { KanbanBoardsSection } from "@/features/boards/ui/boards-section"
+import { ListenerErrorNotice } from "@/components/listener-error-notice"
 import { EmailVerificationNotice } from "@/features/invites/ui/email-verification-notice"
+import { listenerKeys } from "@/lib/store/listener-lifecycle"
 import { KanbanInvitesSection } from "@/features/invites/ui/invites-section"
 import { useNotifications } from "@/features/notifications/ui/notifications-provider"
 import { Button } from "@/components/ui/button"
@@ -130,6 +132,14 @@ export function KanbanApp() {
 
       {user ? (
         <>
+          <ListenerErrorNotice
+            keys={[
+              listenerKeys.boards(user.uid),
+              inviteEmail ? listenerKeys.invites(inviteEmail) : null,
+            ]}
+            message={uiCopy.board.listenerFailed}
+            retryLabel={uiCopy.board.retry}
+          />
           {user.email && !emailVerified ? (
             <EmailVerificationNotice uiCopy={uiCopy} user={user} />
           ) : null}

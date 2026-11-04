@@ -7,8 +7,16 @@ import { AuthForm } from "./auth-form"
 import { useEmailAuthController } from "./use-email-auth-controller"
 import { useGoogleAuthController } from "./use-google-auth-controller"
 import { usePasswordResetController } from "./use-password-reset-controller"
-import { useSessionBootstrap } from "./use-session-bootstrap"
+import {
+  resetSessionBootstrapAttempts,
+  useSessionBootstrap,
+} from "./use-session-bootstrap"
+import { signOut } from "firebase/auth"
+
 import { useAuth } from "@/components/auth-provider"
+import { Button } from "@/components/ui/button"
+import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
+import { clientAuth } from "@/lib/firebase/client"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -46,7 +54,7 @@ export default function SignInPage() {
     setError,
     setNotice,
   })
-  const sessionPending = useSessionBootstrap({
+  const { sessionPending, sessionFailed, retrySession } = useSessionBootstrap({
     loading,
     user,
     router,
@@ -58,7 +66,40 @@ export default function SignInPage() {
     return <div className={styles.loading}>{uiCopy.auth.loading}</div>
   }
   if (user) {
-    return null
+    if (!sessionFailed) {
+      return <div className={styles.loading}>{uiCopy.auth.loading}</div>
+    }
+    // Without this the signed-in user would see an empty page and no way out.
+    return (
+      <div className={styles.loading}>
+        <p role="alert">{error ?? uiCopy.auth.errors.sessionError}</p>
+        <div className={styles.row}>
+          <Button type="button" onClick={retrySession}>
+            {uiCopy.auth.sessionRetry}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={async () => {
+              resetSessionBootstrapAttempts()
+              setError(null)
+              // A valid HttpOnly cookie may still exist; clear it on the
+              // server first, as the home page sign-out does.
+              try {
+                await fetchWithAppCheck("/api/auth/session", {
+                  method: "DELETE",
+                })
+                await signOut(clientAuth)
+              } catch {
+                setError(uiCopy.auth.errors.generic)
+              }
+            }}
+          >
+            {uiCopy.auth.sessionSignOut}
+          </Button>
+        </div>
+      </div>
+    )
   }
 
   const languageControls = (

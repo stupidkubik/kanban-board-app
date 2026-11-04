@@ -18,6 +18,8 @@ export const boardContentCopy = {
     boardLoadFailedTitle: "Не удалось загрузить доску",
     boardLoadFailedDescription: "Проверьте соединение и попробуйте ещё раз.",
     retry: "Повторить",
+    listenerFailed:
+      "Не удалось загрузить данные. Изменения других участников могут не отображаться.",
     columnsTitle: "Колонки",
     addColumn: "Добавить колонку",
     columnNamePlaceholder: "Название колонки",
@@ -92,6 +94,8 @@ export const boardContentCopy = {
     boardLoadFailedTitle: "Could not load board",
     boardLoadFailedDescription: "Check your connection and try again.",
     retry: "Retry",
+    listenerFailed:
+      "Could not load the latest data. Changes by other members may not show up.",
     columnsTitle: "Columns",
     addColumn: "Add column",
     columnNamePlaceholder: "Column title",
@@ -167,6 +171,7 @@ export const boardContentCopy = {
     | "boardLoadFailedTitle"
     | "boardLoadFailedDescription"
     | "retry"
+    | "listenerFailed"
     | "columnsTitle"
     | "addColumn"
     | "columnNamePlaceholder"
