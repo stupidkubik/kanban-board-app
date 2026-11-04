@@ -57,7 +57,9 @@ export async function revokeCurrentSession() {
     return
   }
   try {
-    const claims = await adminAuth.verifySessionCookie(sessionCookie)
+    // checkRevoked: a cookie getSession() already rejects (stolen, then
+    // revoked) must not be able to keep signing the account out.
+    const claims = await adminAuth.verifySessionCookie(sessionCookie, true)
     await adminAuth.revokeRefreshTokens(claims.uid)
   } catch {
     // An expired or already revoked cookie has nothing left to revoke.

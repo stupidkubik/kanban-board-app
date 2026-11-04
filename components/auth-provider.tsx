@@ -18,8 +18,9 @@ import { useAppDispatch } from "@/lib/store/hooks"
 type AuthContextValue = {
   user: User | null
   loading: boolean
-  // Tracked separately: after `user.reload()` Firebase keeps the same User
-  // object, so a change of `user.emailVerified` alone would not re-render.
+  // `email_verified` claim of the current ID token, which is what Firestore
+  // rules see. Not `user.emailVerified`: `user.reload()` fires the token
+  // listener with the new flag while the cached token still says false.
   emailVerified: boolean
 }
 
@@ -33,12 +34,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   React.useEffect(() => {
     dispatch(authLoading())
+    let latestClaimsRequest = 0
     const unsubscribe = onIdTokenChanged(
       clientAuth,
       (currentUser) => {
         setUser(currentUser)
-        setEmailVerified(currentUser?.emailVerified ?? false)
         setLoading(false)
+
+        const claimsRequest = ++latestClaimsRequest
+        if (!currentUser) {
+          setEmailVerified(false)
+        } else {
+          currentUser.getIdTokenResult().then(
+            (token) => {
+              if (claimsRequest === latestClaimsRequest) {
+                setEmailVerified(token.claims.email_verified === true)
+              }
+            },
+            () => {
+              if (claimsRequest === latestClaimsRequest) {
+                setEmailVerified(false)
+              }
+            }
+          )
+        }
 
         if (currentUser) {
           void refreshServerSession().catch(() => {

@@ -106,6 +106,23 @@ describe("/api/auth/session", () => {
     expect(mocks.jar.has("session")).toBe(false)
   })
 
+  it("does not revoke sessions with an already revoked cookie", async () => {
+    mocks.jar.set("session", "stolen-revoked-cookie")
+    mocks.verifySessionCookie.mockImplementation(
+      async (_cookie: string, checkRevoked?: boolean) => {
+        if (checkRevoked) throw new Error("auth/session-cookie-revoked")
+        return { uid: "user-1" }
+      }
+    )
+
+    const response = await DELETE(
+      new Request("https://kanban.test/api/auth/session", { method: "DELETE" })
+    )
+
+    expect(response.status).toBe(200)
+    expect(mocks.revokeRefreshTokens).not.toHaveBeenCalled()
+  })
+
   it("still clears the cookie when it can no longer be verified", async () => {
     mocks.jar.set("session", "expired")
     mocks.verifySessionCookie.mockRejectedValue(new Error("expired"))
