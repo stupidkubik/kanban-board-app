@@ -1,0 +1,68 @@
+name: Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+# Superseded pull request runs are cancelled; every commit on main is verified.
+concurrency:
+  group: quality-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    # The build inlines the public Firebase web config; any non-empty values work.
+    # No Admin SDK credential is needed: the build never calls Firebase.
+    env:
+      NEXT_PUBLIC_FIREBASE_API_KEY: ci-placeholder-api-key
+      NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: demo-ci.firebaseapp.com
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: demo-ci
+      NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: demo-ci.appspot.com
+      NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "000000000000"
+      NEXT_PUBLIC_FIREBASE_APP_ID: 1:000000000000:web:ci
+      NEXT_TELEMETRY_DISABLED: "1"
+      # This job does not run Cypress; skip its ~500 MB binary download.
+      CYPRESS_INSTALL_BINARY: "0"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint, typecheck, and test
+        run: npm run check
+
+      # Also runs the server-trace secret check (check:server-trace).
+      - name: Build
+        run: npm run build
+
+  # Separate job so a dependency advisory never hides a broken build.
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high

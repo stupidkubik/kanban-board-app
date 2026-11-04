@@ -3,7 +3,6 @@ import os from "node:os"
 import path from "node:path"
 import { afterEach, describe, expect, it } from "vitest"
 
-// @ts-expect-error The production check is an executable JavaScript module.
 import { findSensitiveTraceEntries } from "../../scripts/check-server-trace.mjs"
 
 const temporaryDirectories: string[] = []
