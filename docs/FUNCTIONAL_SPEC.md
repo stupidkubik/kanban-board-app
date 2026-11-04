@@ -144,10 +144,10 @@ UI нормализует и проверяет email простой регул�
 2. Отправляет token в `POST /api/auth/session`.
 3. Server Admin SDK создаёт session cookie на 5 дней.
 4. Cookie имеет `httpOnly`, `sameSite=lax`, `path=/`, `secure` в production; в production называется `__Host-session` (локально — `session`; старая cookie `session` читается, пока не истечёт). Невалидный или отозванный ID token даёт `401`, а не `500`.
+5. После успеха пользователь перенаправляется на `/`.
 6. Выход (`DELETE /api/auth/session`) вызывает `revokeRefreshTokens(uid)`: сессии на всех устройствах становятся недействительными, затем cookie очищается.
 
 `proxy.ts` для всех `/api/*` отклоняет мутирующие запросы (`POST`/`PATCH`/`DELETE`) с `Sec-Fetch-Site` кроме `same-origin`/`none` или с `Origin`, чей host не совпадает с `X-Forwarded-Host`/`Host`, — `403`.
-5. После успеха пользователь перенаправляется на `/`.
 
 Создание session cookie ограничено десятью попытками в минуту на IP. Все ответы
 получают явные CSP, anti-framing, MIME, referrer и permissions headers; CSP допускает
