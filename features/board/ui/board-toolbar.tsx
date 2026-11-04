@@ -88,7 +88,12 @@ export function BoardToolbar({
         />
         <Dialog>
           <DialogTrigger asChild>
-            <Button type="button" variant="outline" size="sm" data-testid="labels-manager-trigger">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              data-testid="labels-manager-trigger"
+            >
               <Tag weight="bold" aria-hidden="true" />
               {uiCopy.board.labelsManager}
             </Button>
@@ -100,12 +105,22 @@ export function BoardToolbar({
                 {uiCopy.board.labelsDescription}
               </DialogDescription>
               <DialogClose asChild>
-                <Button type="button" variant="ghost" size="sm" data-testid="close-labels-manager">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  data-testid="close-labels-manager"
+                >
                   {uiCopy.common.cancel}
                 </Button>
               </DialogClose>
             </DialogHeader>
-            <LabelsSection boardId={boardId} canEdit={canEdit} uiCopy={uiCopy} setError={setError} />
+            <LabelsSection
+              boardId={boardId}
+              canEdit={canEdit}
+              uiCopy={uiCopy}
+              setError={setError}
+            />
           </DialogContent>
         </Dialog>
       </div>
@@ -123,9 +138,20 @@ export function BoardToolbar({
             disabled={creatingColumn}
             data-testid="new-column-title"
           />
-          <Button type="submit" size="sm" disabled={creatingColumn} data-testid="create-column-submit">
-            {creatingColumn ? <Spinner size="sm" aria-hidden="true" /> : <Plus weight="bold" aria-hidden="true" />}
-            {creatingColumn ? uiCopy.board.creatingColumn : uiCopy.board.addColumn}
+          <Button
+            type="submit"
+            size="sm"
+            disabled={creatingColumn}
+            data-testid="create-column-submit"
+          >
+            {creatingColumn ? (
+              <Spinner size="sm" aria-hidden="true" />
+            ) : (
+              <Plus weight="bold" aria-hidden="true" />
+            )}
+            {creatingColumn
+              ? uiCopy.board.creatingColumn
+              : uiCopy.board.addColumn}
           </Button>
         </form>
       ) : null}
@@ -147,7 +173,9 @@ export function BoardToolbar({
             <DropdownMenuLabel>{uiCopy.board.settings}</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuLabel>{uiCopy.board.boardSettings}</DropdownMenuLabel>
-            <DropdownMenuLabel>{uiCopy.board.boardLanguageLabel}</DropdownMenuLabel>
+            <DropdownMenuLabel>
+              {uiCopy.board.boardLanguageLabel}
+            </DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={boardLanguage}
               aria-label={uiCopy.board.boardLanguageLabel}
@@ -171,8 +199,12 @@ export function BoardToolbar({
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel>{uiCopy.board.personalSettings}</DropdownMenuLabel>
-            <DropdownMenuLabel>{uiCopy.common.interfaceLanguage}</DropdownMenuLabel>
+            <DropdownMenuLabel>
+              {uiCopy.board.personalSettings}
+            </DropdownMenuLabel>
+            <DropdownMenuLabel>
+              {uiCopy.common.interfaceLanguage}
+            </DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={uiLocale}
               aria-label={uiCopy.common.interfaceLanguage}
@@ -186,7 +218,9 @@ export function BoardToolbar({
               </DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuLabel>{uiCopy.board.appearanceSettings}</DropdownMenuLabel>
+            <DropdownMenuLabel>
+              {uiCopy.board.appearanceSettings}
+            </DropdownMenuLabel>
             <DropdownMenuRadioGroup
               value={theme}
               aria-label={uiCopy.board.appearanceSettings}

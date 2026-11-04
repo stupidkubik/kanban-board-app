@@ -2,7 +2,11 @@
 
 import * as React from "react"
 
-import { ToastStack, type ToastItem, type ToastVariant } from "@/features/notifications/ui/toast-stack"
+import {
+  ToastStack,
+  type ToastItem,
+  type ToastVariant,
+} from "@/features/notifications/ui/toast-stack"
 
 type ToastInput = Omit<ToastItem, "id"> & {
   id?: string
@@ -15,14 +19,20 @@ type NotificationsContextValue = {
   notifySuccess: (message: string) => string
 }
 
-const NotificationsContext = React.createContext<NotificationsContextValue | null>(null)
+const NotificationsContext =
+  React.createContext<NotificationsContextValue | null>(null)
 
 const DEFAULT_DURATION = 5000
 const MAX_TOASTS = 3
 
-const createToastId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`
+const createToastId = () =>
+  `${Date.now()}-${Math.random().toString(16).slice(2)}`
 
-export function NotificationsProvider({ children }: { children: React.ReactNode }) {
+export function NotificationsProvider({
+  children,
+}: {
+  children: React.ReactNode
+}) {
   const [toasts, setToasts] = React.useState<ToastItem[]>([])
   const timeoutsRef = React.useRef(new Map<string, number>())
 
@@ -56,8 +66,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
   )
 
   const notifyVariant = React.useCallback(
-    (variant: ToastVariant, message: string) =>
-      notify({ message, variant }),
+    (variant: ToastVariant, message: string) => notify({ message, variant }),
     [notify]
   )
 
@@ -81,7 +90,9 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 export function useNotifications() {
   const context = React.useContext(NotificationsContext)
   if (!context) {
-    throw new Error("useNotifications must be used within NotificationsProvider")
+    throw new Error(
+      "useNotifications must be used within NotificationsProvider"
+    )
   }
   return context
 }

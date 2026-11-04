@@ -80,7 +80,5 @@ export const participantsApi = columnsApi.injectEndpoints({
   }),
 })
 
-export const {
-  useGetBoardMembersQuery,
-  useUpdateBoardMemberRoleMutation,
-} = participantsApi
+export const { useGetBoardMembersQuery, useUpdateBoardMemberRoleMutation } =
+  participantsApi

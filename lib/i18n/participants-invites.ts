@@ -23,8 +23,8 @@ export const participantsInvitesCopy = {
     invitationsTitle: "Приглашения",
     invitationsSubtitle: "Доступ появится после принятия приглашения.",
     acceptInvite: "Принять",
-    declineInvite: "Отклонить"
-},
+    declineInvite: "Отклонить",
+  },
   en: {
     participantsTitle: "Participants",
     participantsShow: "Show",
@@ -47,6 +47,33 @@ export const participantsInvitesCopy = {
     invitationsTitle: "Invitations",
     invitationsSubtitle: "Board access is granted only after acceptance.",
     acceptInvite: "Accept",
-    declineInvite: "Decline"
-},
-} satisfies Record<Locale, Pick<BoardCopy, "participantsTitle" | "participantsShow" | "participantsHide" | "onlyYou" | "youLabel" | "inviteMember" | "inviteEmailPlaceholder" | "inviteButton" | "inviteSending" | "removeMember" | "removeMemberTitle" | "removeMemberDescription" | "removeMemberConfirm" | "leaveBoard" | "leaveBoardTitle" | "leaveBoardDescription" | "leaveBoardConfirm" | "leaveBoardSuccess" | "invitationsTitle" | "invitationsSubtitle" | "acceptInvite" | "declineInvite">>
+    declineInvite: "Decline",
+  },
+} satisfies Record<
+  Locale,
+  Pick<
+    BoardCopy,
+    | "participantsTitle"
+    | "participantsShow"
+    | "participantsHide"
+    | "onlyYou"
+    | "youLabel"
+    | "inviteMember"
+    | "inviteEmailPlaceholder"
+    | "inviteButton"
+    | "inviteSending"
+    | "removeMember"
+    | "removeMemberTitle"
+    | "removeMemberDescription"
+    | "removeMemberConfirm"
+    | "leaveBoard"
+    | "leaveBoardTitle"
+    | "leaveBoardDescription"
+    | "leaveBoardConfirm"
+    | "leaveBoardSuccess"
+    | "invitationsTitle"
+    | "invitationsSubtitle"
+    | "acceptInvite"
+    | "declineInvite"
+  >
+>

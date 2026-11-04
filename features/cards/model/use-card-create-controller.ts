@@ -53,7 +53,11 @@ export const useCardCreateController = ({
   )
 
   const changeDraftField = React.useCallback(
-    (columnId: string, field: "title" | "description" | "due", value: string) => {
+    (
+      columnId: string,
+      field: "title" | "description" | "due",
+      value: string
+    ) => {
       if (boardId) {
         dispatch(setAddCardField({ boardId, columnId, field, value }))
       }

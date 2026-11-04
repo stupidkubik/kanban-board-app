@@ -14,7 +14,7 @@ export const commonCopy = {
     cancel: "Отмена",
     loading: "Загрузка...",
     undo: "Отменить",
-},
+  },
   en: {
     appTitle: "Kanban MVP",
     appSubtitle: "Auth + Firestore baseline (closed by default)",
@@ -28,5 +28,5 @@ export const commonCopy = {
     cancel: "Cancel",
     loading: "Loading...",
     undo: "Undo",
-},
+  },
 } satisfies Record<Locale, CommonCopy>

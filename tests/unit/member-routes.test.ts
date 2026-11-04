@@ -115,8 +115,9 @@ describe("member server routes", () => {
         : { doc: vi.fn(() => mocks.profileRef) }
     )
     mocks.runTransaction.mockImplementation(
-      async (callback: (transaction: typeof mocks.transaction) => Promise<void>) =>
-        callback(mocks.transaction)
+      async (
+        callback: (transaction: typeof mocks.transaction) => Promise<void>
+      ) => callback(mocks.transaction)
     )
   })
 

@@ -2,13 +2,17 @@ type ClientErrorContext = {
   boundary: "route" | "global"
 }
 
-export const getClientErrorCorrelationId = (error: Error & { digest?: string }) =>
-  error.digest || globalThis.crypto?.randomUUID?.() || `client-${Date.now().toString(36)}`
+export const getClientErrorCorrelationId = (
+  error: Error & { digest?: string }
+) =>
+  error.digest ||
+  globalThis.crypto?.randomUUID?.() ||
+  `client-${Date.now().toString(36)}`
 
 export function reportClientError(
   error: Error & { digest?: string },
   context: ClientErrorContext,
-  correlationId = getClientErrorCorrelationId(error),
+  correlationId = getClientErrorCorrelationId(error)
 ) {
   console.error({
     event: "client_render_error",

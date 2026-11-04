@@ -14,7 +14,8 @@ export const boardsHomeCopy = {
     deleteBoard: "Удалить",
     deletingBoard: "Удаление...",
     deleteBoardTitle: "Удалить доску?",
-    deleteBoardDescription: "Доска будет удалена без возможности восстановления.",
+    deleteBoardDescription:
+      "Доска будет удалена без возможности восстановления.",
     openBoard: "Открыть",
     noBoards: "Пока нет досок.",
     ownerLabel: "Владелец",
@@ -25,8 +26,8 @@ export const boardsHomeCopy = {
     sortByTitle: "По названию",
     sortDirectionLabel: "Порядок",
     sortAscending: "По возрастанию",
-    sortDescending: "По убыванию"
-},
+    sortDescending: "По убыванию",
+  },
   en: {
     boardSectionTitle: "Your boards",
     boardSectionSubtitle: "Only explicit members can read or write board data.",
@@ -51,6 +52,35 @@ export const boardsHomeCopy = {
     sortByTitle: "Name",
     sortDirectionLabel: "Order",
     sortAscending: "Ascending",
-    sortDescending: "Descending"
-},
-} satisfies Record<Locale, Pick<BoardCopy, "boardSectionTitle" | "boardSectionSubtitle" | "boardNamePlaceholder" | "createBoard" | "creatingBoard" | "renameBoard" | "renamingBoard" | "renameBoardTitle" | "renameBoardDescription" | "deleteBoard" | "deletingBoard" | "deleteBoardTitle" | "deleteBoardDescription" | "openBoard" | "noBoards" | "ownerLabel" | "roleLabel" | "boardLanguageLabel" | "sortLabel" | "sortByCreated" | "sortByTitle" | "sortDirectionLabel" | "sortAscending" | "sortDescending">>
+    sortDescending: "Descending",
+  },
+} satisfies Record<
+  Locale,
+  Pick<
+    BoardCopy,
+    | "boardSectionTitle"
+    | "boardSectionSubtitle"
+    | "boardNamePlaceholder"
+    | "createBoard"
+    | "creatingBoard"
+    | "renameBoard"
+    | "renamingBoard"
+    | "renameBoardTitle"
+    | "renameBoardDescription"
+    | "deleteBoard"
+    | "deletingBoard"
+    | "deleteBoardTitle"
+    | "deleteBoardDescription"
+    | "openBoard"
+    | "noBoards"
+    | "ownerLabel"
+    | "roleLabel"
+    | "boardLanguageLabel"
+    | "sortLabel"
+    | "sortByCreated"
+    | "sortByTitle"
+    | "sortDirectionLabel"
+    | "sortAscending"
+    | "sortDescending"
+  >
+>

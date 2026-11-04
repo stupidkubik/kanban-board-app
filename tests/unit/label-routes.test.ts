@@ -69,9 +69,7 @@ describe("label server routes", () => {
       email: "owner@example.com",
     })
     mocks.boardRef.collection.mockImplementation((name: string) =>
-      name === "cards"
-        ? mocks.cardsQuery
-        : { doc: vi.fn(() => mocks.labelRef) }
+      name === "cards" ? mocks.cardsQuery : { doc: vi.fn(() => mocks.labelRef) }
     )
     mocks.boardRef.get.mockResolvedValue(boardSnapshot)
     mocks.cardsQuery.where.mockReturnValue(mocks.cardsQuery)

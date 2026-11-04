@@ -85,7 +85,10 @@ export async function PATCH(
   }
 
   if (!boardId || !title) {
-    return NextResponse.json({ error: "Missing boardId or title" }, { status: 400 })
+    return NextResponse.json(
+      { error: "Missing boardId or title" },
+      { status: 400 }
+    )
   }
 
   try {

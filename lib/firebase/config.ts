@@ -8,4 +8,5 @@ export const firebaseConfig = {
   measurementId: "G-6SXLPMD7X2",
 }
 
-export const hasFirebaseConfig = () => Object.values(firebaseConfig).every(Boolean)
+export const hasFirebaseConfig = () =>
+  Object.values(firebaseConfig).every(Boolean)

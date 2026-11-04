@@ -20,22 +20,19 @@ function InputGroup({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-const inputGroupAddonVariants = cva(
-  styles.addon,
-  {
-    variants: {
-      align: {
-        "inline-start": styles.addonInlineStart,
-        "inline-end": styles.addonInlineEnd,
-        "block-start": styles.addonBlockStart,
-        "block-end": styles.addonBlockEnd,
-      },
+const inputGroupAddonVariants = cva(styles.addon, {
+  variants: {
+    align: {
+      "inline-start": styles.addonInlineStart,
+      "inline-end": styles.addonInlineEnd,
+      "block-start": styles.addonBlockStart,
+      "block-end": styles.addonBlockEnd,
     },
-    defaultVariants: {
-      align: "inline-start",
-    },
-  }
-)
+  },
+  defaultVariants: {
+    align: "inline-start",
+  },
+})
 
 function InputGroupAddon({
   className,
@@ -59,22 +56,19 @@ function InputGroupAddon({
   )
 }
 
-const inputGroupButtonVariants = cva(
-  styles.button,
-  {
-    variants: {
-      size: {
-        xs: styles.buttonSizeXs,
-        sm: styles.buttonSizeSm,
-        "icon-xs": styles.buttonSizeIconXs,
-        "icon-sm": styles.buttonSizeIconSm,
-      },
+const inputGroupButtonVariants = cva(styles.button, {
+  variants: {
+    size: {
+      xs: styles.buttonSizeXs,
+      sm: styles.buttonSizeSm,
+      "icon-xs": styles.buttonSizeIconXs,
+      "icon-sm": styles.buttonSizeIconSm,
     },
-    defaultVariants: {
-      size: "xs",
-    },
-  }
-)
+  },
+  defaultVariants: {
+    size: "xs",
+  },
+})
 
 function InputGroupButton({
   className,
@@ -96,12 +90,7 @@ function InputGroupButton({
 }
 
 function InputGroupText({ className, ...props }: React.ComponentProps<"span">) {
-  return (
-    <span
-      className={cn(styles.text, className)}
-      {...props}
-    />
-  )
+  return <span className={cn(styles.text, className)} {...props} />
 }
 
 function InputGroupInput({

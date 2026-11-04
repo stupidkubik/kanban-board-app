@@ -1,7 +1,12 @@
 import { FieldPath } from "firebase/firestore"
 
 import { toMillis } from "@/lib/firestore-values"
-import type { Board, BoardMemberProfile, BoardRole, Column } from "@/lib/types/boards"
+import type {
+  Board,
+  BoardMemberProfile,
+  BoardRole,
+  Column,
+} from "@/lib/types/boards"
 
 export type Invite = {
   id: string
@@ -37,7 +42,10 @@ export type MemberProfileRecord = {
   joinedAt?: unknown
 }
 
-export const normalizeBoard = (id: string, data: Omit<Board, "id"> & { createdBy?: string }) => {
+export const normalizeBoard = (
+  id: string,
+  data: Omit<Board, "id"> & { createdBy?: string }
+) => {
   const ownerId = data.ownerId ?? data.createdBy ?? ""
   const board: Board = {
     id,
@@ -81,7 +89,10 @@ export const normalizeInvite = (id: string, data: InviteRecord): Invite => {
   return invite
 }
 
-export const normalizeMemberProfile = (id: string, data: MemberProfileRecord) => {
+export const normalizeMemberProfile = (
+  id: string,
+  data: MemberProfileRecord
+) => {
   const profile: BoardMemberProfile = {
     id,
     displayName: data.displayName ?? null,
@@ -97,7 +108,11 @@ export const normalizeMemberProfile = (id: string, data: MemberProfileRecord) =>
   return profile
 }
 
-export const normalizeColumn = (boardId: string, id: string, data: ColumnRecord): Column => {
+export const normalizeColumn = (
+  boardId: string,
+  id: string,
+  data: ColumnRecord
+): Column => {
   const column: Column = {
     id,
     boardId,

@@ -60,7 +60,9 @@ const requestJson = async (url, init) => {
   const response = await fetch(url, init)
   if (!response.ok) {
     const body = await response.text()
-    throw new Error(`${init?.method ?? "GET"} ${url} failed: ${response.status} ${body}`)
+    throw new Error(
+      `${init?.method ?? "GET"} ${url} failed: ${response.status} ${body}`
+    )
   }
   const body = await response.text()
   return body ? JSON.parse(body) : null

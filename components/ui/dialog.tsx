@@ -16,11 +16,15 @@ function DialogTrigger(
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
 }
 
-function DialogClose(props: React.ComponentProps<typeof DialogPrimitive.Close>) {
+function DialogClose(
+  props: React.ComponentProps<typeof DialogPrimitive.Close>
+) {
   return <DialogPrimitive.Close data-slot="dialog-close" {...props} />
 }
 
-function DialogPortal(props: React.ComponentProps<typeof DialogPrimitive.Portal>) {
+function DialogPortal(
+  props: React.ComponentProps<typeof DialogPrimitive.Portal>
+) {
   return <DialogPrimitive.Portal data-slot="dialog-portal" {...props} />
 }
 
@@ -58,29 +62,59 @@ function DialogContent({
 }
 
 function DialogHeader({ className, ...props }: React.ComponentProps<"div">) {
-  return <div data-slot="dialog-header" className={cn(styles.header, className)} {...props} />
+  return (
+    <div
+      data-slot="dialog-header"
+      className={cn(styles.header, className)}
+      {...props}
+    />
+  )
 }
 
 function DialogBody({ className, ...props }: React.ComponentProps<"div">) {
-  return <div data-slot="dialog-body" className={cn(styles.body, className)} {...props} />
+  return (
+    <div
+      data-slot="dialog-body"
+      className={cn(styles.body, className)}
+      {...props}
+    />
+  )
 }
 
 function DialogFooter({ className, ...props }: React.ComponentProps<"div">) {
-  return <div data-slot="dialog-footer" className={cn(styles.footer, className)} {...props} />
+  return (
+    <div
+      data-slot="dialog-footer"
+      className={cn(styles.footer, className)}
+      {...props}
+    />
+  )
 }
 
 function DialogTitle({
   className,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Title>) {
-  return <DialogPrimitive.Title data-slot="dialog-title" className={cn(styles.title, className)} {...props} />
+  return (
+    <DialogPrimitive.Title
+      data-slot="dialog-title"
+      className={cn(styles.title, className)}
+      {...props}
+    />
+  )
 }
 
 function DialogDescription({
   className,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Description>) {
-  return <DialogPrimitive.Description data-slot="dialog-description" className={cn(styles.description, className)} {...props} />
+  return (
+    <DialogPrimitive.Description
+      data-slot="dialog-description"
+      className={cn(styles.description, className)}
+      {...props}
+    />
+  )
 }
 
 export {

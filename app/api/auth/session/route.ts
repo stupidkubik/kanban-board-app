@@ -5,10 +5,13 @@ import { clearSessionCookie, createSessionCookie } from "@/lib/firebase/session"
 import { checkRateLimit, getRequestClientKey } from "@/lib/server/rate-limit"
 
 export async function POST(request: Request) {
-  const rateLimit = checkRateLimit(`session:create:${getRequestClientKey(request)}`, {
-    limit: 10,
-    windowMs: 60_000,
-  })
+  const rateLimit = checkRateLimit(
+    `session:create:${getRequestClientKey(request)}`,
+    {
+      limit: 10,
+      windowMs: 60_000,
+    }
+  )
 
   if (!rateLimit.allowed) {
     return NextResponse.json(
@@ -16,7 +19,7 @@ export async function POST(request: Request) {
       {
         status: 429,
         headers: { "Retry-After": String(rateLimit.retryAfterSeconds) },
-      },
+      }
     )
   }
 

@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 
 import nextEnv from "@next/env"
-import { applicationDefault, cert, deleteApp, initializeApp } from "firebase-admin/app"
+import {
+  applicationDefault,
+  cert,
+  deleteApp,
+  initializeApp,
+} from "firebase-admin/app"
 import { FieldPath, getFirestore } from "firebase-admin/firestore"
 
 import {
@@ -44,7 +49,9 @@ const app = initializeApp(
   emulatorMode
     ? { projectId }
     : {
-        credential: serviceAccount ? cert(serviceAccount) : applicationDefault(),
+        credential: serviceAccount
+          ? cert(serviceAccount)
+          : applicationDefault(),
         projectId,
       },
   "stale-member-profiles-migration"

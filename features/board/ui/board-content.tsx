@@ -103,36 +103,41 @@ export const BoardContent = React.memo(function BoardContent({
         setError(getErrorMessage(err, uiCopy.board.errors.updateLanguageFailed))
       }
     },
-    [boardId, canEdit, uiCopy.board.errors.updateLanguageFailed, updateBoardLanguage]
+    [
+      boardId,
+      canEdit,
+      uiCopy.board.errors.updateLanguageFailed,
+      updateBoardLanguage,
+    ]
   )
 
   return (
     <div className={styles.boardContent}>
       <div className={styles.stickyShell}>
-      <BoardHeader
-        uiCopy={uiCopy}
-        boardId={boardId}
-        boardTitle={boardTitle}
-        isViewer={isViewer}
-      />
-      <BoardToolbar
-        boardId={boardId}
-        board={board}
-        user={user}
-        canEdit={canEdit}
-        isOwner={isOwner}
-        uiCopy={uiCopy}
-        uiLocale={uiLocale}
-        onUiLocaleChange={onUiLocaleChange}
-        boardLanguage={board?.language ?? uiLocale}
-        updatingBoardLanguage={updatingBoardLanguage}
-        onBoardLanguageChange={handleBoardLanguageChange}
-        creatingColumn={creatingColumn}
-        newColumnTitle={newColumnTitle}
-        onNewColumnTitleChange={setNewColumnTitle}
-        onCreateColumn={handleCreateColumn}
-        setError={setError}
-      />
+        <BoardHeader
+          uiCopy={uiCopy}
+          boardId={boardId}
+          boardTitle={boardTitle}
+          isViewer={isViewer}
+        />
+        <BoardToolbar
+          boardId={boardId}
+          board={board}
+          user={user}
+          canEdit={canEdit}
+          isOwner={isOwner}
+          uiCopy={uiCopy}
+          uiLocale={uiLocale}
+          onUiLocaleChange={onUiLocaleChange}
+          boardLanguage={board?.language ?? uiLocale}
+          updatingBoardLanguage={updatingBoardLanguage}
+          onBoardLanguageChange={handleBoardLanguageChange}
+          creatingColumn={creatingColumn}
+          newColumnTitle={newColumnTitle}
+          onNewColumnTitleChange={setNewColumnTitle}
+          onCreateColumn={handleCreateColumn}
+          setError={setError}
+        />
       </div>
       <BoardStatus error={error} />
       <CardsSection

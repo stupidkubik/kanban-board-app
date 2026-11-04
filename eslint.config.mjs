@@ -1,12 +1,12 @@
-import { defineConfig, globalIgnores } from "eslint/config";
-import nextVitals from "eslint-config-next/core-web-vitals";
-import nextTs from "eslint-config-next/typescript";
+import { defineConfig, globalIgnores } from "eslint/config"
+import nextVitals from "eslint-config-next/core-web-vitals"
+import nextTs from "eslint-config-next/typescript"
 
 // eslint-config-next already ignores .next/, out/, build/ and next-env.d.ts.
 const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   globalIgnores(["coverage/**"]),
-]);
+])
 
-export default eslintConfig;
+export default eslintConfig

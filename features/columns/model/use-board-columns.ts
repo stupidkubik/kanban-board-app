@@ -9,7 +9,10 @@ import {
   useGetColumnsQuery,
   useUpdateColumnMutation,
 } from "@/features/columns/data/columns-api"
-import { COLUMN_NOT_EMPTY, restoreColumn } from "@/lib/store/firestore-operations"
+import {
+  COLUMN_NOT_EMPTY,
+  restoreColumn,
+} from "@/lib/store/firestore-operations"
 import { getErrorMessage } from "@/lib/errors"
 import type { Column } from "@/lib/types/boards"
 import type { BoardCopy } from "@/lib/types/board-ui"
@@ -52,7 +55,9 @@ export function useBoardColumns({
   const [newColumnTitle, setNewColumnTitle] = React.useState("")
   const [editingId, setEditingId] = React.useState<string | null>(null)
   const [editingTitle, setEditingTitle] = React.useState("")
-  const [deletePendingId, setDeletePendingId] = React.useState<string | null>(null)
+  const [deletePendingId, setDeletePendingId] = React.useState<string | null>(
+    null
+  )
   const { notify, notifySuccess } = useNotifications()
 
   const {
@@ -68,46 +73,52 @@ export function useBoardColumns({
     useUpdateColumnMutation()
   const [deleteColumn] = useDeleteColumnMutation()
 
-  const handleCreateColumn = React.useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!boardId || !user || !canEdit) {
-      return
-    }
+  const handleCreateColumn = React.useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      if (!boardId || !user || !canEdit) {
+        return
+      }
 
-    if (!isNonEmpty(newColumnTitle)) {
-      setError(uiCopy.board.errors.columnTitleRequired)
-      return
-    }
+      if (!isNonEmpty(newColumnTitle)) {
+        setError(uiCopy.board.errors.columnTitleRequired)
+        return
+      }
 
-    setError(null)
+      setError(null)
 
-    try {
-      await createColumn({
-        boardId,
-        title: newColumnTitle.trim(),
-      }).unwrap()
-      setNewColumnTitle("")
-    } catch (err) {
-      setError(getErrorMessage(err, uiCopy.board.errors.createColumnFailed))
-    }
-  }, [
-    boardId,
-    canEdit,
-    createColumn,
-    newColumnTitle,
-    setError,
-    uiCopy.board.errors.columnTitleRequired,
-    uiCopy.board.errors.createColumnFailed,
-    user,
-  ])
+      try {
+        await createColumn({
+          boardId,
+          title: newColumnTitle.trim(),
+        }).unwrap()
+        setNewColumnTitle("")
+      } catch (err) {
+        setError(getErrorMessage(err, uiCopy.board.errors.createColumnFailed))
+      }
+    },
+    [
+      boardId,
+      canEdit,
+      createColumn,
+      newColumnTitle,
+      setError,
+      uiCopy.board.errors.columnTitleRequired,
+      uiCopy.board.errors.createColumnFailed,
+      user,
+    ]
+  )
 
-  const startEditing = React.useCallback((column: Column) => {
-    if (!canEdit) {
-      return
-    }
-    setEditingId(column.id)
-    setEditingTitle(column.title)
-  }, [canEdit])
+  const startEditing = React.useCallback(
+    (column: Column) => {
+      if (!canEdit) {
+        return
+      }
+      setEditingId(column.id)
+      setEditingTitle(column.title)
+    },
+    [canEdit]
+  )
 
   const cancelEditing = React.useCallback(() => {
     setEditingId(null)
@@ -147,60 +158,65 @@ export function useBoardColumns({
     updateColumn,
   ])
 
-  const handleDeleteColumn = React.useCallback(async (columnId: string) => {
-    if (!boardId) {
-      return
-    }
-
-    setError(null)
-    setDeletePendingId(columnId)
-    const snapshot = columns.find((column) => column.id === columnId) ?? null
-
-    try {
-      await deleteColumn({ boardId, columnId }).unwrap()
-      if (snapshot) {
-        notify({
-          message: uiCopy.board.columnDeletedToast,
-          variant: "success",
-          actionLabel: uiCopy.common.undo,
-          onAction: async () => {
-            try {
-              await restoreColumn({
-                boardId,
-                columnId: snapshot.id,
-                title: snapshot.title,
-                order: snapshot.order,
-              })
-              notifySuccess(uiCopy.board.columnRestoredToast)
-            } catch (err) {
-              setError(getErrorMessage(err, uiCopy.board.errors.createColumnFailed))
-            }
-          },
-        })
+  const handleDeleteColumn = React.useCallback(
+    async (columnId: string) => {
+      if (!boardId) {
+        return
       }
-    } catch (err) {
-      setError(
-        err instanceof Error && err.message === COLUMN_NOT_EMPTY
-          ? uiCopy.board.errors.columnNotEmpty
-          : getErrorMessage(err, uiCopy.board.errors.deleteColumnFailed)
-      )
-    } finally {
-      setDeletePendingId(null)
-    }
-  }, [
-    boardId,
-    columns,
-    deleteColumn,
-    notify,
-    notifySuccess,
-    setError,
-    uiCopy.board.columnDeletedToast,
-    uiCopy.board.columnRestoredToast,
-    uiCopy.board.errors.createColumnFailed,
-    uiCopy.board.errors.columnNotEmpty,
-    uiCopy.board.errors.deleteColumnFailed,
-    uiCopy.common.undo,
-  ])
+
+      setError(null)
+      setDeletePendingId(columnId)
+      const snapshot = columns.find((column) => column.id === columnId) ?? null
+
+      try {
+        await deleteColumn({ boardId, columnId }).unwrap()
+        if (snapshot) {
+          notify({
+            message: uiCopy.board.columnDeletedToast,
+            variant: "success",
+            actionLabel: uiCopy.common.undo,
+            onAction: async () => {
+              try {
+                await restoreColumn({
+                  boardId,
+                  columnId: snapshot.id,
+                  title: snapshot.title,
+                  order: snapshot.order,
+                })
+                notifySuccess(uiCopy.board.columnRestoredToast)
+              } catch (err) {
+                setError(
+                  getErrorMessage(err, uiCopy.board.errors.createColumnFailed)
+                )
+              }
+            },
+          })
+        }
+      } catch (err) {
+        setError(
+          err instanceof Error && err.message === COLUMN_NOT_EMPTY
+            ? uiCopy.board.errors.columnNotEmpty
+            : getErrorMessage(err, uiCopy.board.errors.deleteColumnFailed)
+        )
+      } finally {
+        setDeletePendingId(null)
+      }
+    },
+    [
+      boardId,
+      columns,
+      deleteColumn,
+      notify,
+      notifySuccess,
+      setError,
+      uiCopy.board.columnDeletedToast,
+      uiCopy.board.columnRestoredToast,
+      uiCopy.board.errors.createColumnFailed,
+      uiCopy.board.errors.columnNotEmpty,
+      uiCopy.board.errors.deleteColumnFailed,
+      uiCopy.common.undo,
+    ]
+  )
 
   return {
     columns,

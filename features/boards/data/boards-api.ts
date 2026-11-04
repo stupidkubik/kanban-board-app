@@ -190,7 +190,9 @@ export const boardsApi = firestoreBaseApi.injectEndpoints({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: new Error(getErrorMessage(error, "Update board title failed")),
+            error: new Error(
+              getErrorMessage(error, "Update board title failed")
+            ),
           }
         }
       },

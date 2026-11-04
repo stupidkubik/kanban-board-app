@@ -78,7 +78,9 @@ export const useCardDeleteController = ({
             }).unwrap()
             notifySuccess(uiCopy.board.cardRestoredToast)
           } catch (error) {
-            setError(getErrorMessage(error, uiCopy.board.errors.createCardFailed))
+            setError(
+              getErrorMessage(error, uiCopy.board.errors.createCardFailed)
+            )
           }
         },
       })

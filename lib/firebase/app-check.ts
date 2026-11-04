@@ -13,7 +13,7 @@ const shouldEnforceAppCheck = () => {
   if (process.env.NODE_ENV === "production") {
     return Boolean(
       process.env.NEXT_PUBLIC_FIREBASE_APP_CHECK_SITE_KEY ??
-        process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
+      process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY
     )
   }
   return false

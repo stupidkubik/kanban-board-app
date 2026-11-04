@@ -6,7 +6,6 @@ import { getCopy } from "@/lib/i18n"
 
 const uiCopy = getCopy("en")
 
-
 describe("BoardHeader", () => {
   it("renders header title", () => {
     render(
@@ -32,6 +31,8 @@ describe("BoardHeader", () => {
     )
 
     expect(screen.getByText(uiCopy.board.readOnlyNotice)).toBeInTheDocument()
-    expect(screen.getByRole("link", { name: uiCopy.board.backToBoards })).toBeVisible()
+    expect(
+      screen.getByRole("link", { name: uiCopy.board.backToBoards })
+    ).toBeVisible()
   })
 })

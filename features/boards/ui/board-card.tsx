@@ -6,7 +6,11 @@ import { useRouter } from "next/navigation"
 import { type User } from "firebase/auth"
 import { PencilSimpleLine, TrashSimple } from "@phosphor-icons/react"
 import { getCopy, languageLabels, roleLabels, type Locale } from "@/lib/i18n"
-import { canEditBoard as canEditBoardAccess, canInviteMembers, getMemberRole } from "@/lib/permissions"
+import {
+  canEditBoard as canEditBoardAccess,
+  canInviteMembers,
+  getMemberRole,
+} from "@/lib/permissions"
 import { type Board } from "@/lib/types/boards"
 import { getBoardCoverGradient } from "@/lib/board-cover"
 import { getErrorMessage } from "@/lib/errors"
@@ -52,7 +56,12 @@ type KanbanBoardCardProps = {
   user: User
 }
 
-export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardCardProps) {
+export function KanbanBoardCard({
+  board,
+  onError,
+  uiLocale,
+  user,
+}: KanbanBoardCardProps) {
   const router = useRouter()
   const [updateBoardTitleMutation] = useUpdateBoardTitleMutation()
   const [deleteBoardMutation] = useDeleteBoardMutation()
@@ -77,7 +86,9 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
       deleteTimeoutRef.current = null
     }
   }, [])
-  const roleLabel = role ? roleLabels[uiLocale][role] : roleLabels[uiLocale].member
+  const roleLabel = role
+    ? roleLabels[uiLocale][role]
+    : roleLabels[uiLocale].member
   const boardLanguageLabel = languageLabels[boardLanguage]
   const remainingMembers = Math.max(0, memberCount - visibleMembers.length)
   const coverStyle = React.useMemo(
@@ -125,7 +136,10 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
     setRenamePending(true)
 
     try {
-      await updateBoardTitleMutation({ boardId: board.id, title: trimmed }).unwrap()
+      await updateBoardTitleMutation({
+        boardId: board.id,
+        title: trimmed,
+      }).unwrap()
       setRenameOpen(false)
       setRenameTitle("")
     } catch (err) {
@@ -214,9 +228,7 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                 </DialogTrigger>
                 <DialogContent size="sm">
                   <DialogHeader>
-                    <DialogTitle>
-                      {uiCopy.board.renameBoardTitle}
-                    </DialogTitle>
+                    <DialogTitle>{uiCopy.board.renameBoardTitle}</DialogTitle>
                     <DialogDescription>
                       {uiCopy.board.renameBoardDescription}
                     </DialogDescription>
@@ -238,7 +250,9 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                             id={`rename-board-${board.id}`}
                             className={styles.modalInput}
                             value={renameTitle}
-                            onChange={(event) => setRenameTitle(event.target.value)}
+                            onChange={(event) =>
+                              setRenameTitle(event.target.value)
+                            }
                             placeholder={uiCopy.board.boardNamePlaceholder}
                             autoFocus
                           />
@@ -247,7 +261,11 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                     </div>
                     <DialogFooter className={styles.modalFooter}>
                       <DialogClose asChild>
-                        <Button type="button" variant="ghost" disabled={renamePending}>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          disabled={renamePending}
+                        >
                           {uiCopy.common.cancel}
                         </Button>
                       </DialogClose>
@@ -277,11 +295,7 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
           {visibleMembers.map((member) => {
             const label = member.displayName ?? member.email ?? ""
             return (
-              <div
-                key={member.id}
-                className={styles.boardAvatar}
-                title={label}
-              >
+              <div key={member.id} className={styles.boardAvatar} title={label}>
                 {member.photoURL ? (
                   <Image
                     src={member.photoURL}
@@ -297,7 +311,9 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
             )
           })}
           {remainingMembers > 0 ? (
-            <div className={`${styles.boardAvatar} ${styles.boardAvatarOverflow}`}>
+            <div
+              className={`${styles.boardAvatar} ${styles.boardAvatarOverflow}`}
+            >
               +{remainingMembers}
             </div>
           ) : null}
@@ -305,20 +321,29 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
         <div className={styles.boardStats}>
           <div className={styles.boardStat}>
             <span className={styles.boardStatValue}>{columnCount ?? "—"}</span>
-            <span className={styles.boardStatLabel}>{uiCopy.board.columnsTitle}</span>
+            <span className={styles.boardStatLabel}>
+              {uiCopy.board.columnsTitle}
+            </span>
           </div>
           <div className={styles.boardStat}>
             <span className={styles.boardStatValue}>{cardCount ?? "—"}</span>
-            <span className={styles.boardStatLabel}>{uiCopy.board.cardsLabel}</span>
+            <span className={styles.boardStatLabel}>
+              {uiCopy.board.cardsLabel}
+            </span>
           </div>
           <div className={`${styles.boardStat} ${styles.boardStatWide}`}>
             <span className={styles.boardStatValue}>{boardLanguageLabel}</span>
-            <span className={styles.boardStatLabel}>{uiCopy.board.boardLanguageLabel}</span>
+            <span className={styles.boardStatLabel}>
+              {uiCopy.board.boardLanguageLabel}
+            </span>
           </div>
         </div>
       </CardContent>
       <CardFooter>
-        <div className={styles.boardFooter} onClick={(event) => event.stopPropagation()}>
+        <div
+          className={styles.boardFooter}
+          onClick={(event) => event.stopPropagation()}
+        >
           <div className={styles.boardActions}>
             {isOwner ? (
               <AlertDialog
@@ -342,7 +367,11 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                     data-testid="delete-board-trigger"
                   >
                     {deletePending ? (
-                      <Spinner size="xs" className={styles.iconSpinner} aria-hidden="true" />
+                      <Spinner
+                        size="xs"
+                        className={styles.iconSpinner}
+                        aria-hidden="true"
+                      />
                     ) : (
                       <TrashSimple weight="bold" />
                     )}
@@ -369,7 +398,11 @@ export function KanbanBoardCard({ board, onError, uiLocale, user }: KanbanBoardC
                       data-testid="delete-board-confirm"
                     >
                       {deletePending ? (
-                        <Spinner size="sm" className={styles.buttonSpinner} aria-hidden="true" />
+                        <Spinner
+                          size="sm"
+                          className={styles.buttonSpinner}
+                          aria-hidden="true"
+                        />
                       ) : null}
                       {deletePending
                         ? uiCopy.board.deletingBoard

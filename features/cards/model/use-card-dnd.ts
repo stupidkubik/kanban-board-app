@@ -43,9 +43,13 @@ export function useCardDnd({
   setError,
   updateFailedMessage,
 }: UseCardDndArgs) {
-  const [hoveredColumnId, setHoveredColumnId] = React.useState<string | null>(null)
+  const [hoveredColumnId, setHoveredColumnId] = React.useState<string | null>(
+    null
+  )
   const [activeCardId, setActiveCardId] = React.useState<string | null>(null)
-  const [activeCardColumnId, setActiveCardColumnId] = React.useState<string | null>(null)
+  const [activeCardColumnId, setActiveCardColumnId] = React.useState<
+    string | null
+  >(null)
   const [overCardId, setOverCardId] = React.useState<string | null>(null)
 
   const clearDragState = React.useCallback(() => {
@@ -72,7 +76,9 @@ export function useCardDnd({
       if (activeId === overId && activeColumnId === overColumnId) return
 
       const destinationCards = cardsByColumn.get(overColumnId) ?? []
-      const filteredCards = destinationCards.filter((card) => card.id !== activeId)
+      const filteredCards = destinationCards.filter(
+        (card) => card.id !== activeId
+      )
       let targetIndex = filteredCards.length
 
       if (!dropColumnId) {
@@ -83,7 +89,10 @@ export function useCardDnd({
       const beforeCard = filteredCards[targetIndex - 1]
       const afterCard = filteredCards[targetIndex]
       const nextOrder = getNextOrderValue(beforeCard?.order, afterCard?.order)
-      const shouldRebalance = shouldRebalanceOrder(beforeCard?.order, afterCard?.order)
+      const shouldRebalance = shouldRebalanceOrder(
+        beforeCard?.order,
+        afterCard?.order
+      )
       const currentCard = cards.find((card) => card.id === activeId)
 
       if (
@@ -133,7 +142,7 @@ export function useCardDnd({
       moveCard,
       setError,
       updateFailedMessage,
-    ],
+    ]
   )
 
   const handleDragOver = React.useCallback(
@@ -149,7 +158,7 @@ export function useCardDnd({
       setHoveredColumnId(dropColumnId ?? cardColumnById.get(overId) ?? null)
       setOverCardId(dropColumnId ? null : overId)
     },
-    [cardColumnById],
+    [cardColumnById]
   )
 
   const handleDragStart = React.useCallback(
@@ -164,7 +173,7 @@ export function useCardDnd({
       setActiveCardId(activeId)
       setActiveCardColumnId(columnId)
     },
-    [canEdit, cardColumnById],
+    [canEdit, cardColumnById]
   )
 
   return {

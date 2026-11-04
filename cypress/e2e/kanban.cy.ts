@@ -3,10 +3,7 @@ const setUiLocale = (win: Window) => {
   win.localStorage.setItem("uiLocaleTouched", "1")
 }
 
-const signIn = (
-  emailEnv = "E2E_EMAIL",
-  passwordEnv = "E2E_PASSWORD"
-) => {
+const signIn = (emailEnv = "E2E_EMAIL", passwordEnv = "E2E_PASSWORD") => {
   cy.intercept("POST", "/api/auth/session").as("createSession")
   cy.visit("/sign-in", { onBeforeLoad: setUiLocale })
   cy.get("body", { timeout: 30_000 })
@@ -20,12 +17,15 @@ const signIn = (
         return
       }
 
-      return cy.env([emailEnv, passwordEnv], { log: false }).then(
-        (credentials) => {
+      return cy
+        .env([emailEnv, passwordEnv], { log: false })
+        .then((credentials) => {
           const email = credentials[emailEnv]
           const password = credentials[passwordEnv]
           if (typeof email !== "string" || typeof password !== "string") {
-            throw new Error("The local E2E launcher did not provide Auth credentials.")
+            throw new Error(
+              "The local E2E launcher did not provide Auth credentials."
+            )
           }
 
           cy.get("#auth-email").type(email, { log: false })
@@ -35,8 +35,7 @@ const signIn = (
             .wait("@createSession", { timeout: 60_000 })
             .its("response.statusCode")
             .should("eq", 200)
-        }
-      )
+        })
     })
 
   cy.get('[data-testid="create-board-trigger"]', { timeout: 30_000 }).should(
@@ -133,13 +132,15 @@ const cleanupCreatedBoards = () => {
 
 describe("kanban core flows", () => {
   before(() => {
-    cy.env(["E2E_ALLOW_WRITES"], { log: false }).then(({ E2E_ALLOW_WRITES }) => {
-      if (E2E_ALLOW_WRITES !== true) {
-        throw new Error(
-          "Run Cypress through the local Firebase emulator launcher."
-        )
+    cy.env(["E2E_ALLOW_WRITES"], { log: false }).then(
+      ({ E2E_ALLOW_WRITES }) => {
+        if (E2E_ALLOW_WRITES !== true) {
+          throw new Error(
+            "Run Cypress through the local Firebase emulator launcher."
+          )
+        }
       }
-    })
+    )
   })
 
   afterEach(cleanupCreatedBoards)
@@ -166,7 +167,9 @@ describe("kanban core flows", () => {
 
     cy.contains('[data-testid="board-card"]', boardTitle).click()
     cy.url({ timeout: 45_000 }).should("match", /\/boards\/[^/]+$/)
-    cy.get('[data-testid="labels-manager-trigger"]', { timeout: 60_000 }).click()
+    cy.get('[data-testid="labels-manager-trigger"]', {
+      timeout: 60_000,
+    }).click()
     cy.get('[data-testid="labels-section"]', { timeout: 60_000 }).should(
       "be.visible"
     )
@@ -182,7 +185,9 @@ describe("kanban core flows", () => {
     cy.get('[data-testid="close-labels-manager"]').click()
 
     cy.viewport(375, 873)
-    cy.get('[data-testid="labels-manager-trigger"]').should("be.visible").click()
+    cy.get('[data-testid="labels-manager-trigger"]')
+      .should("be.visible")
+      .click()
     cy.get('[role="dialog"]')
       .should("be.visible")
       .then(($dialog) => {
@@ -211,9 +216,13 @@ describe("kanban core flows", () => {
       .type(cardTitle, { delay: 25 })
       .should("have.value", cardTitle)
     cy.get('[role="dialog"] [data-testid^="new-card-due-"]').type(dueDate)
-    cy.get('[role="dialog"] [data-testid^="new-card-due-"]')
-      .should("have.value", dueDate)
-    cy.get('[role="dialog"] [data-testid^="new-card-labels-"] input[type="checkbox"]')
+    cy.get('[role="dialog"] [data-testid^="new-card-due-"]').should(
+      "have.value",
+      dueDate
+    )
+    cy.get(
+      '[role="dialog"] [data-testid^="new-card-labels-"] input[type="checkbox"]'
+    )
       .should("have.length", 1)
       .check()
     cy.get('[role="dialog"] [data-testid^="create-card-"]').click()
@@ -281,9 +290,7 @@ describe("kanban core flows", () => {
     cy.get(`[data-card-title="${editedCardTitle}"]`)
       .find('button[aria-label="Delete card"]')
       .click()
-    cy.get('[role="alertdialog"]')
-      .contains("button", "Delete card")
-      .click()
+    cy.get('[role="alertdialog"]').contains("button", "Delete card").click()
     cy.get(`[data-card-title="${editedCardTitle}"]`).should("not.exist")
     cy.contains('[role="status"]', "Card deleted.").within(() => {
       cy.contains("button", "Undo").click()
@@ -300,9 +307,7 @@ describe("kanban core flows", () => {
         .should("have.css", "overflow-wrap", "anywhere")
         .should("have.css", "-webkit-line-clamp", "3")
         .then(($title) => {
-          expect($title[0].scrollWidth).to.be.at.most(
-            $title[0].clientWidth + 1
-          )
+          expect($title[0].scrollWidth).to.be.at.most($title[0].clientWidth + 1)
         })
       cy.get('[data-testid="card-description"]')
         .should("have.css", "overflow-wrap", "anywhere")
@@ -396,8 +401,12 @@ describe("kanban core flows", () => {
     cy.contains('[data-testid^="column-"]', "Assigned").within(() => {
       cy.get('[data-testid^="add-card-"]').click()
     })
-    cy.get('[role="dialog"] [data-testid^="new-card-title-"]').type(assignedCardTitle)
-    cy.get('[role="dialog"] [data-testid^="new-card-assignees-"] input[type="checkbox"]')
+    cy.get('[role="dialog"] [data-testid^="new-card-title-"]').type(
+      assignedCardTitle
+    )
+    cy.get(
+      '[role="dialog"] [data-testid^="new-card-assignees-"] input[type="checkbox"]'
+    )
       .should("have.length", 2)
       .check()
     cy.get('[role="dialog"] [data-testid^="create-card-"]').click()
@@ -414,9 +423,7 @@ describe("kanban core flows", () => {
     cy.intercept("PATCH", "/api/boards/*/members/*").as("updateMemberRole")
     cy.get('[data-testid^="participant-role-"]').click()
     cy.contains('[role="option"]', "Viewer").click()
-    cy.wait("@updateMemberRole")
-      .its("response.statusCode")
-      .should("eq", 200)
+    cy.wait("@updateMemberRole").its("response.statusCode").should("eq", 200)
     cy.get('[data-testid="close-participants-manager"]').click()
     cy.contains('[role="status"]', "Member role updated.").should("be.visible")
 

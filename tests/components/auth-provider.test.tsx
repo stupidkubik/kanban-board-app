@@ -10,10 +10,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("firebase/auth", () => ({
   onIdTokenChanged: vi.fn(
-    (
-      _auth: unknown,
-      listener: (user: unknown) => void
-    ) => {
+    (_auth: unknown, listener: (user: unknown) => void) => {
       mocks.authListener = listener
       return mocks.unsubscribe
     }
@@ -33,7 +30,7 @@ import { store } from "@/lib/store"
 
 const AuthProbe = () => {
   const { user, loading } = useAuth()
-  return <div>{loading ? "loading" : user?.uid ?? "signed-out"}</div>
+  return <div>{loading ? "loading" : (user?.uid ?? "signed-out")}</div>
 }
 
 describe("AuthProvider", () => {
@@ -42,7 +39,6 @@ describe("AuthProvider", () => {
     mocks.authListener = null
     mocks.refreshServerSession.mockResolvedValue(undefined)
   })
-
 
   it("tracks token refresh events and renews the server session", async () => {
     const view = render(

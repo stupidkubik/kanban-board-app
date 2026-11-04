@@ -34,10 +34,9 @@ describe("CardEditDialog", () => {
       />
     )
 
-    fireEvent.change(
-      screen.getByLabelText(uiCopy.board.cardTitlePlaceholder),
-      { target: { value: "New title" } }
-    )
+    fireEvent.change(screen.getByLabelText(uiCopy.board.cardTitlePlaceholder), {
+      target: { value: "New title" },
+    })
     expect(onFieldChange).toHaveBeenCalledWith("title", "New title")
   })
 
@@ -71,7 +70,9 @@ describe("CardEditDialog", () => {
       />
     )
 
-    await user.click(screen.getByRole("button", { name: uiCopy.board.saveCard }))
+    await user.click(
+      screen.getByRole("button", { name: uiCopy.board.saveCard })
+    )
     expect(onSubmit).toHaveBeenCalled()
   })
 

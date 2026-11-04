@@ -88,11 +88,10 @@ describe("BoardToolbar", () => {
     const user = userEvent.setup()
     const { onCreateColumn, onNewColumnTitleChange } = renderToolbar()
 
-    const participantsTrigger = screen.getByTestId("participants-manager-trigger")
-    expect(participantsTrigger).toHaveAttribute(
-      "data-owner",
-      "true"
+    const participantsTrigger = screen.getByTestId(
+      "participants-manager-trigger"
     )
+    expect(participantsTrigger).toHaveAttribute("data-owner", "true")
 
     const labelsTrigger = screen.getByTestId("labels-manager-trigger")
     await user.click(labelsTrigger)

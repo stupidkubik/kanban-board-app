@@ -18,27 +18,72 @@
   gap: var(--space-2);
 }
 
-.managementActions { flex: 0 1 auto; }
-.createColumnForm { flex: 1 1 360px; justify-content: flex-end; min-width: 0; }
-.createColumnForm input { max-width: 280px; }
-.settingsActions { flex: 0 0 auto; }
-.settingsMenu { width: max-content; min-width: 220px; }
-.managerHeader { display: flex; align-items: center; justify-content: space-between; }
-.managerDialog [data-slot="dialog-body"] { overflow: visible; }
-.managerDialog > [data-slot="card"] { min-height: 0; overflow: auto; }
+.managementActions {
+  flex: 0 1 auto;
+}
+.createColumnForm {
+  flex: 1 1 360px;
+  justify-content: flex-end;
+  min-width: 0;
+}
+.createColumnForm input {
+  max-width: 280px;
+}
+.settingsActions {
+  flex: 0 0 auto;
+}
+.settingsMenu {
+  width: max-content;
+  min-width: 220px;
+}
+.managerHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.managerDialog [data-slot="dialog-body"] {
+  overflow: visible;
+}
+.managerDialog > [data-slot="card"] {
+  min-height: 0;
+  overflow: auto;
+}
 
 @media (max-width: 760px) {
-  .toolbar { flex-wrap: wrap; }
-  .managementActions { order: 2; width: 100%; }
-  .createColumnForm { order: 3; flex-basis: 100%; }
-  .createColumnForm input { max-width: none; }
-  .settingsActions { margin-left: auto; }
+  .toolbar {
+    flex-wrap: wrap;
+  }
+  .managementActions {
+    order: 2;
+    width: 100%;
+  }
+  .createColumnForm {
+    order: 3;
+    flex-basis: 100%;
+  }
+  .createColumnForm input {
+    max-width: none;
+  }
+  .settingsActions {
+    margin-left: auto;
+  }
 }
 
 @media (max-width: 480px) {
-  .toolbar { align-items: stretch; }
-  .managementActions { display: grid; grid-template-columns: 1fr 1fr; }
-  .managementActions button { width: 100%; }
-  .createColumnForm { flex-wrap: wrap; }
-  .createColumnForm input { flex-basis: 100%; }
+  .toolbar {
+    align-items: stretch;
+  }
+  .managementActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .managementActions button {
+    width: 100%;
+  }
+  .createColumnForm {
+    flex-wrap: wrap;
+  }
+  .createColumnForm input {
+    flex-basis: 100%;
+  }
 }

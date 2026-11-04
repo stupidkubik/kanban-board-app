@@ -14,7 +14,14 @@ type LabelColorPickerProps = {
   ariaLabel: string
 }
 
-export function LabelColorPicker({ value, labels, onValueChange, disabled = false, testId, ariaLabel }: LabelColorPickerProps) {
+export function LabelColorPicker({
+  value,
+  labels,
+  onValueChange,
+  disabled = false,
+  testId,
+  ariaLabel,
+}: LabelColorPickerProps) {
   const optionRefs = React.useRef<Array<HTMLButtonElement | null>>([])
   const selectedIndex = BOARD_LABEL_COLORS.indexOf(value)
 
@@ -50,7 +57,12 @@ export function LabelColorPicker({ value, labels, onValueChange, disabled = fals
   }
 
   return (
-    <div className={styles.colorPicker} role="radiogroup" aria-label={ariaLabel} data-testid={testId}>
+    <div
+      className={styles.colorPicker}
+      role="radiogroup"
+      aria-label={ariaLabel}
+      data-testid={testId}
+    >
       {BOARD_LABEL_COLORS.map((color, index) => (
         <button
           key={color}

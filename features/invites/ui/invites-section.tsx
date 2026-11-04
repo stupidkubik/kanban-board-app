@@ -62,7 +62,9 @@ export function KanbanInvitesSection({
       <section>
         <div className={styles.cardHeader}>
           <h3 className={styles.cardTitle}>{uiCopy.board.invitationsTitle}</h3>
-          <p className={styles.cardSubtitle}>{uiCopy.board.invitationsSubtitle}</p>
+          <p className={styles.cardSubtitle}>
+            {uiCopy.board.invitationsSubtitle}
+          </p>
         </div>
         <div className={styles.cardContent}>
           {invites.map((invite) => (
@@ -74,7 +76,9 @@ export function KanbanInvitesSection({
             >
               <div>{invite.boardTitle}</div>
               <div className={styles.inviteMeta}>
-                <span className={styles.inviteRoleLabel}>{uiCopy.board.roleLabel}</span>
+                <span className={styles.inviteRoleLabel}>
+                  {uiCopy.board.roleLabel}
+                </span>
                 <Badge variant="outline" className={styles.inviteRoleBadge}>
                   {roleLabels[uiLocale][invite.role]}
                 </Badge>

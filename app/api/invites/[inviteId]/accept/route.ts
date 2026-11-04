@@ -7,7 +7,10 @@ import { getSession } from "@/lib/firebase/session"
 import { getErrorMessage } from "@/lib/errors"
 
 class AcceptInviteError extends Error {
-  constructor(readonly status: number, message: string) {
+  constructor(
+    readonly status: number,
+    message: string
+  ) {
     super(message)
   }
 }
@@ -54,11 +57,12 @@ export async function POST(
     const profileRef = boardRef.collection("memberProfiles").doc(session.uid)
 
     await adminDb.runTransaction(async (transaction) => {
-      const [inviteSnapshot, boardSnapshot, profileSnapshot] = await Promise.all([
-        transaction.get(inviteRef),
-        transaction.get(boardRef),
-        transaction.get(profileRef),
-      ])
+      const [inviteSnapshot, boardSnapshot, profileSnapshot] =
+        await Promise.all([
+          transaction.get(inviteRef),
+          transaction.get(boardRef),
+          transaction.get(profileRef),
+        ])
 
       if (!boardSnapshot.exists) {
         throw new AcceptInviteError(404, "Board not found")
@@ -70,18 +74,20 @@ export async function POST(
       }
       const alreadyMember = board.members?.[session.uid] === true
       const invite = inviteSnapshot.data() as
-        | { boardId?: string; email?: string; role?: string }
-        | undefined
+        { boardId?: string; email?: string; role?: string } | undefined
 
       if (inviteSnapshot.exists && invite) {
         if (invite.boardId !== body.boardId) {
           throw new AcceptInviteError(400, "Invite board mismatch")
         }
-        if (!session.email || invite.email?.toLowerCase() !== session.email.toLowerCase()) {
+        if (
+          !session.email ||
+          invite.email?.toLowerCase() !== session.email.toLowerCase()
+        ) {
           throw new AcceptInviteError(403, "Invite email mismatch")
         }
       } else if (!alreadyMember) {
-          throw new AcceptInviteError(404, "Invite not found")
+        throw new AcceptInviteError(404, "Invite not found")
       }
 
       if (!alreadyMember) {
@@ -112,7 +118,10 @@ export async function POST(
     return NextResponse.json({ status: "ok" })
   } catch (error) {
     if (error instanceof AcceptInviteError) {
-      return NextResponse.json({ error: error.message }, { status: error.status })
+      return NextResponse.json(
+        { error: error.message },
+        { status: error.status }
+      )
     }
     const message = getErrorMessage(error, "Accept invite failed")
     return NextResponse.json({ error: message }, { status: 500 })

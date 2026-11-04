@@ -75,8 +75,8 @@ export function ToastStack({ toasts, onDismiss }: ToastStackProps) {
               x
             </Button>
           </div>
-        )}
-      )}
+        )
+      })}
     </div>
   )
 }

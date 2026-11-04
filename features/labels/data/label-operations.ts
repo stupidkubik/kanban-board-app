@@ -61,10 +61,7 @@ export const updateBoardLabel = ({
     { name, color }
   )
 
-export const deleteBoardLabel = ({
-  boardId,
-  labelId,
-}: DeleteBoardLabelInput) =>
+export const deleteBoardLabel = ({ boardId, labelId }: DeleteBoardLabelInput) =>
   requestLabel(
     `/api/boards/${encodeURIComponent(boardId)}/labels/${encodeURIComponent(labelId)}`,
     "DELETE"

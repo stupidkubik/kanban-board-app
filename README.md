@@ -175,8 +175,9 @@ Never store a service-account file or `.env.local` in Git.
 | --- | --- |
 | `npm run dev` | Start the development server |
 | `npm run build` | Build with Webpack and inspect server traces |
-| `npm run check` | Lint (zero warnings), typecheck, unit tests with coverage thresholds |
+| `npm run check` | Lint (zero warnings), Prettier check, typecheck, unit tests with coverage thresholds |
 | `npm run lint` | Run ESLint |
+| `npm run format` | Format code and config with Prettier |
 | `npm run typecheck` | Type-check the app, tests, and Cypress specs |
 | `npm run test` | Run every Vitest project once (rules tests skip without the emulator) |
 | `npm run test:watch` | Run Vitest in watch mode |

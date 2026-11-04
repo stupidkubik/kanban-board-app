@@ -1,4 +1,4 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from "next"
 
 const contentSecurityPolicy = [
   "default-src 'self'",
@@ -41,11 +41,14 @@ const nextConfig: NextConfig = {
             key: "Permissions-Policy",
             value: "camera=(), microphone=(), geolocation=()",
           },
-          { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin-allow-popups",
+          },
         ],
       },
     ]
   },
-};
+}
 
-export default nextConfig;
+export default nextConfig

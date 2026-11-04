@@ -11,6 +11,17 @@
 }
 
 .content[data-state="delayed-open"],
-.content[data-state="instant-open"] { animation: tooltip-in var(--duration-fast) var(--ease-emphasized); }
+.content[data-state="instant-open"] {
+  animation: tooltip-in var(--duration-fast) var(--ease-emphasized);
+}
 
-@keyframes tooltip-in { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes tooltip-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

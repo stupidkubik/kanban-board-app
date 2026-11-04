@@ -7,7 +7,9 @@ describe("reportClientError", () => {
 
   it("logs a structured event and preserves the server digest", () => {
     const log = vi.spyOn(console, "error").mockImplementation(() => undefined)
-    const error = Object.assign(new Error("render failed"), { digest: "digest-123" })
+    const error = Object.assign(new Error("render failed"), {
+      digest: "digest-123",
+    })
 
     expect(reportClientError(error, { boundary: "route" })).toBe("digest-123")
     expect(log).toHaveBeenCalledWith(
@@ -16,7 +18,7 @@ describe("reportClientError", () => {
         correlationId: "digest-123",
         boundary: "route",
         message: "render failed",
-      }),
+      })
     )
   })
 })

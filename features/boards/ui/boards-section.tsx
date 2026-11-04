@@ -73,13 +73,17 @@ export function KanbanBoardsSection({
     nextBoards.sort((a, b) => {
       let compare = 0
       if (sortKey === "title") {
-        compare = a.title.localeCompare(b.title, locale, { sensitivity: "base" })
+        compare = a.title.localeCompare(b.title, locale, {
+          sensitivity: "base",
+        })
       } else {
         const aCreated = a.createdAt ?? 0
         const bCreated = b.createdAt ?? 0
         compare = aCreated - bCreated
         if (compare === 0) {
-          compare = a.title.localeCompare(b.title, locale, { sensitivity: "base" })
+          compare = a.title.localeCompare(b.title, locale, {
+            sensitivity: "base",
+          })
         }
       }
       return sortDirection === "asc" ? compare : -compare
@@ -114,7 +118,9 @@ export function KanbanBoardsSection({
     }
   }
 
-  const handleCreateBoardSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+  const handleCreateBoardSubmit = async (
+    event: React.FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault()
     const created = await createBoard()
     if (created) {
@@ -127,8 +133,12 @@ export function KanbanBoardsSection({
       <section>
         <div className={`${styles.cardHeader} ${styles.sectionHeader}`}>
           <div>
-            <h3 className={styles.cardTitle}>{uiCopy.board.boardSectionTitle}</h3>
-            <p className={styles.cardSubtitle}>{uiCopy.board.boardSectionSubtitle}</p>
+            <h3 className={styles.cardTitle}>
+              {uiCopy.board.boardSectionTitle}
+            </h3>
+            <p className={styles.cardSubtitle}>
+              {uiCopy.board.boardSectionSubtitle}
+            </p>
           </div>
           <div className={styles.sectionControls}>
             <div className={styles.sortControls}>
@@ -171,14 +181,22 @@ export function KanbanBoardsSection({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="asc">{uiCopy.board.sortAscending}</SelectItem>
-                  <SelectItem value="desc">{uiCopy.board.sortDescending}</SelectItem>
+                  <SelectItem value="asc">
+                    {uiCopy.board.sortAscending}
+                  </SelectItem>
+                  <SelectItem value="desc">
+                    {uiCopy.board.sortDescending}
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <Dialog open={createOpen} onOpenChange={setCreateOpen}>
               <DialogTrigger asChild>
-                <Button type="button" size="sm" data-testid="create-board-trigger">
+                <Button
+                  type="button"
+                  size="sm"
+                  data-testid="create-board-trigger"
+                >
                   {uiCopy.board.createBoard}
                 </Button>
               </DialogTrigger>
@@ -189,7 +207,10 @@ export function KanbanBoardsSection({
                     {uiCopy.board.boardSectionSubtitle}
                   </DialogDescription>
                 </DialogHeader>
-                <form className={styles.modalForm} onSubmit={handleCreateBoardSubmit}>
+                <form
+                  className={styles.modalForm}
+                  onSubmit={handleCreateBoardSubmit}
+                >
                   <div className={styles.modalFields}>
                     <Field>
                       <FieldLabel htmlFor="create-board-title">
@@ -217,14 +238,16 @@ export function KanbanBoardsSection({
                             setNewBoardLanguageOverride(value as BoardLanguage)
                           }}
                         >
-                          <SelectTrigger
-                            id="create-board-language"
-                          >
+                          <SelectTrigger id="create-board-language">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="ru">{languageLabels.ru}</SelectItem>
-                            <SelectItem value="en">{languageLabels.en}</SelectItem>
+                            <SelectItem value="ru">
+                              {languageLabels.ru}
+                            </SelectItem>
+                            <SelectItem value="en">
+                              {languageLabels.en}
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                       </FieldContent>
@@ -233,7 +256,7 @@ export function KanbanBoardsSection({
                   <DialogFooter className={styles.modalFooter}>
                     <DialogClose asChild>
                       <Button type="button" variant="ghost">
-                      {uiCopy.common.cancel}
+                        {uiCopy.common.cancel}
                       </Button>
                     </DialogClose>
                     <Button
@@ -248,7 +271,9 @@ export function KanbanBoardsSection({
                           aria-hidden="true"
                         />
                       ) : null}
-                      {creating ? uiCopy.board.creatingBoard : uiCopy.board.createBoard}
+                      {creating
+                        ? uiCopy.board.creatingBoard
+                        : uiCopy.board.createBoard}
                     </Button>
                   </DialogFooter>
                 </form>

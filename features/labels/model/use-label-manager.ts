@@ -19,7 +19,11 @@ type UseLabelManagerOptions = {
   setError: (message: string | null) => void
 }
 
-export function useLabelManager({ boardId, uiCopy, setError }: UseLabelManagerOptions) {
+export function useLabelManager({
+  boardId,
+  uiCopy,
+  setError,
+}: UseLabelManagerOptions) {
   const { data: labels = [] } = useGetBoardLabelsQuery(boardId)
   const [createLabel] = useCreateBoardLabelMutation()
   const [updateLabel] = useUpdateBoardLabelMutation()
@@ -27,12 +31,18 @@ export function useLabelManager({ boardId, uiCopy, setError }: UseLabelManagerOp
   const [createOpen, setCreateOpen] = React.useState(false)
   const [createName, setCreateName] = React.useState("")
   const [createColor, setCreateColor] = React.useState<BoardLabelColor>("blue")
-  const [editingLabel, setEditingLabel] = React.useState<BoardLabel | null>(null)
+  const [editingLabel, setEditingLabel] = React.useState<BoardLabel | null>(
+    null
+  )
   const [editName, setEditName] = React.useState("")
   const [editColor, setEditColor] = React.useState<BoardLabelColor>("blue")
-  const [deleteTarget, setDeleteTarget] = React.useState<BoardLabel | null>(null)
+  const [deleteTarget, setDeleteTarget] = React.useState<BoardLabel | null>(
+    null
+  )
   const [creating, setCreating] = React.useState(false)
-  const [pendingLabelId, setPendingLabelId] = React.useState<string | null>(null)
+  const [pendingLabelId, setPendingLabelId] = React.useState<string | null>(
+    null
+  )
 
   const openCreate = React.useCallback(() => {
     setError(null)
@@ -45,12 +55,15 @@ export function useLabelManager({ boardId, uiCopy, setError }: UseLabelManagerOp
     setCreateColor("blue")
   }, [])
 
-  const startEdit = React.useCallback((label: BoardLabel) => {
-    setError(null)
-    setEditingLabel(label)
-    setEditName(label.name)
-    setEditColor(label.color)
-  }, [setError])
+  const startEdit = React.useCallback(
+    (label: BoardLabel) => {
+      setError(null)
+      setEditingLabel(label)
+      setEditName(label.name)
+      setEditColor(label.color)
+    },
+    [setError]
+  )
 
   const cancelEdit = React.useCallback(() => {
     setEditingLabel(null)
@@ -58,44 +71,74 @@ export function useLabelManager({ boardId, uiCopy, setError }: UseLabelManagerOp
     setEditColor("blue")
   }, [])
 
-  const submitCreate = React.useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    const name = createName.trim()
-    if (!name) {
-      setError(uiCopy.board.errors.labelNameRequired)
-      return
-    }
-    setError(null)
-    setCreating(true)
-    try {
-      await createLabel({ boardId, name, color: createColor }).unwrap()
-      cancelCreate()
-    } catch (error) {
-      setError(getErrorMessage(error, uiCopy.board.errors.createLabelFailed))
-    } finally {
-      setCreating(false)
-    }
-  }, [boardId, cancelCreate, createColor, createLabel, createName, setError, uiCopy.board.errors.createLabelFailed, uiCopy.board.errors.labelNameRequired])
+  const submitCreate = React.useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      const name = createName.trim()
+      if (!name) {
+        setError(uiCopy.board.errors.labelNameRequired)
+        return
+      }
+      setError(null)
+      setCreating(true)
+      try {
+        await createLabel({ boardId, name, color: createColor }).unwrap()
+        cancelCreate()
+      } catch (error) {
+        setError(getErrorMessage(error, uiCopy.board.errors.createLabelFailed))
+      } finally {
+        setCreating(false)
+      }
+    },
+    [
+      boardId,
+      cancelCreate,
+      createColor,
+      createLabel,
+      createName,
+      setError,
+      uiCopy.board.errors.createLabelFailed,
+      uiCopy.board.errors.labelNameRequired,
+    ]
+  )
 
-  const submitEdit = React.useCallback(async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
-    if (!editingLabel) return
-    const name = editName.trim()
-    if (!name) {
-      setError(uiCopy.board.errors.labelNameRequired)
-      return
-    }
-    setError(null)
-    setPendingLabelId(editingLabel.id)
-    try {
-      await updateLabel({ boardId, labelId: editingLabel.id, name, color: editColor }).unwrap()
-      cancelEdit()
-    } catch (error) {
-      setError(getErrorMessage(error, uiCopy.board.errors.updateLabelFailed))
-    } finally {
-      setPendingLabelId(null)
-    }
-  }, [boardId, cancelEdit, editColor, editName, editingLabel, setError, uiCopy.board.errors.labelNameRequired, uiCopy.board.errors.updateLabelFailed, updateLabel])
+  const submitEdit = React.useCallback(
+    async (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault()
+      if (!editingLabel) return
+      const name = editName.trim()
+      if (!name) {
+        setError(uiCopy.board.errors.labelNameRequired)
+        return
+      }
+      setError(null)
+      setPendingLabelId(editingLabel.id)
+      try {
+        await updateLabel({
+          boardId,
+          labelId: editingLabel.id,
+          name,
+          color: editColor,
+        }).unwrap()
+        cancelEdit()
+      } catch (error) {
+        setError(getErrorMessage(error, uiCopy.board.errors.updateLabelFailed))
+      } finally {
+        setPendingLabelId(null)
+      }
+    },
+    [
+      boardId,
+      cancelEdit,
+      editColor,
+      editName,
+      editingLabel,
+      setError,
+      uiCopy.board.errors.labelNameRequired,
+      uiCopy.board.errors.updateLabelFailed,
+      updateLabel,
+    ]
+  )
 
   const confirmDelete = React.useCallback(async () => {
     if (!deleteTarget) return
@@ -110,7 +153,15 @@ export function useLabelManager({ boardId, uiCopy, setError }: UseLabelManagerOp
     } finally {
       setPendingLabelId(null)
     }
-  }, [boardId, cancelEdit, deleteLabel, deleteTarget, editingLabel, setError, uiCopy.board.errors.deleteLabelFailed])
+  }, [
+    boardId,
+    cancelEdit,
+    deleteLabel,
+    deleteTarget,
+    editingLabel,
+    setError,
+    uiCopy.board.errors.deleteLabelFailed,
+  ])
 
   return {
     labels,
@@ -125,7 +176,11 @@ export function useLabelManager({ boardId, uiCopy, setError }: UseLabelManagerOp
     creating,
     pendingLabelId,
     createDirty: Boolean(createName.trim()),
-    editDirty: Boolean(editingLabel && (editName.trim() !== editingLabel.name || editColor !== editingLabel.color)),
+    editDirty: Boolean(
+      editingLabel &&
+      (editName.trim() !== editingLabel.name ||
+        editColor !== editingLabel.color)
+    ),
     openCreate,
     cancelCreate,
     startEdit,

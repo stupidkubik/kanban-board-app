@@ -38,7 +38,9 @@ vi.mock("@/features/cards/data/card-operations", () => ({
 }))
 
 vi.mock("@/features/cards/model/card-normalizers", () => ({
-  ensureCardId: vi.fn((_boardId: string, cardId?: string) => cardId ?? "card-1"),
+  ensureCardId: vi.fn(
+    (_boardId: string, cardId?: string) => cardId ?? "card-1"
+  ),
   ensureCardOrder: vi.fn((order?: number) => order ?? 1),
 }))
 
@@ -94,10 +96,7 @@ describe("Firestore RTK Query listeners", () => {
 
   it("starts one listener per cache entry and keeps a synchronous initial snapshot", async () => {
     mocks.subscribeToBoard.mockImplementation(
-      (
-        _boardId: string,
-        onData: (nextBoard: Board | null) => void
-      ) => {
+      (_boardId: string, onData: (nextBoard: Board | null) => void) => {
         onData(board)
         return mocks.unsubscribe
       }
@@ -114,7 +113,9 @@ describe("Firestore RTK Query listeners", () => {
 
     await Promise.all([firstSubscription, secondSubscription])
     await vi.waitFor(() => {
-      expect(firestoreApi.endpoints.getBoard.select(args)(store.getState()).data).toEqual({
+      expect(
+        firestoreApi.endpoints.getBoard.select(args)(store.getState()).data
+      ).toEqual({
         status: "ready",
         board,
       })
@@ -137,7 +138,9 @@ describe("Firestore RTK Query listeners", () => {
         return mocks.unsubscribe
       }
     )
-    mocks.fetchWithAppCheck.mockResolvedValue(new Response(null, { status: 403 }))
+    mocks.fetchWithAppCheck.mockResolvedValue(
+      new Response(null, { status: 403 })
+    )
 
     const store = makeStore()
     const args = { boardId: board.id, subscriptionKey: 0 }
@@ -146,7 +149,9 @@ describe("Firestore RTK Query listeners", () => {
 
     onError?.()
     await vi.waitFor(() => {
-      expect(firestoreApi.endpoints.getBoard.select(args)(store.getState()).data).toEqual({
+      expect(
+        firestoreApi.endpoints.getBoard.select(args)(store.getState()).data
+      ).toEqual({
         status: "forbidden",
         board: null,
       })

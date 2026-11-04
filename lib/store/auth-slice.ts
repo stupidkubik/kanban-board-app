@@ -7,7 +7,8 @@ export type AuthUser = {
   email: string | null
 }
 
-export type AuthStatus = "idle" | "loading" | "authenticated" | "unauthenticated"
+export type AuthStatus =
+  "idle" | "loading" | "authenticated" | "unauthenticated"
 
 type AuthState = {
   user: AuthUser | null
@@ -47,5 +48,6 @@ const authSlice = createSlice({
   },
 })
 
-export const { authLoading, authSignedIn, authSignedOut, authError } = authSlice.actions
+export const { authLoading, authSignedIn, authSignedOut, authError } =
+  authSlice.actions
 export const authReducer = authSlice.reducer

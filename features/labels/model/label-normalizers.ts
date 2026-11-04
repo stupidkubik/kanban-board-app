@@ -1,8 +1,5 @@
 import { BOARD_LABEL_COLORS } from "@/lib/types/boards"
-import type {
-  BoardLabel,
-  BoardLabelColor,
-} from "@/lib/types/boards"
+import type { BoardLabel, BoardLabelColor } from "@/lib/types/boards"
 import { toMillis } from "@/lib/firestore-values"
 
 export const BOARD_LABEL_LIMIT = 50
@@ -23,9 +20,7 @@ export const normalizeLabelName = (value: unknown) =>
     ? value.trim().replace(/\s+/g, " ").toLocaleLowerCase()
     : ""
 
-export const isBoardLabelColor = (
-  value: unknown
-): value is BoardLabelColor =>
+export const isBoardLabelColor = (value: unknown): value is BoardLabelColor =>
   typeof value === "string" &&
   BOARD_LABEL_COLORS.includes(value as BoardLabelColor)
 

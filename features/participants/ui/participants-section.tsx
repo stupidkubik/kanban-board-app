@@ -18,7 +18,10 @@ import type { Board } from "@/lib/types/boards"
 import type { BoardCopy } from "@/lib/types/board-ui"
 import type { Locale } from "@/lib/i18n"
 import { useBoardParticipants } from "@/features/participants/model/use-board-participants"
-import { ParticipantsSectionView, ParticipantsSummary } from "@/features/participants/ui/participants-section-view"
+import {
+  ParticipantsSectionView,
+  ParticipantsSummary,
+} from "@/features/participants/ui/participants-section-view"
 import styles from "@/features/participants/ui/participants.module.css"
 
 type ParticipantsSectionProps = {
@@ -31,7 +34,9 @@ type ParticipantsSectionProps = {
   setError: (message: string | null) => void
 }
 
-export const ParticipantsSection = React.memo(function ParticipantsSection(props: ParticipantsSectionProps) {
+export const ParticipantsSection = React.memo(function ParticipantsSection(
+  props: ParticipantsSectionProps
+) {
   const {
     participants,
     inviteEmail,
@@ -55,18 +60,35 @@ export const ParticipantsSection = React.memo(function ParticipantsSection(props
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button type="button" variant="outline" size="sm" className={styles.managerTrigger} aria-label={props.uiCopy.board.participantsManager} data-testid="participants-manager-trigger">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className={styles.managerTrigger}
+          aria-label={props.uiCopy.board.participantsManager}
+          data-testid="participants-manager-trigger"
+        >
           <UsersThree weight="bold" aria-hidden="true" />
           <span>{props.uiCopy.board.participantsManager}</span>
-          <ParticipantsSummary participants={participants} emptyLabel={props.uiCopy.board.onlyYou} />
+          <ParticipantsSummary
+            participants={participants}
+            emptyLabel={props.uiCopy.board.onlyYou}
+          />
         </Button>
       </DialogTrigger>
       <DialogContent size="lg" className={styles.managerDialog}>
         <DialogHeader className={styles.managerHeader}>
           <DialogTitle>{props.uiCopy.board.participantsManager}</DialogTitle>
-          <DialogDescription className="srOnly">{props.uiCopy.board.participantsTitle}</DialogDescription>
+          <DialogDescription className="srOnly">
+            {props.uiCopy.board.participantsTitle}
+          </DialogDescription>
           <DialogClose asChild>
-            <Button type="button" variant="ghost" size="sm" data-testid="close-participants-manager">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              data-testid="close-participants-manager"
+            >
               {props.uiCopy.common.cancel}
             </Button>
           </DialogClose>

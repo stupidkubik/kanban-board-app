@@ -18,7 +18,8 @@ const keys = {
   boardsSortDirection: "boardsSortDirection",
 } as const
 
-const isLocale = (value: string): value is Locale => value === "ru" || value === "en"
+const isLocale = (value: string): value is Locale =>
+  value === "ru" || value === "en"
 const isTheme = (value: string): value is UiTheme =>
   value === "light" || value === "dark"
 const isBoardsSortKey = (value: string): value is BoardsSortKey =>
@@ -83,8 +84,10 @@ export const setStoredUiLocale = (locale: Locale) => {
 }
 
 export const useUiLocaleTouched = () =>
-  useStringPreference(keys.localeTouched, "0", (value): value is "0" | "1" =>
-    value === "0" || value === "1"
+  useStringPreference(
+    keys.localeTouched,
+    "0",
+    (value): value is "0" | "1" => value === "0" || value === "1"
   ) === "1"
 
 export const setUiLocaleTouched = (touched: boolean) => {

@@ -34,7 +34,9 @@ const isSensitiveProjectFile = (absolutePath) => {
   const filename = path.basename(relativePath).toLowerCase()
 
   return (
-    segments.some((segment) => segment === ".env" || segment.startsWith(".env.")) ||
+    segments.some(
+      (segment) => segment === ".env" || segment.startsWith(".env.")
+    ) ||
     filename.includes("firebase-adminsdk") ||
     filename.includes("service-account") ||
     filename.includes("service_account") ||
@@ -65,7 +67,9 @@ export const findSensitiveTraceEntries = (manifestPaths) => {
 const run = () => {
   const manifests = collectTraceManifests(nextRoot)
   if (!manifests.length) {
-    throw new Error("No Next.js trace manifests found. Run `npm run build` first.")
+    throw new Error(
+      "No Next.js trace manifests found. Run `npm run build` first."
+    )
   }
 
   const findings = findSensitiveTraceEntries(manifests)
@@ -76,10 +80,14 @@ const run = () => {
           `${path.relative(projectRoot, manifestPath)} -> ${path.relative(projectRoot, absolutePath)}`
       )
       .join("\n")
-    throw new Error(`Sensitive files found in Next.js server traces:\n${details}`)
+    throw new Error(
+      `Sensitive files found in Next.js server traces:\n${details}`
+    )
   }
 
-  process.stdout.write(`Server trace check passed (${manifests.length} manifests).\n`)
+  process.stdout.write(
+    `Server trace check passed (${manifests.length} manifests).\n`
+  )
 }
 
 const currentFile = fileURLToPath(import.meta.url)

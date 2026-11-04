@@ -70,11 +70,16 @@ beforeEach(() => {
   apiMocks.createUnwrap.mockReset().mockResolvedValue(undefined)
   apiMocks.updateUnwrap.mockReset().mockResolvedValue(undefined)
   apiMocks.deleteUnwrap.mockReset().mockResolvedValue(undefined)
-  apiMocks.createLabel.mockImplementation(() => ({ unwrap: apiMocks.createUnwrap }))
-  apiMocks.updateLabel.mockImplementation(() => ({ unwrap: apiMocks.updateUnwrap }))
-  apiMocks.deleteLabel.mockImplementation(() => ({ unwrap: apiMocks.deleteUnwrap }))
+  apiMocks.createLabel.mockImplementation(() => ({
+    unwrap: apiMocks.createUnwrap,
+  }))
+  apiMocks.updateLabel.mockImplementation(() => ({
+    unwrap: apiMocks.updateUnwrap,
+  }))
+  apiMocks.deleteLabel.mockImplementation(() => ({
+    unwrap: apiMocks.deleteUnwrap,
+  }))
 })
-
 
 describe("LabelsSection", () => {
   it("renders empty and populated read-only states for viewers", () => {
@@ -110,12 +115,12 @@ describe("LabelsSection", () => {
     expect(screen.getByTestId("create-label")).toBeDisabled()
 
     fireEvent.submit(nameInput.closest("form")!)
-    expect(setError).toHaveBeenCalledWith(
-      uiCopy.board.errors.labelNameRequired
-    )
+    expect(setError).toHaveBeenCalledWith(uiCopy.board.errors.labelNameRequired)
 
     await user.type(nameInput, "Bug")
-    const blue = screen.getByRole("radio", { name: uiCopy.board.labelColorBlue })
+    const blue = screen.getByRole("radio", {
+      name: uiCopy.board.labelColorBlue,
+    })
     const purple = screen.getByRole("radio", {
       name: uiCopy.board.labelColorPurple,
     })

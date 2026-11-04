@@ -22,7 +22,11 @@ export type CardRecord = {
   archived?: boolean
 }
 
-export const normalizeCard = (boardId: string, id: string, data: CardRecord): Card => {
+export const normalizeCard = (
+  boardId: string,
+  id: string,
+  data: CardRecord
+): Card => {
   const createdById =
     typeof data.createdById === "string"
       ? data.createdById
@@ -92,12 +96,7 @@ export const normalizeCard = (boardId: string, id: string, data: CardRecord): Ca
 export const isVisibleCard = (card: Card) => card.archived !== true
 
 export const ensureCardId = (boardId: string, cardId?: string) => {
-  return (
-    cardId ??
-    doc(
-      collection(clientDb, "boards", boardId, "cards")
-    ).id
-  )
+  return cardId ?? doc(collection(clientDb, "boards", boardId, "cards")).id
 }
 
 export const ensureCardOrder = (order?: number) => {

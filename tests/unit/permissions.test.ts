@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest"
 
-import { canEditBoard, canInviteMembers, getMemberRole, isBoardOwner } from "@/lib/permissions"
+import {
+  canEditBoard,
+  canInviteMembers,
+  getMemberRole,
+  isBoardOwner,
+} from "@/lib/permissions"
 import type { Board } from "@/lib/types/boards"
 
 const makeBoard = (overrides?: Partial<Board>): Board => ({

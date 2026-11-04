@@ -148,8 +148,7 @@ function SelectScrollUpButton({
       className={cn(styles.scrollButton, className)}
       {...props}
     >
-      <CaretUpIcon
-      />
+      <CaretUpIcon />
     </SelectPrimitive.ScrollUpButton>
   )
 }
@@ -164,8 +163,7 @@ function SelectScrollDownButton({
       className={cn(styles.scrollButton, className)}
       {...props}
     >
-      <CaretDownIcon
-      />
+      <CaretDownIcon />
     </SelectPrimitive.ScrollDownButton>
   )
 }

@@ -39,10 +39,9 @@ describe("stale member profile migration", () => {
     )
 
     expect(staleIds).toEqual(["stale"])
-    expect(chunkValues(profileIds).map((chunk: string[]) => chunk.length)).toEqual([
-      MAX_BATCH_WRITES,
-      1,
-    ])
+    expect(
+      chunkValues(profileIds).map((chunk: string[]) => chunk.length)
+    ).toEqual([MAX_BATCH_WRITES, 1])
   })
 
   it("rejects unsafe batch sizes", () => {

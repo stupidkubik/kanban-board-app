@@ -7,10 +7,7 @@ import { useGetBoardMembersQuery } from "@/features/participants/data/participan
 import { buildCardAssignees } from "@/features/cards/model/card-assignees"
 import type { Board } from "@/lib/types/boards"
 
-export const useBoardAssignees = (
-  board: Board | null,
-  user: User | null
-) => {
+export const useBoardAssignees = (board: Board | null, user: User | null) => {
   const { data: profiles = [] } = useGetBoardMembersQuery(board?.id ?? null, {
     skip: !board?.id,
   })

@@ -14,7 +14,9 @@ export default function GlobalError({
   error: Error & { digest?: string }
   reset: () => void
 }) {
-  const [correlationId] = React.useState(() => getClientErrorCorrelationId(error))
+  const [correlationId] = React.useState(() =>
+    getClientErrorCorrelationId(error)
+  )
 
   React.useEffect(() => {
     reportClientError(error, { boundary: "global" }, correlationId)
