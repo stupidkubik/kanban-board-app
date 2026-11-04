@@ -108,11 +108,11 @@ Build / start:
 - npm run start
 
 Quality gate (also runs in GitHub Actions, `.github/workflows/quality.yml`):
-- npm run check      (lint with zero warnings + typecheck + all Vitest tests)
+- npm run check      (lint with zero warnings + typecheck + unit tests with coverage thresholds)
 
 Lint / typecheck / auto-fix:
 - npm run lint
-- npm run typecheck  (tsc --noEmit; `next build` type-checks `tests/**` too)
+- npm run typecheck  (app + tests, then `cypress/tsconfig.json`; `next build` type-checks `tests/**` too)
 - npm run format     (eslint --fix; there is no formatter yet)
 
 Seed / smoke:
@@ -121,10 +121,11 @@ Seed / smoke:
 - npm run migrate:card-labels
 
 Tests:
-- npm run test         (Vitest, single run)
-- npm run test:watch   (Vitest watch mode)
-- npm run test:unit    (unit + component tests only)
-- npm run test:rules   (Firestore rules tests via emulator; uses `firebase emulators:exec`)
+- npm run test           (every Vitest project once; `rules` skips without the emulator)
+- npm run test:watch     (Vitest watch mode)
+- npm run test:unit      (Vitest project `unit`: tests/unit + tests/components, jsdom)
+- npm run test:coverage  (project `unit` with V8 coverage; thresholds in `vitest.config.mts` — raise them, never lower)
+- npm run test:rules     (Vitest project `rules` against the Firestore emulator; uses `firebase emulators:exec`)
 - npm run cypress:open
 - npm run cypress:run
 

@@ -119,9 +119,10 @@ and remove all synthetic data in `finally`.
 
 The current automated baseline contains:
 
-- 128 passing unit and component tests, with 12 environment-conditional skips.
-- 12 Firestore Rules scenarios covering owner/editor/viewer access and data
-  invariants.
+- 128 unit and component tests (Vitest project `unit`) with a V8 coverage
+  floor of 45% statements and lines, 38% branches, 47% functions.
+- 12 Firestore Rules scenarios (Vitest project `rules`, emulator only) covering
+  owner/editor/viewer access and data invariants.
 - 3 full Cypress journeys covering core CRUD, Undo, drag-and-drop, invitations,
   labels, assignees, role changes, realtime updates, and cleanup.
 - A production build check for secret-free Next.js server traces.
@@ -174,12 +175,13 @@ Never store a service-account file or `.env.local` in Git.
 | --- | --- |
 | `npm run dev` | Start the development server |
 | `npm run build` | Build with Webpack and inspect server traces |
-| `npm run check` | Lint (zero warnings), typecheck, and run all Vitest tests once |
+| `npm run check` | Lint (zero warnings), typecheck, unit tests with coverage thresholds |
 | `npm run lint` | Run ESLint |
-| `npm run typecheck` | Run `tsc --noEmit` |
-| `npm run test` | Run all Vitest tests once (rules tests skip without the emulator) |
+| `npm run typecheck` | Type-check the app, tests, and Cypress specs |
+| `npm run test` | Run every Vitest project once (rules tests skip without the emulator) |
 | `npm run test:watch` | Run Vitest in watch mode |
 | `npm run test:unit` | Run unit and component tests once |
+| `npm run test:coverage` | Unit tests with V8 coverage (report in `coverage/`) |
 | `npm run test:rules` | Test Firestore Rules in the emulator |
 | `npm run cypress:run` | Run isolated Auth/Firestore E2E |
 | `npm run smoke` | Run the guarded production smoke script |

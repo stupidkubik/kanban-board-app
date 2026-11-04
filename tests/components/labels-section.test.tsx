@@ -1,6 +1,6 @@
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react"
+import { fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest"
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest"
 
 import { LabelsSection } from "@/features/labels/ui/labels-section"
 import { getCopy } from "@/lib/i18n"
@@ -75,7 +75,6 @@ beforeEach(() => {
   apiMocks.deleteLabel.mockImplementation(() => ({ unwrap: apiMocks.deleteUnwrap }))
 })
 
-afterEach(cleanup)
 
 describe("LabelsSection", () => {
   it("renders empty and populated read-only states for viewers", () => {

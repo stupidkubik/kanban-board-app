@@ -114,6 +114,9 @@ UI-проверки не являются границей безопаснос�
 | `PATCH /api/boards/[boardId]` | server route | rename board и pending invites |
 | `DELETE /api/boards/[boardId]` | server route | owner-only каскадное удаление board data |
 | `DELETE /api/boards/[boardId]/columns/[columnId]` | server route | owner-only удаление пустой колонки |
+| `POST /api/boards/[boardId]/labels` | server route | owner/editor создание метки в каталоге (cap 50) |
+| `PATCH /api/boards/[boardId]/labels/[labelId]` | server route | owner/editor rename/recolor метки |
+| `DELETE /api/boards/[boardId]/labels/[labelId]` | server route | owner/editor удаление метки и снятие её с карточек |
 | `PATCH /api/boards/[boardId]/members/[memberId]` | server route | owner-only editor/viewer role update |
 | `DELETE /api/boards/[boardId]/members/[memberId]` | server route | remove member или leave board |
 | `POST /api/invites/[inviteId]/accept` | server route | атомарное принятие приглашения |
