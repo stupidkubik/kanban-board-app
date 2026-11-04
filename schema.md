@@ -140,8 +140,12 @@ Ordering notes:
 - New positions are computed using gaps between neighbors (avg / +/- gap).
 - Moving a card updates both `columnId` and `order`.
 - If neighbors are missing, `order` uses the configured numeric gap.
-- When the relative gap between neighbors falls to `1e-6` or lower, the client
-  rebalances the target column in a batch (up to the supported 500-card cap).
+- New cards get the column's largest `order` plus the gap (older cards may
+  still carry `Date.now()` values; both coexist).
+- When the absolute gap between neighbors falls to `0.001` or lower (or below
+  the double-precision floor `16 * Number.EPSILON * |order|`), the client
+  rebalances the target column in a batch that writes only `order` (up to the
+  supported 500-card cap).
 
 Example:
 ```json

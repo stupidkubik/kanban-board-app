@@ -83,7 +83,19 @@ export function useCardDnd({
 
       if (!dropColumnId) {
         const overIndex = filteredCards.findIndex((card) => card.id === overId)
-        if (overIndex >= 0) targetIndex = overIndex
+        if (overIndex >= 0) {
+          // Match dnd-kit's sortable preview (arrayMove): within a column a
+          // card dragged down lands after the card it is over, up — before.
+          const sourceIndex = destinationCards.findIndex(
+            (card) => card.id === activeId
+          )
+          const overIndexBeforeRemoval = destinationCards.findIndex(
+            (card) => card.id === overId
+          )
+          const movingDown =
+            sourceIndex >= 0 && sourceIndex < overIndexBeforeRemoval
+          targetIndex = movingDown ? overIndex + 1 : overIndex
+        }
       }
 
       const beforeCard = filteredCards[targetIndex - 1]
@@ -123,7 +135,6 @@ export function useCardDnd({
             boardId,
             cards: reorderedCards.map((card, index) => ({
               cardId: card.id,
-              columnId: overColumnId,
               order: getRebalancedOrder(index),
             })),
           })

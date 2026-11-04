@@ -1,6 +1,10 @@
 // Keep gaps so we can insert cards without reindexing whole columns.
 export const ORDER_GAP = 1000
-const MIN_ORDER_GAP = 0.000001
+// Absolute, not relative: cards created before 2026-11 have Date.now()
+// orders (~1.7e12), and a relative 1e-6 threshold fired on nearly every drop.
+const MIN_ORDER_GAP = 0.001
+// Midpoints stop being distinct doubles well before the gap reaches zero.
+const PRECISION_GAP_FACTOR = 16
 
 export const getNextOrderValue = (before?: number, after?: number) => {
   if (typeof before === "number" && typeof after === "number") {
@@ -18,7 +22,17 @@ export const getNextOrderValue = (before?: number, after?: number) => {
     return after - ORDER_GAP
   }
 
-  return Date.now()
+  return ORDER_GAP
+}
+
+// Order for a card added at the end of a column.
+export const getAppendOrder = (cards: readonly { order: number }[] = []) => {
+  const last = cards.reduce(
+    (max, card) =>
+      Number.isFinite(card.order) ? Math.max(max, card.order) : max,
+    -Infinity
+  )
+  return Number.isFinite(last) ? last + ORDER_GAP : ORDER_GAP
 }
 
 export const shouldRebalanceOrder = (before?: number, after?: number) => {
@@ -26,8 +40,11 @@ export const shouldRebalanceOrder = (before?: number, after?: number) => {
     return false
   }
   const gap = after - before
-  const scale = Math.max(1, Math.abs(before), Math.abs(after))
-  return !Number.isFinite(gap) || gap <= MIN_ORDER_GAP * scale
+  const precisionGap =
+    Number.EPSILON *
+    Math.max(Math.abs(before), Math.abs(after)) *
+    PRECISION_GAP_FACTOR
+  return !Number.isFinite(gap) || gap <= Math.max(MIN_ORDER_GAP, precisionGap)
 }
 
 export const getRebalancedOrder = (index: number) => (index + 1) * ORDER_GAP

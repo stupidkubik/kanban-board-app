@@ -47,7 +47,9 @@ export type DeleteCardInput = {
 
 export type RebalanceCardOrdersInput = {
   boardId: string
-  cards: Array<{ cardId: string; columnId: string; order: number }>
+  // Only `order`: writing columnId from a stale snapshot would undo moves
+  // other members made to these cards in the meantime.
+  cards: Array<{ cardId: string; order: number }>
 }
 
 const buildCardUpdates = (input: UpdateCardInput) => {
@@ -152,7 +154,6 @@ export const rebalanceCardOrders = async ({
   const batch = writeBatch(clientDb)
   cards.forEach((card) => {
     batch.update(doc(clientDb, "boards", boardId, "cards", card.cardId), {
-      columnId: card.columnId,
       order: card.order,
       updatedAt: serverTimestamp(),
     })
