@@ -56,5 +56,19 @@
     "jsdom": "^27.4.0",
     "typescript": "^5",
     "vitest": "^4.1.12"
+  },
+  "overrides": {
+    "@firebase/firestore": {
+      "@grpc/grpc-js": "^1.14.7"
+    },
+    "gaxios": {
+      "uuid": "^11.1.1"
+    },
+    "google-gax": {
+      "uuid": "^11.1.1"
+    },
+    "teeny-request": {
+      "uuid": "^11.1.1"
+    }
   }
 }
