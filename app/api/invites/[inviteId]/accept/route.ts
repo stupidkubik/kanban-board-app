@@ -5,6 +5,14 @@ import { adminAuth, adminDb } from "@/lib/firebase/admin"
 import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { getSession } from "@/lib/firebase/session"
 import { getErrorMessage } from "@/lib/errors"
+import {
+  MAX_BOARD_MEMBERS,
+  hasOnlyKeys,
+  isDocumentId,
+  isInviteId,
+  isPlainObject,
+  parseProfileFields,
+} from "@/lib/server/route-input"
 
 class AcceptInviteError extends Error {
   constructor(
@@ -15,11 +23,13 @@ class AcceptInviteError extends Error {
   }
 }
 
-type AcceptInviteBody = {
-  boardId?: string
-  displayName?: string | null
-  photoURL?: string | null
-}
+// `email` is accepted for older clients but ignored: the account decides it.
+const ACCEPT_INVITE_KEYS = [
+  "boardId",
+  "displayName",
+  "email",
+  "photoURL",
+] as const
 
 export async function POST(
   request: Request,
@@ -36,16 +46,21 @@ export async function POST(
   }
 
   const { inviteId } = await params
-  let body: AcceptInviteBody = {}
+  let body: unknown
   try {
-    body = (await request.json()) as AcceptInviteBody
+    body = await request.json()
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
 
-  if (!inviteId || !body.boardId) {
+  if (!isPlainObject(body) || !hasOnlyKeys(body, ACCEPT_INVITE_KEYS)) {
+    return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
+  }
+  const boardId = body.boardId
+  const profile = parseProfileFields(body)
+  if (!isInviteId(inviteId) || !isDocumentId(boardId) || !profile) {
     return NextResponse.json(
-      { error: "Missing inviteId or boardId" },
+      { error: "Invalid inviteId, boardId or profile" },
       { status: 400 }
     )
   }
@@ -69,7 +84,7 @@ export async function POST(
 
   try {
     const inviteRef = adminDb.collection("boardInvites").doc(inviteId)
-    const boardRef = adminDb.collection("boards").doc(body.boardId)
+    const boardRef = adminDb.collection("boards").doc(boardId)
     const profileRef = boardRef.collection("memberProfiles").doc(session.uid)
 
     await adminDb.runTransaction(async (transaction) => {
@@ -93,7 +108,7 @@ export async function POST(
         { boardId?: string; email?: string; role?: string } | undefined
 
       if (inviteSnapshot.exists && invite) {
-        if (invite.boardId !== body.boardId) {
+        if (invite.boardId !== boardId) {
           throw new AcceptInviteError(400, "Invite board mismatch")
         }
         if (invite.email?.toLowerCase() !== accountEmail) {
@@ -107,6 +122,10 @@ export async function POST(
         if (!invite || (invite.role !== "editor" && invite.role !== "viewer")) {
           throw new AcceptInviteError(400, "Invalid invite role")
         }
+        // Rules reject any client board update once members exceed the cap.
+        if (Object.keys(board.members ?? {}).length >= MAX_BOARD_MEMBERS) {
+          throw new AcceptInviteError(409, "Board member limit reached")
+        }
 
         transaction.update(boardRef, {
           members: { ...board.members, [session.uid]: true },
@@ -117,9 +136,9 @@ export async function POST(
 
       if (!profileSnapshot.exists) {
         transaction.set(profileRef, {
-          displayName: body.displayName ?? null,
+          displayName: profile.displayName,
           email: accountEmail,
-          photoURL: body.photoURL ?? null,
+          photoURL: profile.photoURL,
           joinedAt: FieldValue.serverTimestamp(),
         })
       }

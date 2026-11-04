@@ -5,6 +5,12 @@ import { adminDb } from "@/lib/firebase/admin"
 import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { getSession } from "@/lib/firebase/session"
 import { getErrorMessage } from "@/lib/errors"
+import {
+  hasOnlyKeys,
+  isDocumentId,
+  isPlainObject,
+  parseBoardTitle,
+} from "@/lib/server/route-input"
 
 const DELETE_BATCH_SIZE = 500
 const MAX_INVITES_PER_RENAME = 499
@@ -41,8 +47,8 @@ export async function GET(
   }
 
   const { boardId } = await params
-  if (!boardId) {
-    return NextResponse.json({ error: "Missing boardId" }, { status: 400 })
+  if (!isDocumentId(boardId)) {
+    return NextResponse.json({ error: "Invalid boardId" }, { status: 400 })
   }
 
   try {
@@ -76,17 +82,20 @@ export async function PATCH(
   }
 
   const { boardId } = await params
-  let title = ""
+  let body: unknown
   try {
-    const body = (await request.json()) as { title?: string }
-    title = body.title?.trim() ?? ""
+    body = await request.json()
   } catch {
     return NextResponse.json({ error: "Invalid request body" }, { status: 400 })
   }
 
-  if (!boardId || !title) {
+  const title =
+    isPlainObject(body) && hasOnlyKeys(body, ["title"])
+      ? parseBoardTitle(body.title)
+      : null
+  if (!isDocumentId(boardId) || !title) {
     return NextResponse.json(
-      { error: "Missing boardId or title" },
+      { error: "Invalid boardId or title" },
       { status: 400 }
     )
   }
@@ -165,8 +174,8 @@ export async function DELETE(
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
   }
 
-  if (!boardId) {
-    return NextResponse.json({ error: "Missing boardId" }, { status: 400 })
+  if (!isDocumentId(boardId)) {
+    return NextResponse.json({ error: "Invalid boardId" }, { status: 400 })
   }
 
   try {

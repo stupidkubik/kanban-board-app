@@ -5,6 +5,7 @@ import { adminDb } from "@/lib/firebase/admin"
 import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { getSession } from "@/lib/firebase/session"
 import { getErrorMessage } from "@/lib/errors"
+import { isDocumentId } from "@/lib/server/route-input"
 
 class MemberRouteError extends Error {
   constructor(
@@ -34,9 +35,9 @@ export async function DELETE(
   }
 
   const { boardId, memberId } = await params
-  if (!boardId || !memberId) {
+  if (!isDocumentId(boardId) || !isDocumentId(memberId)) {
     return NextResponse.json(
-      { error: "Missing boardId or memberId" },
+      { error: "Invalid boardId or memberId" },
       { status: 400 }
     )
   }
@@ -154,9 +155,9 @@ export async function PATCH(
   }
 
   const { boardId, memberId } = await params
-  if (!boardId || !memberId) {
+  if (!isDocumentId(boardId) || !isDocumentId(memberId)) {
     return NextResponse.json(
-      { error: "Missing boardId or memberId" },
+      { error: "Invalid boardId or memberId" },
       { status: 400 }
     )
   }

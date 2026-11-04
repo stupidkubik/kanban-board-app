@@ -12,6 +12,7 @@ import { adminDb } from "@/lib/firebase/admin"
 import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { getSession } from "@/lib/firebase/session"
 import { getErrorMessage } from "@/lib/errors"
+import { isDocumentId } from "@/lib/server/route-input"
 
 export async function POST(
   request: Request,
@@ -28,6 +29,9 @@ export async function POST(
 
   try {
     const { boardId } = await params
+    if (!isDocumentId(boardId)) {
+      throw new LabelRouteError(400, "Invalid boardId")
+    }
     const label = await parseLabelBody(request)
     const boardRef = adminDb.collection("boards").doc(boardId)
     const labelRef = boardRef.collection("labels").doc()

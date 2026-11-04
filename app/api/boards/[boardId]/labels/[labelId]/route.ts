@@ -11,6 +11,7 @@ import { adminDb } from "@/lib/firebase/admin"
 import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { getSession } from "@/lib/firebase/session"
 import { getErrorMessage } from "@/lib/errors"
+import { isDocumentId } from "@/lib/server/route-input"
 
 const authorize = async (request: Request) => {
   const appCheck = await verifyAppCheckToken(request)
@@ -41,6 +42,9 @@ export async function PATCH(
   try {
     const session = await authorize(request)
     const { boardId, labelId } = await params
+    if (!isDocumentId(boardId) || !isDocumentId(labelId)) {
+      throw new LabelRouteError(400, "Invalid boardId or labelId")
+    }
     const nextLabel = await parseLabelBody(request)
     const boardRef = adminDb.collection("boards").doc(boardId)
     const labelRef = boardRef.collection("labels").doc(labelId)
@@ -88,6 +92,9 @@ export async function DELETE(
   try {
     const session = await authorize(request)
     const { boardId, labelId } = await params
+    if (!isDocumentId(boardId) || !isDocumentId(labelId)) {
+      throw new LabelRouteError(400, "Invalid boardId or labelId")
+    }
     const boardRef = adminDb.collection("boards").doc(boardId)
     const boardSnapshot = await boardRef.get()
     const board = boardSnapshot.exists ? boardSnapshot.data() : undefined
