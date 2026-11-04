@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server"
 
 import { verifyAppCheckToken } from "@/lib/firebase/app-check"
-import { clearSessionCookie, createSessionCookie } from "@/lib/firebase/session"
+import {
+  clearSessionCookie,
+  createSessionCookie,
+  revokeCurrentSession,
+} from "@/lib/firebase/session"
 import { checkRateLimit, getRequestClientKey } from "@/lib/server/rate-limit"
+
+// Firebase ID tokens are ~1 KB; anything far larger is not one.
+const MAX_ID_TOKEN_LENGTH = 16_384
 
 export async function POST(request: Request) {
   const rateLimit = checkRateLimit(
@@ -28,20 +35,28 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: appCheck.error }, { status: 401 })
   }
 
-  let idToken = ""
-
+  let idToken: unknown
   try {
-    const body = (await request.json()) as { idToken?: string }
-    idToken = body.idToken ?? ""
+    const body = (await request.json()) as { idToken?: unknown }
+    idToken = body?.idToken
   } catch {
-    idToken = ""
+    idToken = undefined
   }
 
-  if (!idToken) {
+  if (
+    typeof idToken !== "string" ||
+    idToken.length === 0 ||
+    idToken.length > MAX_ID_TOKEN_LENGTH
+  ) {
     return NextResponse.json({ error: "Missing idToken" }, { status: 400 })
   }
 
-  await createSessionCookie(idToken)
+  try {
+    await createSessionCookie(idToken)
+  } catch {
+    // Expired, revoked, malformed or foreign-project tokens.
+    return NextResponse.json({ error: "Invalid idToken" }, { status: 401 })
+  }
 
   return NextResponse.json({ status: "ok" })
 }
@@ -52,6 +67,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: appCheck.error }, { status: 401 })
   }
 
+  await revokeCurrentSession()
   await clearSessionCookie()
   return NextResponse.json({ status: "ok" })
 }
