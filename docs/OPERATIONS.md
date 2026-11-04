@@ -98,6 +98,21 @@ upgrade не считается безопасным исправлением.
 - Firebase Admin 14.x сейчас ломает Vercel Functions с `ERR_REQUIRE_ESM` через
   `jwks-rsa@4 -> jose@6`.
 
+`package.json` → `overrides` (добавлены 2026-11-04, закрывают оставшиеся
+production advisories):
+
+- `@firebase/firestore` → `@grpc/grpc-js ^1.14.7`: `@firebase/firestore` пинит
+  `~1.9.0` (1.9.16 уязвима). gRPC нужен только Node-сборке Firestore SDK (rules
+  tests, скрипты); проверено `npm run test:rules` и `npm run cypress:run`.
+  Удалить, когда `firebase` перестанет пинить 1.9.x (`npm ls @grpc/grpc-js`).
+- `gaxios`, `google-gax`, `teeny-request` → `uuid ^11.1.1`: `firebase-admin` 13
+  и `firebase-tools` тянут `uuid@9.0.1`; пакеты используют только `v4()`.
+  Удалить после перехода на `firebase-admin` ≥14.3, если `npm ls uuid` чистый.
+
+Dependabot (`.github/dependabot.yml`) раз в неделю открывает группы `next`,
+`react`, `vitest`, `firebase` и minor/patch для production/development; мажоры
+`typescript` ≥7, `eslint` и `@types/node` игнорируются. Overrides он не обновляет.
+
 Будущее обновление Firebase Admin 14.x выполнять отдельной миграцией: отдельный
 commit, clean install, полный gate, preview, проверка session/protected API и
 runtime logs. Не объединять его с обновлением Next.js.
