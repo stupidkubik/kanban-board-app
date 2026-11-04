@@ -1,0 +1,13 @@
+# Generated or vendored
+package-lock.json
+.next/
+out/
+build/
+coverage/
+next-env.d.ts
+cypress/screenshots/
+public/
+
+# Prose and data are left as written; only code and config are formatted.
+*.md
+design-system.json

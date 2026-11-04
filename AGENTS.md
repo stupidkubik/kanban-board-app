@@ -108,12 +108,14 @@ Build / start:
 - npm run start
 
 Quality gate (also runs in GitHub Actions, `.github/workflows/quality.yml`):
-- npm run check      (lint with zero warnings + typecheck + unit tests with coverage thresholds)
+- npm run check      (lint with zero warnings + Prettier check + typecheck + unit tests with coverage thresholds)
 
-Lint / typecheck / auto-fix:
+Lint / format / typecheck:
 - npm run lint
-- npm run typecheck  (app + tests, then `cypress/tsconfig.json`; `next build` type-checks `tests/**` too)
-- npm run format     (eslint --fix; there is no formatter yet)
+- npm run lint:fix      (eslint --fix)
+- npm run format        (Prettier write; config in `.prettierrc.json`, Markdown is not formatted)
+- npm run format:check  (Prettier check, part of `check`)
+- npm run typecheck     (app + tests, then `cypress/tsconfig.json`; `next build` type-checks `tests/**` too)
 
 Seed / smoke:
 - npm run smoke    (guarded cloud smoke; see `scripts/smoke-kanban.mjs`)
