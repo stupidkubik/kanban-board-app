@@ -4,7 +4,7 @@ import { NextResponse } from "next/server"
 import { adminAuth, adminDb } from "@/lib/firebase/admin"
 import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { getSession } from "@/lib/firebase/session"
-import { getErrorMessage } from "@/lib/errors"
+import { internalErrorResponse } from "@/lib/server/error-response"
 import {
   MAX_BOARD_MEMBERS,
   hasOnlyKeys,
@@ -17,7 +17,8 @@ import {
 class AcceptInviteError extends Error {
   constructor(
     readonly status: number,
-    message: string
+    message: string,
+    readonly code?: string
   ) {
     super(message)
   }
@@ -124,7 +125,11 @@ export async function POST(
         }
         // Rules reject any client board update once members exceed the cap.
         if (Object.keys(board.members ?? {}).length >= MAX_BOARD_MEMBERS) {
-          throw new AcceptInviteError(409, "Board member limit reached")
+          throw new AcceptInviteError(
+            409,
+            "Board member limit reached",
+            "member-limit"
+          )
         }
 
         transaction.update(boardRef, {
@@ -151,11 +156,10 @@ export async function POST(
   } catch (error) {
     if (error instanceof AcceptInviteError) {
       return NextResponse.json(
-        { error: error.message },
+        { error: error.message, code: error.code },
         { status: error.status }
       )
     }
-    const message = getErrorMessage(error, "Accept invite failed")
-    return NextResponse.json({ error: message }, { status: 500 })
+    return internalErrorResponse(error, "Accept invite failed")
   }
 }

@@ -214,6 +214,8 @@ export type BoardCopy = {
     signInToLeave: string
     leaveBoardFailed: string
     acceptInviteFailed: string
+    acceptInviteEmailNotVerified: string
+    acceptInviteMemberLimit: string
     declineInviteFailed: string
     labelNameRequired: string
     createLabelFailed: string

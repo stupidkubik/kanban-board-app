@@ -1,5 +1,5 @@
 import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
-import { getErrorMessage } from "@/lib/errors"
+import { serializeError } from "@/lib/errors"
 import { firestoreBaseApi } from "@/lib/store/firestore-base-api"
 import type {
   BoardQueryInput,
@@ -132,7 +132,7 @@ export const boardsApi = firestoreBaseApi.injectEndpoints({
           return { data: { ...mutationOk, boardId } }
         } catch (error) {
           return {
-            error: new Error(getErrorMessage(error, "Create board failed")),
+            error: serializeError(error, "Create board failed"),
           }
         }
       },
@@ -176,9 +176,7 @@ export const boardsApi = firestoreBaseApi.injectEndpoints({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: new Error(
-              getErrorMessage(error, "Update board language failed")
-            ),
+            error: serializeError(error, "Update board language failed"),
           }
         }
       },
@@ -190,9 +188,7 @@ export const boardsApi = firestoreBaseApi.injectEndpoints({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: new Error(
-              getErrorMessage(error, "Update board title failed")
-            ),
+            error: serializeError(error, "Update board title failed"),
           }
         }
       },
@@ -204,7 +200,7 @@ export const boardsApi = firestoreBaseApi.injectEndpoints({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: new Error(getErrorMessage(error, "Delete board failed")),
+            error: serializeError(error, "Delete board failed"),
           }
         }
       },

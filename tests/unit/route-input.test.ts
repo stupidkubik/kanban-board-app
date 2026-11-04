@@ -253,4 +253,18 @@ describe("routes reject malformed input before touching Firestore", () => {
     expect(response.status).toBe(409)
     expect(mocks.transaction.update).not.toHaveBeenCalled()
   })
+
+  it("does not leak Firestore internals in a 500 response", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {})
+    mocks.runTransaction.mockRejectedValue(
+      new Error("5 NOT_FOUND: projects/demo/databases/(default)/documents/x")
+    )
+
+    const response = await createBoard(post(validBoard))
+    const body = await response.json()
+
+    expect(response.status).toBe(500)
+    expect(body).toMatchObject({ error: "Create board failed" })
+    expect(JSON.stringify(body)).not.toContain("projects/")
+  })
 })

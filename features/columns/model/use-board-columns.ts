@@ -13,7 +13,7 @@ import {
   COLUMN_NOT_EMPTY,
   restoreColumn,
 } from "@/lib/store/firestore-operations"
-import { getErrorMessage } from "@/lib/errors"
+import { getErrorCode, getErrorMessage } from "@/lib/errors"
 import type { Column } from "@/lib/types/boards"
 import type { BoardCopy } from "@/lib/types/board-ui"
 import { isNonEmpty } from "@/lib/validation"
@@ -194,7 +194,7 @@ export function useBoardColumns({
         }
       } catch (err) {
         setError(
-          err instanceof Error && err.message === COLUMN_NOT_EMPTY
+          getErrorCode(err) === COLUMN_NOT_EMPTY
             ? uiCopy.board.errors.columnNotEmpty
             : getErrorMessage(err, uiCopy.board.errors.deleteColumnFailed)
         )

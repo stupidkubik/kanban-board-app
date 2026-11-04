@@ -1,5 +1,6 @@
 import { fetchWithAppCheck } from "@/lib/firebase/app-check-fetch"
 import type { BoardRole } from "@/lib/types/boards"
+import { readApiError } from "@/lib/errors"
 
 export type EditableBoardRole = Exclude<BoardRole, "owner">
 
@@ -25,13 +26,6 @@ export const updateBoardMemberRole = async ({
   )
 
   if (!response.ok) {
-    let message = "Update member role failed"
-    try {
-      const payload = (await response.json()) as { error?: string }
-      message = payload.error ?? message
-    } catch {
-      // Keep the fallback when the server does not return JSON.
-    }
-    throw new Error(message)
+    throw await readApiError(response, "Update member role failed")
   }
 }

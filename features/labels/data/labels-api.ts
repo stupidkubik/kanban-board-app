@@ -7,7 +7,7 @@ import {
   type DeleteBoardLabelInput,
   type UpdateBoardLabelInput,
 } from "@/features/labels/data/label-operations"
-import { getErrorMessage } from "@/lib/errors"
+import { serializeError } from "@/lib/errors"
 import { subscribeToBoardLabels } from "@/lib/store/firestore-listeners"
 import type { MutationResult } from "@/lib/store/firestore-api-types"
 import type { BoardLabel } from "@/lib/types/boards"
@@ -61,7 +61,7 @@ export const labelsApi = participantsApi.injectEndpoints({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: new Error(getErrorMessage(error, "Create label failed")),
+            error: serializeError(error, "Create label failed"),
           }
         }
       },
@@ -73,7 +73,7 @@ export const labelsApi = participantsApi.injectEndpoints({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: new Error(getErrorMessage(error, "Update label failed")),
+            error: serializeError(error, "Update label failed"),
           }
         }
       },
@@ -85,7 +85,7 @@ export const labelsApi = participantsApi.injectEndpoints({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: new Error(getErrorMessage(error, "Delete label failed")),
+            error: serializeError(error, "Delete label failed"),
           }
         }
       },

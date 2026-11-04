@@ -4,7 +4,7 @@ import { FieldValue, type Query } from "firebase-admin/firestore"
 import { adminDb } from "@/lib/firebase/admin"
 import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { getSession } from "@/lib/firebase/session"
-import { getErrorMessage } from "@/lib/errors"
+import { internalErrorResponse } from "@/lib/server/error-response"
 import {
   hasOnlyKeys,
   isDocumentId,
@@ -62,8 +62,7 @@ export async function GET(
     }
     return NextResponse.json({ status: "ok" })
   } catch (error) {
-    const message = getErrorMessage(error, "Board access check failed")
-    return NextResponse.json({ error: message }, { status: 500 })
+    return internalErrorResponse(error, "Board access check failed")
   }
 }
 
@@ -154,8 +153,7 @@ export async function PATCH(
         )
       }
     }
-    const message = getErrorMessage(error, "Update board failed")
-    return NextResponse.json({ error: message }, { status: 500 })
+    return internalErrorResponse(error, "Update board failed")
   }
 }
 
@@ -203,7 +201,6 @@ export async function DELETE(
 
     return NextResponse.json({ status: "ok" })
   } catch (error) {
-    const message = getErrorMessage(error, "Delete board failed")
-    return NextResponse.json({ error: message }, { status: 500 })
+    return internalErrorResponse(error, "Delete board failed")
   }
 }

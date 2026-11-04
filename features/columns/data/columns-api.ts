@@ -1,5 +1,5 @@
 import { invitesApi } from "@/features/invites/data/invites-api"
-import { getErrorMessage } from "@/lib/errors"
+import { serializeError } from "@/lib/errors"
 import type { MutationResult } from "@/lib/store/firestore-api-types"
 import {
   createColumn as createColumnDocument,
@@ -72,7 +72,7 @@ export const columnsApi = invitesApi.injectEndpoints({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: new Error(getErrorMessage(error, "Create column failed")),
+            error: serializeError(error, "Create column failed"),
           }
         }
       },
@@ -84,7 +84,7 @@ export const columnsApi = invitesApi.injectEndpoints({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: new Error(getErrorMessage(error, "Update column failed")),
+            error: serializeError(error, "Update column failed"),
           }
         }
       },
@@ -96,7 +96,7 @@ export const columnsApi = invitesApi.injectEndpoints({
           return { data: mutationOk }
         } catch (error) {
           return {
-            error: new Error(getErrorMessage(error, "Delete column failed")),
+            error: serializeError(error, "Delete column failed"),
           }
         }
       },
