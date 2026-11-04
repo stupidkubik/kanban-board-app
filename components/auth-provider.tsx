@@ -18,6 +18,9 @@ import { useAppDispatch } from "@/lib/store/hooks"
 type AuthContextValue = {
   user: User | null
   loading: boolean
+  // Tracked separately: after `user.reload()` Firebase keeps the same User
+  // object, so a change of `user.emailVerified` alone would not re-render.
+  emailVerified: boolean
 }
 
 const AuthContext = React.createContext<AuthContextValue | null>(null)
@@ -26,6 +29,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const dispatch = useAppDispatch()
   const [user, setUser] = React.useState<User | null>(null)
   const [loading, setLoading] = React.useState(true)
+  const [emailVerified, setEmailVerified] = React.useState(false)
 
   React.useEffect(() => {
     dispatch(authLoading())
@@ -33,6 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       clientAuth,
       (currentUser) => {
         setUser(currentUser)
+        setEmailVerified(currentUser?.emailVerified ?? false)
         setLoading(false)
 
         if (currentUser) {
@@ -54,6 +59,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
       (error) => {
         setUser(null)
+        setEmailVerified(false)
         setLoading(false)
         dispatch(authError(error.message))
       }
@@ -62,7 +68,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => unsubscribe()
   }, [dispatch])
 
-  const value = React.useMemo(() => ({ user, loading }), [user, loading])
+  const value = React.useMemo(
+    () => ({ user, loading, emailVerified }),
+    [user, loading, emailVerified]
+  )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

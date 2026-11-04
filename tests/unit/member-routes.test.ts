@@ -30,6 +30,7 @@ const mocks = vi.hoisted(() => {
     assignedCardsQuery,
     batch,
     getSession: vi.fn(),
+    getUser: vi.fn(),
     inviteRef,
     profileRef,
     runTransaction: vi.fn(),
@@ -39,6 +40,7 @@ const mocks = vi.hoisted(() => {
 })
 
 vi.mock("@/lib/firebase/admin", () => ({
+  adminAuth: { getUser: mocks.getUser },
   adminDb: {
     collection: vi.fn((name: string) => ({
       doc: vi.fn(() =>
@@ -388,6 +390,11 @@ describe("member server routes", () => {
     mocks.getSession.mockResolvedValue({
       uid: "invitee",
       email: "invitee@example.com",
+    })
+    mocks.getUser.mockResolvedValue({
+      uid: "invitee",
+      email: "invitee@example.com",
+      emailVerified: true,
     })
     mocks.transaction.get.mockImplementation(async (reference: unknown) => {
       if (reference === mocks.inviteRef) return inviteSnapshot

@@ -172,6 +172,13 @@ export type BoardCopy = {
   invitationsSubtitle: string
   acceptInvite: string
   declineInvite: string
+  verifyEmailTitle: string
+  verifyEmailDescription: string
+  verifyEmailResend: string
+  verifyEmailSent: string
+  verifyEmailCheck: string
+  verifyEmailPending: string
+  verifyEmailResendFailed: string
   readOnlyNotice: string
   errors: {
     signOutFailed: string

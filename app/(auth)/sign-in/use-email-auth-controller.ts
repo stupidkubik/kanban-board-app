@@ -3,6 +3,7 @@
 import * as React from "react"
 import {
   createUserWithEmailAndPassword,
+  sendEmailVerification,
   signInWithEmailAndPassword,
 } from "firebase/auth"
 
@@ -60,11 +61,14 @@ export const useEmailAuthController = ({
             password
           )
         } else {
-          await createUserWithEmailAndPassword(
+          const credential = await createUserWithEmailAndPassword(
             clientAuth,
             normalizedEmail,
             password
           )
+          // Invites are only shown and accepted for a verified address. A
+          // failed send is recoverable from the home page notice.
+          await sendEmailVerification(credential.user).catch(() => undefined)
         }
       } catch (error) {
         setError(getFriendlyAuthError(error, errors))

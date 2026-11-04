@@ -455,9 +455,12 @@ service cloud.firestore {
         || request.resource.data.joinedAt is timestamp);
     }
 
+    // Only a verified address proves ownership; otherwise anyone could
+    // register the invitee's email with a password and read the invite.
     function isInvitee() {
       return isSignedIn()
         && request.auth.token.email != null
+        && request.auth.token.email_verified == true
         && request.auth.token.email == resource.data.email;
     }
 

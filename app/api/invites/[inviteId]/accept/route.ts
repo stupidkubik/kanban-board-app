@@ -1,7 +1,7 @@
 import { FieldValue } from "firebase-admin/firestore"
 import { NextResponse } from "next/server"
 
-import { adminDb } from "@/lib/firebase/admin"
+import { adminAuth, adminDb } from "@/lib/firebase/admin"
 import { verifyAppCheckToken } from "@/lib/firebase/app-check"
 import { getSession } from "@/lib/firebase/session"
 import { getErrorMessage } from "@/lib/errors"
@@ -18,7 +18,6 @@ class AcceptInviteError extends Error {
 type AcceptInviteBody = {
   boardId?: string
   displayName?: string | null
-  email?: string | null
   photoURL?: string | null
 }
 
@@ -51,6 +50,23 @@ export async function POST(
     )
   }
 
+  // Session cookie claims are frozen at sign-in, so read the live account:
+  // a user who verified their address later is accepted, and a password
+  // account registered for someone else's unverified address is not.
+  let accountEmail: string
+  try {
+    const account = await adminAuth.getUser(session.uid)
+    if (!account.email || !account.emailVerified) {
+      return NextResponse.json(
+        { error: "Email not verified", code: "email-not-verified" },
+        { status: 403 }
+      )
+    }
+    accountEmail = account.email.toLowerCase()
+  } catch {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+  }
+
   try {
     const inviteRef = adminDb.collection("boardInvites").doc(inviteId)
     const boardRef = adminDb.collection("boards").doc(body.boardId)
@@ -80,10 +96,7 @@ export async function POST(
         if (invite.boardId !== body.boardId) {
           throw new AcceptInviteError(400, "Invite board mismatch")
         }
-        if (
-          !session.email ||
-          invite.email?.toLowerCase() !== session.email.toLowerCase()
-        ) {
+        if (invite.email?.toLowerCase() !== accountEmail) {
           throw new AcceptInviteError(403, "Invite email mismatch")
         }
       } else if (!alreadyMember) {
@@ -105,7 +118,7 @@ export async function POST(
       if (!profileSnapshot.exists) {
         transaction.set(profileRef, {
           displayName: body.displayName ?? null,
-          email: session.email ?? body.email ?? null,
+          email: accountEmail,
           photoURL: body.photoURL ?? null,
           joinedAt: FieldValue.serverTimestamp(),
         })

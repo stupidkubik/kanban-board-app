@@ -13,6 +13,7 @@ import { getCopy, languageLabels, type Locale } from "@/lib/i18n"
 import { useGetBoardsQuery } from "@/features/boards/data/boards-api"
 import { useGetInvitesQuery } from "@/features/invites/data/invites-api"
 import { KanbanBoardsSection } from "@/features/boards/ui/boards-section"
+import { EmailVerificationNotice } from "@/features/invites/ui/email-verification-notice"
 import { KanbanInvitesSection } from "@/features/invites/ui/invites-section"
 import { useNotifications } from "@/features/notifications/ui/notifications-provider"
 import { Button } from "@/components/ui/button"
@@ -32,12 +33,14 @@ import styles from "@/features/home/ui/kanban-app.module.css"
 export function KanbanApp() {
   const router = useRouter()
   const dispatch = useAppDispatch()
-  const { user } = useAuth()
+  const { user, emailVerified } = useAuth()
   const { data: boards = [] } = useGetBoardsQuery(user?.uid ?? null, {
     skip: !user?.uid,
   })
-  const { data: invites = [] } = useGetInvitesQuery(user?.email ?? null, {
-    skip: !user?.email,
+  // Firestore rules only release invites to a verified address.
+  const inviteEmail = emailVerified ? (user?.email ?? null) : null
+  const { data: invites = [] } = useGetInvitesQuery(inviteEmail, {
+    skip: !inviteEmail,
   })
   const [error, setError] = React.useState<string | null>(null)
   const { locale: uiLocale, setLocale: handleUiLocaleChange } =
@@ -127,6 +130,9 @@ export function KanbanApp() {
 
       {user ? (
         <>
+          {user.email && !emailVerified ? (
+            <EmailVerificationNotice uiCopy={uiCopy} user={user} />
+          ) : null}
           <KanbanInvitesSection
             invites={invites}
             onError={setError}
