@@ -60,7 +60,7 @@
     "jsdom": "^27.4.0",
     "prettier": "3.9.10",
     "typescript": "^5",
-    "vitest": "^4.1.12"
+    "vitest": "^5.1.0"
   },
   "overrides": {
     "@firebase/firestore": {
