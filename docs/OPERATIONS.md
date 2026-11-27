@@ -1,6 +1,6 @@
 # Kanban Board App — operations
 
-Статус: живой runbook, обновлён 29 июля 2026 года.
+Статус: живой runbook, обновлён 27 ноября 2026 года.
 
 ## Production baseline
 
@@ -129,6 +129,43 @@ Dependabot (`.github/dependabot.yml`) раз в неделю открывает 
 Будущее обновление Firebase Admin 14.x выполнять отдельной миграцией: отдельный
 commit, clean install, полный gate, preview, проверка session/protected API и
 runtime logs. Не объединять его с обновлением Next.js.
+
+### Проверка обновления зависимостей — 2026-11-27
+
+Причины падений открытых PR Dependabot:
+
+| PR | Причина | Исправление |
+| --- | --- | --- |
+| [#22](https://github.com/stupidkubik/kanban-board-app/pull/22), [#40](https://github.com/stupidkubik/kanban-board-app/pull/40) | `npm ci`: Vitest и coverage требуют одинаковую версию | Оба пакета обновлены до 5.1.2 |
+| [#23](https://github.com/stupidkubik/kanban-board-app/pull/23), [#28](https://github.com/stupidkubik/kanban-board-app/pull/28) | `npm ci`: несовместимые peer-версии Firebase и rules-unit-testing | Firebase 13.4.0 + rules-unit-testing 6.0.0 |
+| [#29](https://github.com/stupidkubik/kanban-board-app/pull/29) | TypeScript: Cypress 16 удалил `allowCypressEnv` | Cypress 16.4.0, устаревший параметр удалён; тесты уже используют `cy.env()` |
+| [#27](https://github.com/stupidkubik/kanban-board-app/pull/27) | Последний CI зелёный | TypeScript 6.0.3 включён в обновление |
+
+Также обновлены Next.js / eslint-config-next до 16.4.6, Redux Toolkit до 2.15.0,
+Firebase CLI до 15.37.0 и совместимые dev-зависимости. `@types/node` возвращён
+на 24.x в соответствии с runtime. Уже слитый Admin SDK 14.5.1 возвращён на
+13.10.0 согласно ограничениям выше; его мажоры добавлены в ignore Dependabot.
+
+После обновления Firebase нужен единый `@firebase/app` во всём дереве:
+сохранённая в lockfile копия 0.16.2 рядом с 0.16.7 приводила к
+`Service firestore is not available` в rules tests. `npm dedupe` устранил дубли;
+чистый `npm ci` воспроизводит рабочее дерево. Существующие security overrides
+пока нужны: Firestore по-прежнему требует `@grpc/grpc-js ~1.9.0`, Admin 13 — uuid 9.
+
+Локально прошли `npm ci`, `npm run check` (196 unit/component tests; coverage:
+53.98% statements, 44.54% branches, 54.23% functions, 53.92% lines),
+`npm run test:rules -- --project demo-kanban-e2e` (12/12), Webpack build и
+проверка 17 server traces, `cypress verify`, `npm run cypress:run` (3/3,
+cleanup подтверждён). Cypress использовал встроенный Electron; в версии 16
+этот браузер deprecated, переход на Chrome нужно проверить отдельно.
+Это локальная проверка обновления, а не подтверждение production release.
+
+`npm audit --omit=dev`: 0 уязвимостей. Полный audit: 11 moderate, все через
+Firebase CLI (`glob` / `minimatch`, OpenTelemetry); high/critical отсутствуют.
+Совместимый апдейт typescript-eslint до 8.74.0 устранил ещё 6 dev-advisories.
+Предложенный audit понижает google-gax или Firebase CLI; такое исправление
+не применялось. Jest DOM 8 и jsdom 31 оставлены для отдельных миграций;
+ограничения на ESLint 10, TypeScript 7 и Admin 14 сохраняются.
 
 ## Cypress and smoke
 
