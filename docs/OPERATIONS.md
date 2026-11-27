@@ -164,8 +164,21 @@ cleanup подтверждён). Cypress использовал встроенн
 Firebase CLI (`glob` / `minimatch`, OpenTelemetry); high/critical отсутствуют.
 Совместимый апдейт typescript-eslint до 8.74.0 устранил ещё 6 dev-advisories.
 Предложенный audit понижает google-gax или Firebase CLI; такое исправление
-не применялось. Jest DOM 8 и jsdom 31 оставлены для отдельных миграций;
-ограничения на ESLint 10, TypeScript 7 и Admin 14 сохраняются.
+не применялось. Jest DOM 8 и jsdom 31 на этом этапе оставлены для отдельных
+миграций; ограничения на ESLint 10, TypeScript 7 и Admin 14 сохраняются.
+
+Дополнение: [#43](https://github.com/stupidkubik/kanban-board-app/pull/43)
+обновляет Jest DOM до 8.0.0 (поддержка Vitest 5),
+[#42](https://github.com/stupidkubik/kanban-board-app/pull/42) — jsdom до 31.0.1.
+Новый jsdom возвращает live computed styles: Radix видит CSS-анимацию выхода
+из диалога и ждёт `animationend`, который jsdom самостоятельно не отправляет.
+Component test явно завершает анимации диалога и overlay, затем по-прежнему
+проверяет закрытие и возврат фокуса на кнопку удаления. Cypress дополнительно
+проверяет отмену удаления метки и возврат фокуса в браузере. Код приложения
+для этой миграции менять не потребовалось.
+Совместно прошли clean install, `npm run check` (196 tests), Webpack build с
+проверкой 17 traces и Cypress (3/3, включая возврат фокуса; cleanup подтверждён).
+Production audit по-прежнему показывает 0 уязвимостей.
 
 ## Cypress and smoke
 

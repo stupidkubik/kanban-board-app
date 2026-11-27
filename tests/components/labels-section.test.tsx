@@ -62,6 +62,21 @@ const renderSection = ({
   return { ...view, setError }
 }
 
+const finishAlertDialogExit = () => {
+  // jsdom exposes animation styles but does not run CSS animations. Radix
+  // waits for animationend before unmounting the dialog and returning focus.
+  const elements = document.querySelectorAll(
+    '[data-slot="alert-dialog-overlay"][data-state="closed"], [data-slot="alert-dialog-content"][data-state="closed"]'
+  )
+  elements.forEach((element) => {
+    const event = new Event("animationend", { bubbles: true })
+    Object.defineProperty(event, "animationName", {
+      value: getComputedStyle(element).animationName,
+    })
+    fireEvent(element, event)
+  })
+}
+
 beforeEach(() => {
   apiMocks.labels = []
   apiMocks.createLabel.mockReset()
@@ -175,12 +190,16 @@ describe("LabelsSection", () => {
       name: `${uiCopy.board.deleteLabel}: Bug`,
     })
     await user.click(deleteButton)
-    expect(
-      screen.getByRole("alertdialog", { name: uiCopy.board.deleteLabelTitle })
-    ).toHaveTextContent("Bug")
+    const deleteDialog = screen.getByRole("alertdialog", {
+      name: uiCopy.board.deleteLabelTitle,
+    })
+    expect(deleteDialog).toHaveTextContent("Bug")
 
     await user.click(screen.getByRole("button", { name: uiCopy.common.cancel }))
+    expect(deleteDialog).toHaveAttribute("data-state", "closed")
+    finishAlertDialogExit()
     await waitFor(() => expect(deleteButton).toHaveFocus())
+    expect(deleteDialog).not.toBeInTheDocument()
 
     await user.click(deleteButton)
     await user.click(screen.getByTestId("delete-label-confirm"))
@@ -190,6 +209,8 @@ describe("LabelsSection", () => {
         labelId: "bug",
       })
     )
+    finishAlertDialogExit()
+    expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument()
   })
 
   it("keeps unrelated rows enabled while one label update is pending", async () => {
