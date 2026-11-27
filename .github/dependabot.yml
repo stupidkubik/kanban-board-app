@@ -27,6 +27,9 @@ updates:
         dependency-type: development
         update-types: [minor, patch]
     ignore:
+      # Admin 14 needs its own verified Vercel preview migration (AGENTS.md).
+      - dependency-name: firebase-admin
+        update-types: ["version-update:semver-major"]
       # Keep Node.js types on the runtime line pinned in .nvmrc.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
